@@ -1,0 +1,22 @@
+{
+  "name": "natfis",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "rm -r ./bin/* && tsc && node ./bin/index.js",
+    "build": "rm -r ./bin/* && tsc"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/express": "^4.17.0",
+    "@types/express-session": "^1.15.13",
+    "@types/mongoose": "^5.5.12",
+    "express": "^4.17.1",
+    "express-session": "^1.16.2",
+    "mongoose": "^5.6.9",
+    "nodemon": "^1.19.1"
+  }
+}
