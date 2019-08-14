@@ -3,6 +3,7 @@ import session from 'express-session';
 import mongoose from 'mongoose';
 
 import accountController from './controllers/account';
+import authenticationController from './controllers/authentication';
 
 // global config
 const app = express();
@@ -20,6 +21,7 @@ app.use(session({ secret }));
 
 // Apply controllers
 app.use('/account/', accountController);
+app.use('/authentication/', authenticationController);
 
 // Start express server
 app.listen(port, () => {

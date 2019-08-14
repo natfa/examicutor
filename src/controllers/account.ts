@@ -8,7 +8,7 @@ router.post('/', (req: Request, res: Response) => {
   const { email, password, facultyNumber } = req.body;
 
   const account = new Account(facultyNumber, email, password);
-  accountdb.saveAccount(account)
+  accountdb.saveNewAccount(account)
     .then((acc) => {
       res.status(200).json(acc);
     })
