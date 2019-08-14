@@ -2,8 +2,9 @@ import express from 'express';
 import session from 'express-session';
 import mongoose from 'mongoose';
 
-import accountController from './controllers/account';
 import authenticationController from './controllers/authentication';
+import accountController from './controllers/account';
+import questionController from './controllers/question';
 
 // global config
 const app = express();
@@ -12,7 +13,7 @@ const secret = 'very-secret-secret';
 const conString = 'mongodb://localhost/natfis';
 
 // Mongoose config
-mongoose.connect(conString, { useNewUrlParser: true })
+mongoose.connect(conString, { useNewUrlParser: true, useFindAndModify: false })
   .catch(err => console.error);
 
 // Express config
@@ -20,8 +21,9 @@ app.use(express.json());
 app.use(session({ secret }));
 
 // Apply controllers
-app.use('/account/', accountController);
 app.use('/authentication/', authenticationController);
+app.use('/account/', accountController);
+app.use('/question/', questionController);
 
 // Start express server
 app.listen(port, () => {
