@@ -1,5 +1,6 @@
 import express from 'express';
 
+import { validatePOST, validatePUT } from '../validators/question';
 import questiondb from '../db/questions';
 import Question from '../models/Question';
 
@@ -34,7 +35,7 @@ router.get('/:questionID', (req, res) => {
 
 // POST /quesiton/
 // Create a new question
-router.post('/', (req, res) => {
+router.post('/', validatePOST, (req, res) => {
   const { text, incorrectAnswers, correctAnswers, points } = req.body;
 
   const newQuestion = new Question(text, incorrectAnswers, correctAnswers, points);
@@ -48,7 +49,7 @@ router.post('/', (req, res) => {
     });
 });
 
-router.put('/:questionID', (req, res) => {
+router.put('/:questionID', validatePUT, (req, res) => {
   questiondb.findQuestionById(req.params.questionID)
     .then((question) => {
       if (!question)
