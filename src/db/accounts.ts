@@ -10,7 +10,7 @@ const schemaToModel = (schema: IAccount): AccountModel => {
   )
 }
 
-const saveNewAccount = (account: AccountModel): Promise<AccountModel> => {
+const saveAccount = (account: AccountModel): Promise<AccountModel> => {
   const newAccount = new AccountSchema({
     email: account.email,
     passwordHash: account.passwordHash,
@@ -28,7 +28,7 @@ const saveNewAccount = (account: AccountModel): Promise<AccountModel> => {
   })
 }
 
-const findAccountById = (accountID: String): Promise<AccountModel | null> => {
+const getAccountById = (accountID: String): Promise<AccountModel | null> => {
   return new Promise<AccountModel | null>((resolve, reject) => {
     AccountSchema.findById(accountID)
       .then((account) => {
@@ -44,6 +44,6 @@ const findAccountById = (accountID: String): Promise<AccountModel | null> => {
 }
 
 export default {
-  saveNewAccount,
-  findAccountById,
+  saveAccount,
+  getAccountById,
 }
