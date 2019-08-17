@@ -5,8 +5,6 @@ export interface IQuestion extends mongoose.Document {
   incorrectAnswers: Array<String>;
   correctAnswers: Array<String>;
   points: Number;
-  //subject?: any;
-  //media?: any;
 }
 
 const schema = new mongoose.Schema({

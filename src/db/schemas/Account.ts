@@ -1,22 +1,12 @@
 import mongoose from 'mongoose';
 
 export interface IAccount extends mongoose.Document {
-  firstName?: String;
-  middleName?: String;
-  lastName?: String;
   facultyNumber: String;
   email: String;
   passwordHash: String;
-  course?: String;
-  accountType?: String;
 }
 
 const schema = new mongoose.Schema({
-  firstName: String,
-  middleName: String,
-  lastName: String,
-  course: String,
-  accountType: String,
   facultyNumber: {
     type: String,
     required: true,
