@@ -1,25 +1,22 @@
 class Question {
+  id: String | null;
   text: String;
   incorrectAnswers: Array<String>;
   correctAnswers: Array<String>;
   points: Number;
-  //subject: any;
-  //media: any;
 
   constructor (
+    id: String | null = null,
     text: String,
     incorrectAnswers: Array<String>,
     correctAnswers: Array<String>,
     points: Number,
-    //subject: any,
-    //media: any,
   ) {
+    this.id = id;
     this.text = text;
     this.incorrectAnswers = incorrectAnswers;
     this.correctAnswers = correctAnswers;
     this.points = points;
-    //this.subject = subject;
-    //this.media = media;
   }
 }
 

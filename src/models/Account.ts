@@ -1,31 +1,19 @@
 class Account {
-  // firstName: String;
-  // middleName: String;
-  // lastName: String;
+  id: String | null;
   facultyNumber: String;
   email: String;
   passwordHash: String;
-  // course: any;
-  // accountType: any;
 
   constructor(
-    // firstName: String,
-    // middleName: String,
-    // lastName: String,
+    id: String | null = null,
     facultyNumber: String,
     email: String,
     passwordHash: String,
-    // course: any,
-    // accountType: any,
   ) {
-    // this.firstName = firstName;
-    // this.middleName = middleName;
-    // this.lastName = lastName;
+    this.id = id;
     this.facultyNumber = facultyNumber;
     this.email = email;
     this.passwordHash = passwordHash;
-    // this.course = course;
-    // this.accountType = accountType;
   }
 }
 
