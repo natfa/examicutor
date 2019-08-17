@@ -8,7 +8,7 @@ const router = express();
 router.post('/', (req: Request, res: Response) => {
   const { email, password } = req.body;
 
-  accountdb.findAccountByEmail(email)
+  accountdb.getAccountByEmail(email)
     .then((acc) => {
       if (!acc)
         return res.status(404).send('Not Found');

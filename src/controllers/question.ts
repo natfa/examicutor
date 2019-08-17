@@ -21,7 +21,7 @@ router.get('/', (req, res) => {
 // GET /question/questionID
 // Get a question by it's ID
 router.get('/:questionID', (req, res) => {
-  questiondb.findQuestionById(req.params.questionID)
+  questiondb.getQuestionById(req.params.questionID)
     .then((question) => {
       if (!question)
         return res.status(404).send('Not Found');
@@ -38,9 +38,9 @@ router.get('/:questionID', (req, res) => {
 router.post('/', validatePOST, (req, res) => {
   const { text, incorrectAnswers, correctAnswers, points } = req.body;
 
-  const newQuestion = new Question(text, incorrectAnswers, correctAnswers, points);
+  const newQuestion = new Question(null, text, incorrectAnswers, correctAnswers, points);
 
-  questiondb.saveNewQuestion(newQuestion)
+  questiondb.saveQuestion(newQuestion)
     .then((question) => {
       return res.status(200).send(question);
     })
@@ -50,14 +50,14 @@ router.post('/', validatePOST, (req, res) => {
 });
 
 router.put('/:questionID', validatePUT, (req, res) => {
-  questiondb.findQuestionById(req.params.questionID)
+  questiondb.getQuestionById(req.params.questionID)
     .then((question) => {
       if (!question)
         return res.status(404).send('Not Found');
 
       const { text, incorrectAnswers, correctAnswers, points } = req.body;
 
-      const newQuestion = new Question(question.text, question.incorrectAnswers, question.correctAnswers, question.points);
+      const newQuestion = new Question(question.id, question.text, question.incorrectAnswers, question.correctAnswers, question.points);
 
       if (text) newQuestion.text = text;
       if (incorrectAnswers) newQuestion.incorrectAnswers = incorrectAnswers;
