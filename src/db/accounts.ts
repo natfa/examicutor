@@ -43,7 +43,20 @@ const getAccountById = (accountID: String): Promise<AccountModel | null> => {
   })
 }
 
+const getAccountByEmail = (email: String): Promise<AccountModel | null> => {
+  return new Promise<AccountModel | null>((resolve, reject) => {
+    AccountSchema.findOne({ email })
+      .then((schema) => {
+        if (schema === null || schema === undefined)
+          return resolve(null);
+        return resolve(schemaToModel(schema));
+      })
+      .catch((err) => reject(err));
+  });
+}
+
 export default {
   saveAccount,
   getAccountById,
+  getAccountByEmail,
 }
