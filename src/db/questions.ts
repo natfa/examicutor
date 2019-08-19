@@ -8,6 +8,7 @@ const schemaToModel = (schema: IQuestion): QuestionModel => {
     schema.incorrectAnswers,
     schema.correctAnswers,
     schema.points,
+    schema.subject,
   );
 }
 
@@ -41,6 +42,7 @@ const saveQuestion = (question: QuestionModel): Promise<QuestionModel> => {
     incorrectAnswers: question.incorrectAnswers,
     correctAnswers: question.correctAnswers,
     points: question.points,
+    subject: question.subject,
   });
 
   return new Promise<QuestionModel>((resolve, reject) => {
@@ -57,7 +59,7 @@ const updateQuestionById = (questionId: String, newQuestion: QuestionModel): Pro
       incorrectAnswers: newQuestion.incorrectAnswers,
       correctAnswers: newQuestion.correctAnswers,
       points: newQuestion.points,
-
+      subject: newQuestion.subject,
     }
   };
 

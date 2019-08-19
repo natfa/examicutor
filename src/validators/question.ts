@@ -2,44 +2,52 @@ import { Request, Response, NextFunction } from 'express';
 
 interface ValidatorReturnValue {
   isValid: boolean;
-  value: any;
+  err: any;
 }
 
 
 export const validatePOST = (req: Request, res: Response, next: NextFunction) => {
   let errors = {};
-  const { text, incorrectAnswers, correctAnswers, points } = req.body;
+  const { text, incorrectAnswers, correctAnswers, points, subject } = req.body;
 
   if (text === undefined){
     errors = Object.assign({}, errors, { text: `Required` });
   } else {
-    const { isValid, value } = validateText(text);
+    const { isValid, err } = validateText(text);
     if (!isValid)
-      errors = Object.assign({}, errors, value);
+      errors = Object.assign({}, errors, err);
   }
 
   if (incorrectAnswers === undefined) {
     errors = Object.assign({}, errors, { incorrectAnswers: `Required` });
   } else {
-    const { isValid, value } = validateAnswers(incorrectAnswers);
+    const { isValid, err } = validateAnswers(incorrectAnswers);
     if (!isValid)
-      errors = Object.assign({}, errors, value);
+      errors = Object.assign({}, errors, err);
   }
 
   if (correctAnswers === undefined) {
     errors = Object.assign({}, errors, { correctAnswers: `Required` });
   } else {
-    const { isValid, value } = validateAnswers(correctAnswers);
+    const { isValid, err } = validateAnswers(correctAnswers);
     if (!isValid)
-      errors = Object.assign({}, errors, value);
+      errors = Object.assign({}, errors, err);
   }
 
   if (points === undefined) {
     errors = Object.assign({}, errors, { points: `Required` });
   } else {
-    const { isValid, value } = validatePoints(points);
+    const { isValid, err } = validatePoints(points);
     if (!isValid)
-      errors = Object.assign({}, errors, value);
+      errors = Object.assign({}, errors, err);
+  }
+
+  if (subject === undefined) {
+    errors = Object.assign({}, errors, { subject: `Required` });
+  } else {
+    const { isValid, err } = validateSubject(subject);
+    if (!isValid)
+      errors = Object.assign({}, errors, err);
   }
 
   if (Object.keys(errors).length > 0)
@@ -49,30 +57,36 @@ export const validatePOST = (req: Request, res: Response, next: NextFunction) =>
 
 export const validatePUT = (req: Request, res: Response, next: NextFunction) => {
   let errors = {};
-  const { text, incorrectAnswers, correctAnswers, points } = req.body;
+  const { text, incorrectAnswers, correctAnswers, points, subject } = req.body;
 
   if (text !== undefined) {
-    const { isValid, value } = validateText(text);
+    const { isValid, err } = validateText(text);
     if (!isValid)
-      errors = Object.assign({}, errors, value);
+      errors = Object.assign({}, errors, err);
   }
 
   if (incorrectAnswers !== undefined) {
-    const { isValid, value } = validateAnswers(incorrectAnswers);
+    const { isValid, err } = validateAnswers(incorrectAnswers);
     if (!isValid)
-      errors = Object.assign({}, errors, value);
+      errors = Object.assign({}, errors, err);
   }
 
   if (correctAnswers !== undefined) {
-    const { isValid, value } = validateAnswers(correctAnswers);
+    const { isValid, err } = validateAnswers(correctAnswers);
     if (!isValid)
-      errors = Object.assign({}, errors, value);
+      errors = Object.assign({}, errors, err);
   }
 
   if (points !== undefined) {
-    const { isValid, value } = validatePoints(points);
+    const { isValid, err } = validatePoints(points);
     if (!isValid)
-      errors = Object.assign({}, errors, value);
+      errors = Object.assign({}, errors, err);
+  }
+
+  if (subject !== undefined) {
+    const { isValid, err } = validateSubject(subject);
+    if (!isValid)
+      errors = Object.assign({}, errors, err);
   }
 
   if (Object.keys(errors).length > 0)
@@ -96,20 +110,10 @@ const validateText = (text: any): ValidatorReturnValue => {
       text: `Can't be empty`,
     });
 
-  let rv: ValidatorReturnValue;
-
-  if (Object.keys(errors).length > 0)
-    rv = {
-      isValid: false,
-      value: errors,
-    }
-  else
-    rv = {
-      isValid: true,
-      value: text,
-    }
-
-  return rv;
+  return {
+    isValid: Object.keys(errors).length === 0,
+    err: errors,
+  }
 }
 
 const validateAnswers = (answers: any): ValidatorReturnValue => {
@@ -141,20 +145,10 @@ const validateAnswers = (answers: any): ValidatorReturnValue => {
     }
   }
 
-  let rv: ValidatorReturnValue;
-
-  if (Object.keys(errors).length > 0)
-    rv = {
-      isValid: false,
-      value: errors,
-    };
-  else
-    rv = {
-      isValid: true,
-      value: answers,
-    }
-
-  return rv;
+  return {
+    isValid: Object.keys(errors).length === 0,
+    err: errors,
+  }
 }
 
 const validatePoints = (points: any): ValidatorReturnValue => {
@@ -166,17 +160,26 @@ const validatePoints = (points: any): ValidatorReturnValue => {
     });
 
 
-  let rv: ValidatorReturnValue;
-  if (Object.keys(errors).length > 0)
-    rv = {
-      isValid: false,
-      value: errors,
-    }
-  else
-    rv = {
-      isValid: true,
-      value: points,
-    }
+  return {
+    isValid: Object.keys(errors).length === 0,
+    err: errors,
+  }
+}
 
-  return rv;
+const validateSubject = (subject: any): ValidatorReturnValue => {
+  let errors = {};
+
+  if (typeof(subject) !== 'string')
+    errors = Object.assign({}, errors, {
+      subject: `Must be a string`,
+    });
+  else if(subject.length === 0)
+    errors = Object.assign({}, errors, {
+      subject: `Can't be empty`,
+    });
+
+  return {
+    isValid: Object.keys(errors).length === 0,
+    err: errors,
+  }
 }

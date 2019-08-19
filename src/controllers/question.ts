@@ -36,9 +36,9 @@ router.get('/:questionID', (req, res) => {
 // POST /quesiton/
 // Create a new question
 router.post('/', validatePOST, (req, res) => {
-  const { text, incorrectAnswers, correctAnswers, points } = req.body;
+  const { text, incorrectAnswers, correctAnswers, points, subject } = req.body;
 
-  const newQuestion = new Question(null, text, incorrectAnswers, correctAnswers, points);
+  const newQuestion = new Question(null, text, incorrectAnswers, correctAnswers, points, subject);
 
   questiondb.saveQuestion(newQuestion)
     .then((question) => {
@@ -55,9 +55,9 @@ router.put('/:questionID', validatePUT, (req, res) => {
       if (!question)
         return res.status(404).send('Not Found');
 
-      const { text, incorrectAnswers, correctAnswers, points } = req.body;
+      const { text, incorrectAnswers, correctAnswers, points, subject } = req.body;
 
-      const newQuestion = new Question(question.id, question.text, question.incorrectAnswers, question.correctAnswers, question.points);
+      const newQuestion = new Question(question.id, question.text, question.incorrectAnswers, question.correctAnswers, question.points, question.subject);
 
       if (text) newQuestion.text = text;
       if (incorrectAnswers) newQuestion.incorrectAnswers = incorrectAnswers;
@@ -91,6 +91,6 @@ router.delete('/:questionID', (req, res) => {
     .catch((err) => {
       return res.status(500).send(err);
     });
-})
+});
 
 export default router;
