@@ -1,62 +1,24 @@
-import AccountSchema, { IAccount } from './schemas/Account';
-import AccountModel from '../models/Account';
+import mysql from 'mysql';
 
-const schemaToModel = (schema: IAccount): AccountModel => {
-  return new AccountModel(
-    schema.id,
-    schema.facultyNumber,
-    schema.email,
-    schema.passwordHash,
-  )
-}
+import Account from '../models/Account';
 
-const saveAccount = (account: AccountModel): Promise<AccountModel> => {
-  const newAccount = new AccountSchema({
-    email: account.email,
-    passwordHash: account.passwordHash,
-    facultyNumber: account.facultyNumber,
+const getAccountById = (accountId: String): Promise<Account|null> => {
+  return new Promise<Account|null>((resolve, reject) => {
   });
-
-  return new Promise<AccountModel>((resolve, reject) => {
-    newAccount.save()
-      .then((savedAccount) => {
-        return resolve(schemaToModel(savedAccount));
-      })
-      .catch((err) => {
-        return reject(err);
-      });
-  })
 }
 
-const getAccountById = (accountID: String): Promise<AccountModel | null> => {
-  return new Promise<AccountModel | null>((resolve, reject) => {
-    AccountSchema.findById(accountID)
-      .then((account) => {
-        if (account === null || account === undefined) {
-          return resolve(null);
-        }
-        return resolve(schemaToModel(account));
-      })
-      .catch((err) => {
-        return reject(err);
-      });
-  })
+const getAccountByEmail = (email: String): Promise<Account|null> => {
+  return new Promise<Account|null>((resolve, reject) => {
+  });
 }
 
-const getAccountByEmail = (email: String): Promise<AccountModel | null> => {
-  return new Promise<AccountModel | null>((resolve, reject) => {
-    AccountSchema.findOne({ email })
-      .then((schema) => {
-        if (schema === null || schema === undefined)
-          return resolve(null);
-        return resolve(schemaToModel(schema));
-      })
-      .catch((err) => reject(err));
+const saveAccount = (accout: Account): Promise<Account> => {
+  return new Promise<Account>((resolve, reject) => {
   });
 }
 
 export default {
-  saveAccount,
   getAccountById,
   getAccountByEmail,
+  saveAccount,
 }

@@ -1,13 +1,31 @@
-import express from 'express';
+import express from 'express'
 
-import Test from '../models/Test';
-import Question from '../models/Question';
+import { validateQuery } from '../validators/test'
 
-import questiondb from '../db/questions';
+import Test from '../models/Test'
+import Question from '../models/Question'
 
-const router = express();
+import questiondb from '../db/questions'
 
-router.get('/', (req, res) => {
+const router = express()
+
+router.get('/', validateQuery, (req, res) => {
+  const { total, subjects } = req.query;
+
+
+
+
+  return res.status(200).end()
+
+
+
+
+
+
+
+
+
+
   questiondb.getAllQuestions()
     .then((questions) => {
       let testQuestions = questions.filter((question) => {

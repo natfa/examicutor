@@ -49,7 +49,10 @@ router.post('/', validatePOST, (req, res) => {
     });
 });
 
+// TODO: finish
 router.put('/:questionID', validatePUT, (req, res) => {
+  return res.status(500).send('This functionality is not working at the moment');
+
   questiondb.getQuestionById(req.params.questionID)
     .then((question) => {
       if (!question)

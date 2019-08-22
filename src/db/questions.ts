@@ -1,88 +1,196 @@
-import QuestionSchema, { IQuestion } from './schemas/Question';
-import QuestionModel from '../models/Question';
+import mysql from 'mysql';
 
-const schemaToModel = (schema: IQuestion): QuestionModel => {
-  return new QuestionModel(
-    schema.id,
-    schema.text,
-    schema.incorrectAnswers,
-    schema.correctAnswers,
-    schema.points,
-    schema.subject,
-  );
+import pool from './index';
+
+import Question from '../models/Question';
+
+interface AnswerResult {
+  id: Number;
+  text: String;
+  correct: Number;
+  questionid: Number;
 }
 
-const getAllQuestions = (): Promise<Array<QuestionModel>> => {
-  return new Promise<Array<QuestionModel>>((resolve, reject) => {
-    QuestionSchema.find()
-      .then((schemas) => {
-        const models = schemas.map((schema) => schemaToModel(schema));
+interface QuestionResult {
+  id: Number;
+  text: String;
+  points: Number;
+}
 
-        return resolve(models);
+const getAllQuestions = (): Promise<Array<Question>> => {
+  return new Promise<Array<Question>>((resolve, reject) => {
+    pool.getConnection((err, connection) => {
+      if (err)
+        throw err;
+
+      connection.query({
+        sql: `select q.*, a.*
+        from questions q
+        inner join answers a
+        on a.questionid = q.id`,
+        nestTables: true,
+      }, (err, results, fields) => {
+        if (err)
+          throw err;
+
+        connection.release();
+        let questions: Array<Question> = [];
+
+        results.map((result: any) => {
+          let question: Question|undefined = questions.find((q) => q.id === String(result.a.questionid));
+
+          if (question === undefined) {
+            question = new Question(
+              String(result.q.id),
+              result.q.text,
+              [],
+              [],
+              result.q.points,
+              'Math',
+            );
+
+            questions = [...questions, question];
+          }
+
+          if (result.a.correct)
+            question.correctAnswers = [...question.correctAnswers, result.a.text];
+          else
+            question.incorrectAnswers = [...question.incorrectAnswers, result.a.text];
+        })
+
+        return resolve(questions);
       })
-      .catch((err) => reject(err));
+    })
   });
 }
 
-const getQuestionById = (questionId: String): Promise<QuestionModel | null> => {
-  return new Promise<QuestionModel | null>((resolve, reject) => {
-    QuestionSchema.findById(questionId)
-      .then((schema) => {
-        if (schema === null || schema === undefined)
-          return resolve(null);
-        return resolve(schemaToModel(schema));
-      })
-      .catch((err) => reject(err));
-  })
-}
+const getQuestionById = (questionId: String): Promise<Question|null> => {
+  return new Promise<Question|null>((resolve, reject) => {
+    pool.getConnection((err, connection) => {
+      if (err) {
+        if (connection)
+          connection.release();
 
-const saveQuestion = (question: QuestionModel): Promise<QuestionModel> => {
-  const questionSchema = new QuestionSchema({
-    text: question.text,
-    incorrectAnswers: question.incorrectAnswers,
-    correctAnswers: question.correctAnswers,
-    points: question.points,
-    subject: question.subject,
+        throw err;
+      }
+
+      connection.query({
+        sql: `select q.*, a.*
+        from questions q
+        inner join answers a
+        on a.questionid = q.id
+        where q.id = ?`,
+        values: [questionId],
+        nestTables: true,
+      }, (err, results, fields) => {
+        connection.release();
+
+        if (results.length === 0) {
+          return resolve(null);
+        }
+
+        // Find correct results and save them as correct answers
+        const correctAnswers = results.filter((result: any) => result.a.correct)
+          .map((correctResult: any) => {
+            return correctResult.a.text;
+          })
+
+        // Find incorrect results and save them as incorrect answers
+        const incorrectAnswers = results.filter((result: any) => !(result.a.correct))
+          .map((incorrectResult: any) => {
+            return incorrectResult.a.text;
+          })
+
+        // Get the interface value from the 'any' value
+        // This is needed only to have some type checking
+        const questionResult: QuestionResult = results[0].q;
+
+        return resolve(new Question(
+          String(questionResult.id),
+          questionResult.text,
+          incorrectAnswers,
+          correctAnswers,
+          questionResult.points,
+          'Math'
+        ));
+      })
+    })
   });
-
-  return new Promise<QuestionModel>((resolve, reject) => {
-    questionSchema.save()
-      .then((schema) => resolve(schemaToModel(schema)))
-      .catch((err) => reject(err));
-  })
 }
 
-const updateQuestionById = (questionId: String, newQuestion: QuestionModel): Promise<QuestionModel | null> => {
-  const update = {
-    $set: {
-      text: newQuestion.text,
-      incorrectAnswers: newQuestion.incorrectAnswers,
-      correctAnswers: newQuestion.correctAnswers,
-      points: newQuestion.points,
-      subject: newQuestion.subject,
-    }
-  };
+const saveQuestion = (question: Question): Promise<Question> => {
+  return new Promise<Question>((resolve, reject) => {
+    let answers: Array<any> = []
 
-  return new Promise<QuestionModel | null>((resolve, reject) => {
-    QuestionSchema.findByIdAndUpdate(questionId, update)
-      .then((oldSchema) => {
-        if (oldSchema === null || oldSchema === undefined)
-          return resolve(null);
-        return resolve(schemaToModel(oldSchema));
-      })
-      .catch((err) => reject(err));
+    question.incorrectAnswers.map((answer) => {
+      answers = [...answers, {
+        text: answer,
+        correct: false,
+      }]
+    })
+
+    question.correctAnswers.map((answer) => {
+      answers = [...answers, {
+        text: answer,
+        correct: true,
+      }]
+    })
+
+    pool.getConnection((err, connection) => {
+      if (err)
+        throw err;
+
+      connection.query({
+        sql: `insert into
+        questions(text, points)
+        values(?, ?)`,
+        values: [question.text, question.points],
+      }, (err, results, fields) => {
+        if (err)
+          throw err
+
+        question.id = results.insertId;
+
+        answers.map((answer) => {
+          connection.query({
+            sql: `insert into
+            answers(text, correct, questionid)
+            values(?, ?, ?)`,
+            values: [answer.text, answer.correct, question.id],
+          }, (err, results, fields) => {
+            if (err)
+              throw err
+          })
+        })
+
+        connection.release()
+        return resolve(question);
+      });
+    })
   });
 }
 
-const removeQuestionById = (questionId: String): Promise<QuestionModel | null> => {
-  return new Promise<QuestionModel | null>((resolve, reject) => {
-    QuestionSchema.findByIdAndRemove(questionId)
-      .then((schema) => {
-        if (schema === null || schema === undefined)
-          return resolve(null);
-        return resolve(schemaToModel(schema));
+const updateQuestionById = (questionId: String, update: any): Promise<Question|null> => {
+  return new Promise<Question|null>((resolve, reject) => {
+  });
+}
+
+// TODO: Make the deletion cascade as well
+const removeQuestionById = (questionId: String): Promise<Question|null> => {
+  return new Promise<Question|null>((resolve, reject) => {
+    pool.getConnection((err, connection) => {
+      if (err)
+        throw err
+
+      connection.query({
+        sql: `delete from questions where id = ?`,
+        values: [questionId],
+      }, (err, results, fields) => {
+        connection.release()
+
+        console.log(results);
       })
-      .catch((err) => reject(err));
+    })
   });
 }
 
@@ -93,4 +201,3 @@ export default {
   updateQuestionById,
   removeQuestionById,
 }
-
