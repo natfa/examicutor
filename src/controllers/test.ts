@@ -38,7 +38,12 @@ router.get('/', validateQuery, (req, res) => {
           questioneer = [...questioneer, pq]
         })
 
-      return res.status(200).send(questioneer)
+      const test = {
+        name: 'Some random test',
+        questions: questioneer,
+      }
+
+      return res.status(200).send(test)
     })
     .catch((err) => {
       return res.status(500).send(err)
