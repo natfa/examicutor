@@ -9,35 +9,40 @@ import questiondb from '../db/questions'
 
 const router = express()
 
+interface PublicQuestion {
+  text: String
+  answers: Array<String>
+}
+
 router.get('/', validateQuery, (req, res) => {
-  const { total, subjects } = req.query;
+  const { total, subjects } = req.query
 
+  // validate question count
+  const subjectsTotal = Object.keys(subjects)
+    .reduce((acc: number, key: string) => acc += Number(subjects[key]), 0)
 
+  if (subjectsTotal > total)
+    return res.status(400).send(`Subjects count more than total`)
 
-
-  return res.status(200).end()
-
-
-
-
-
-
-
-
-
-
-  questiondb.getAllQuestions()
+  questiondb.getQuestionsBySubjects(...Object.keys(subjects))
     .then((questions) => {
-      let testQuestions = questions.filter((question) => {
-        return question;
-      })
+      let questioneer: Array<PublicQuestion> = []
 
-      const test = new Test('New test test', testQuestions);
-      res.status(200).send(test.publish());
+      questions
+        .map((question) => {
+          const pq: PublicQuestion = {
+            text: question.text,
+            answers: [...question.incorrectAnswers, ...question.correctAnswers],
+          }
+
+          questioneer = [...questioneer, pq]
+        })
+
+      return res.status(200).send(questioneer)
     })
     .catch((err) => {
-      return res.status(500).send(err);
-    });
+      return res.status(500).send(err)
+    })
 })
 
-export default router;
+export default router

@@ -11,7 +11,6 @@ const isInt = (n: number): boolean => {
 
 export const validateQuery = (req: Request, res: Response, next: NextFunction) => {
   const { total, subjects } = req.query
-  console.log(subjects)
   let errors = {}
 
   if (total === undefined || total === null)
