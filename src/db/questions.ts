@@ -3,17 +3,17 @@ import pool from './index'
 import Question from '../models/Question'
 
 interface AnswerResult {
-  id: Number
-  text: String
-  correct: Number
-  questionid: Number
+  id: number
+  text: string
+  correct: number
+  questionid: number
 }
 
 interface QuestionResult {
-  id: Number
-  text: String
-  points: Number
-  subjectid: Number
+  id: number
+  text: string
+  points: number
+  subjectid: number
 }
 
 const getAllQuestions = (): Promise<Array<Question>> => {
@@ -65,7 +65,7 @@ const getAllQuestions = (): Promise<Array<Question>> => {
   });
 }
 
-const getQuestionById = (questionId: String): Promise<Question|null> => {
+const getQuestionById = (questionId: string): Promise<Question|null> => {
   return new Promise<Question|null>((resolve, reject) => {
     pool.getConnection((err, connection) => {
       if (err)
@@ -115,7 +115,7 @@ const getQuestionById = (questionId: String): Promise<Question|null> => {
   })
 }
 
-const getQuestionsBySubjects = (...subjects: Array<String>): Promise<Array<Question>> => {
+const getQuestionsBySubjects = (...subjects: Array<string>): Promise<Array<Question>> => {
   return new Promise<Array<Question>>((resolve, reject) => {
 
     // Build the query, have as many ors as needed for the names to match
@@ -130,9 +130,6 @@ const getQuestionsBySubjects = (...subjects: Array<String>): Promise<Array<Quest
     for (let i = 0, len = subjects.length - 1; i < len; i++)
       query += ' or s.name = ?'
 
-
-    console.log(subjects)
-
     pool.getConnection((err, connection) => {
       if (err)
         throw err
@@ -142,7 +139,6 @@ const getQuestionsBySubjects = (...subjects: Array<String>): Promise<Array<Quest
         values: [...subjects],
         nestTables: true,
       }, (err, results, fields) => {
-        console.log(results)
         connection.release();
         if (err)
           throw err
@@ -248,13 +244,13 @@ const saveQuestion = (question: Question): Promise<Question> => {
   })
 }
 
-const updateQuestionById = (questionId: String, update: any): Promise<Question|null> => {
+const updateQuestionById = (questionId: string, update: any): Promise<Question|null> => {
   return new Promise<Question|null>((resolve, reject) => {
   });
 }
 
 // TODO: Make the deletion cascade as well
-const removeQuestionById = (questionId: String): Promise<Question|null> => {
+const removeQuestionById = (questionId: string): Promise<Question|null> => {
   return new Promise<Question|null>((resolve, reject) => {
     pool.getConnection((err, connection) => {
       if (err)

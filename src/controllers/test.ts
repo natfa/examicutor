@@ -10,8 +10,44 @@ import questiondb from '../db/questions'
 const router = express()
 
 interface PublicQuestion {
-  text: String
-  answers: Array<String>
+  text: string
+  answers: Array<string>
+}
+
+interface TestFilters {
+  [filter: string]: number
+}
+
+function compileTest (questions: Array<Question>, maxQuestions: number, filters: TestFilters): Test {
+  let addedQuestions: Array<Question> = []
+  let leftover: Array<Question> = questions.splice(0)
+
+  for (let subject in filters) {
+    let currentCount = 0
+    const count = filters[subject]
+    const questionsFromSubject = leftover.filter((question) => question.subject === subject)
+    leftover = leftover.filter((question) => question.subject !== subject)
+
+    while (currentCount < count) {
+      const nextQuestion = questionsFromSubject.pop()
+      if (nextQuestion === undefined || nextQuestion === null)
+        break
+
+      addedQuestions = [...addedQuestions, nextQuestion]
+      currentCount++
+    }
+    leftover = [...leftover, ...questionsFromSubject]
+  }
+
+  while (maxQuestions > addedQuestions.length) {
+    const question = leftover.pop()
+    if (question === undefined || question === null)
+      break
+
+    addedQuestions = [...addedQuestions, question]
+  }
+
+  return new Test('', addedQuestions)
 }
 
 router.get('/', validateQuery, (req, res) => {
@@ -25,26 +61,14 @@ router.get('/', validateQuery, (req, res) => {
     return res.status(400).send(`Subjects count more than total`)
 
   questiondb.getQuestionsBySubjects(...Object.keys(subjects))
-    .then((questions) => {
-      console.log(questions)
-      let questioneer: Array<PublicQuestion> = []
+    .then((questions: Array<Question>) => {
+      if (questions.length < total)
+        return res.status(400).send('Not enough questions in the system')
 
-      questions
-        .map((question) => {
-          const pq: PublicQuestion = {
-            text: question.text,
-            answers: [...question.incorrectAnswers, ...question.correctAnswers],
-          }
+      const testFilters: TestFilters = { ...subjects }
+      const test = compileTest(questions, total, testFilters)
 
-          questioneer = [...questioneer, pq]
-        })
-
-      const test = {
-        name: 'Some random test',
-        questions: questioneer,
-      }
-
-      return res.status(200).send(test)
+      return res.status(200).send(test.publish())
     })
     .catch((err) => {
       return res.status(500).send(err)

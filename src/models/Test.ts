@@ -1,11 +1,11 @@
 import Question from './Question';
 
 class Test {
-  name: String;
+  name: string;
   questions: Array<Question>;
 
   constructor (
-    name: String,
+    name: string,
     questions: Array<Question>,
   ) {
     this.name = name;

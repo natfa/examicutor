@@ -1,18 +1,18 @@
 class Question {
-  id: String | null;
-  text: String;
-  incorrectAnswers: Array<String>;
-  correctAnswers: Array<String>;
-  points: Number;
-  subject: String;
+  id: string | null;
+  text: string;
+  incorrectAnswers: Array<string>;
+  correctAnswers: Array<string>;
+  points: number;
+  subject: string;
 
   constructor (
-    id: String | null = null,
-    text: String,
-    incorrectAnswers: Array<String>,
-    correctAnswers: Array<String>,
-    points: Number,
-    subject: String,
+    id: string | null = null,
+    text: string,
+    incorrectAnswers: Array<string>,
+    correctAnswers: Array<string>,
+    points: number,
+    subject: string,
   ) {
     this.id = id;
     this.text = text;
