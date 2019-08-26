@@ -131,21 +131,18 @@ const getQuestionsBySubjects = (...subjects: Array<String>): Promise<Array<Quest
       query += ' or s.name = ?'
 
 
+    console.log(subjects)
+
     pool.getConnection((err, connection) => {
       if (err)
         throw err
 
       connection.query({
-        sql: `select q.*, a.*, s.*
-        from questions q
-        inner join answers a
-        on a.questionid = q.id
-        inner join subjects s
-        on q.subjectid = s.id
-        where s.name = ?`,
+        sql: query,
         values: [...subjects],
         nestTables: true,
       }, (err, results, fields) => {
+        console.log(results)
         connection.release();
         if (err)
           throw err

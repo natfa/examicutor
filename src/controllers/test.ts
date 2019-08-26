@@ -26,6 +26,7 @@ router.get('/', validateQuery, (req, res) => {
 
   questiondb.getQuestionsBySubjects(...Object.keys(subjects))
     .then((questions) => {
+      console.log(questions)
       let questioneer: Array<PublicQuestion> = []
 
       questions
