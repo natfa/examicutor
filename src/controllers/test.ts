@@ -6,13 +6,9 @@ import Test from '../models/Test'
 import Question from '../models/Question'
 
 import questiondb from '../db/questions'
+import testdb from '../db/tests'
 
 const router = express()
-
-interface PublicQuestion {
-  text: string
-  answers: Array<string>
-}
 
 interface TestFilters {
   [filter: string]: number
@@ -47,7 +43,7 @@ function compileTest (questions: Array<Question>, maxQuestions: number, filters:
     addedQuestions = [...addedQuestions, question]
   }
 
-  return new Test('', addedQuestions)
+  return new Test(undefined, '', addedQuestions, new Date(), new Date(), new Date())
 }
 
 router.get('/', validateQuery, (req, res) => {
@@ -69,6 +65,25 @@ router.get('/', validateQuery, (req, res) => {
       const test = compileTest(questions, total, testFilters)
 
       return res.status(200).send(test.publish())
+    })
+    .catch((err) => {
+      return res.status(500).send(err)
+    })
+})
+
+router.post('/', (req, res) => {
+  const { name, questions } = req.body
+
+  testdb.saveTest(new Test(
+    undefined,
+    name,
+    questions,
+    new Date(),
+    new Date(),
+    new Date(),
+  ))
+    .then((result) => {
+      return res.status(200).send(result)
     })
     .catch((err) => {
       return res.status(500).send(err)

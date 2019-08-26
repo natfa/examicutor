@@ -1,20 +1,33 @@
-import Question from './Question';
+import Question from './Question'
 
 class Test {
-  name: string;
-  questions: Array<Question>;
+  id: string|undefined
+  name: string
+  questions: Array<Question>
+  timeToSolve: Date
+  start: Date
+  end: Date
 
   constructor (
+    id: string|undefined,
     name: string,
     questions: Array<Question>,
+    timeToSolve: Date,
+    start: Date,
+    end: Date,
   ) {
-    this.name = name;
-    this.questions = questions;
+    this.id = id
+    this.name = name
+    this.questions = questions
+    this.timeToSolve = timeToSolve
+    this.start = start
+    this.end = end
   }
 
   publish () {
     const questions = this.questions.map((question) => {
       return {
+        id: question.id,
         text: question.text,
         answers: [...question.incorrectAnswers, ...question.correctAnswers],
       }
@@ -27,4 +40,4 @@ class Test {
   }
 }
 
-export default Test;
+export default Test
