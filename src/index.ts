@@ -1,6 +1,6 @@
-import express, { Request, Response, NextFunction } from 'express'
-import session from 'express-session'
-import cors from 'cors'
+import express, { Request, Response, NextFunction } from 'express';
+import session from 'express-session';
+import cors from 'cors';
 
 import authenticationController from './controllers/authentication'
 import accountController from './controllers/account'
@@ -38,5 +38,5 @@ function reqLogger(req: Request, res: Response, next: NextFunction) {
 
 // Start express server
 app.listen(config.port, () => {
-  console.log(`Server listening on port ${config.port}`)
+  console.log(`Server listening on port ${config.port}`);
 })
