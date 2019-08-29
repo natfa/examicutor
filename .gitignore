@@ -5,8 +5,9 @@
 **/bin/
 **/build/
 
-# configs
+# configs and environment specific
 **/config/
+**/uploads/
 
 # personal and client files
 questions.md

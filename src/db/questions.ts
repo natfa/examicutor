@@ -2,20 +2,6 @@ import pool from './index'
 
 import Question from '../models/Question'
 
-interface AnswerResult {
-  id: number
-  text: string
-  correct: number
-  questionid: number
-}
-
-interface QuestionResult {
-  id: number
-  text: string
-  points: number
-  subjectid: number
-}
-
 const getAllQuestions = (): Promise<Array<Question>> => {
   return new Promise<Array<Question>>((resolve, reject) => {
     pool.getConnection((err, connection) => {
@@ -31,14 +17,13 @@ const getAllQuestions = (): Promise<Array<Question>> => {
         on q.subjectid = s.id`,
         nestTables: true,
       }, (err, results, fields) => {
-        connection.release();
         if (err)
           throw err;
 
-        let questions: Array<Question> = [];
+        let questions: Array<Question> = []
 
         results.map((result: any) => {
-          let question: Question|undefined = questions.find((q) => q.id === String(result.a.questionid));
+          let question: Question|undefined = questions.find((q) => q.id === String(result.a.questionid))
 
           if (question === undefined) {
             question = new Question(
@@ -48,21 +33,42 @@ const getAllQuestions = (): Promise<Array<Question>> => {
               [],
               result.q.points,
               result.s.name,
+              [],
             );
 
-            questions = [...questions, question];
+            questions = [...questions, question]
           }
 
           if (result.a.correct)
-            question.correctAnswers = [...question.correctAnswers, result.a.text];
+            question.correctAnswers = [...question.correctAnswers, result.a.text]
           else
-            question.incorrectAnswers = [...question.incorrectAnswers, result.a.text];
+            question.incorrectAnswers = [...question.incorrectAnswers, result.a.text]
         })
 
-        return resolve(questions);
+        connection.query({
+          sql: `select q.*, m.*
+          from questions q
+          inner join media m
+          on m.questionid = q.id`,
+          nestTables: true,
+        }, (err, results, fields) => {
+          connection.release()
+          if (err)
+            throw err
+
+          results.map((result: any) => {
+            const mediaResult = result.m
+            const question = questions.find((q) => q.id === String(mediaResult.questionid))
+            if (!question)
+              return
+
+            question.media = [...question.media, mediaResult.content]
+          })
+        return resolve(questions)
+        })
       })
     })
-  });
+  })
 }
 
 const getQuestionById = (questionId: string): Promise<Question|null> => {
@@ -82,13 +88,14 @@ const getQuestionById = (questionId: string): Promise<Question|null> => {
         values: [questionId],
         nestTables: true,
       }, (err, results, fields) => {
-        connection.release();
         if (err)
           throw err
 
         if (results.length === 0) {
           return resolve(null)
         }
+        const questionResult = results[0].q
+        const subjectName = results[0].s
 
         // Find correct results and save them as correct answers
         const correctAnswers = results.filter((result: any) => result.a.correct)
@@ -98,18 +105,30 @@ const getQuestionById = (questionId: string): Promise<Question|null> => {
         const incorrectAnswers = results.filter((result: any) => !result.a.correct)
           .map((incorrectResult: any) => incorrectResult.a.text)
 
-        // Get the interface value from the 'any' value
-        // This is needed only to have some type checking
-        const questionResult: QuestionResult = results[0].q
+        connection.query({
+          sql: `select *
+          from media
+          where media.questionid = ?`,
+          values: [questionId]
+        }, (err, results, fields) => {
+          connection.release()
+          if (err)
+            throw err
 
-        return resolve(new Question(
-          String(questionResult.id),
-          questionResult.text,
-          incorrectAnswers,
-          correctAnswers,
-          questionResult.points,
-          results[0].s.name,
-        ))
+          const media = results.map((result: any) => {
+            return Buffer.from(result.content)
+          })
+
+          return resolve(new Question(
+            String(questionResult.id),
+            questionResult.text,
+            incorrectAnswers,
+            correctAnswers,
+            questionResult.points,
+            subjectName,
+            media,
+          ))
+        })
       })
     })
   })
@@ -139,7 +158,6 @@ const getQuestionsBySubjects = (...subjects: Array<string>): Promise<Array<Quest
         values: [...subjects],
         nestTables: true,
       }, (err, results, fields) => {
-        connection.release();
         if (err)
           throw err
 
@@ -156,6 +174,7 @@ const getQuestionsBySubjects = (...subjects: Array<string>): Promise<Array<Quest
               [],
               result.q.points,
               result.s.name,
+              [],
             )
 
             questions = [...questions, question]
@@ -166,7 +185,36 @@ const getQuestionsBySubjects = (...subjects: Array<string>): Promise<Array<Quest
           else
             question.incorrectAnswers = [...question.incorrectAnswers, result.a.text]
         })
-        return resolve(questions)
+
+        let newQuery = `select m.*
+          from questions q
+        inner join media m
+        on m.questionid = q.id
+        inner join subjects s
+        on q.subjectid = s.id
+        where s.name = ?`
+        for (let i = 0, len = subjects.length - 1; i < len; i++)
+          newQuery += ' or s.name = ?'
+
+        connection.query({
+          sql: newQuery,
+          values: [...subjects],
+          nestTables: true,
+        }, (err, results, fields) => {
+          connection.release()
+          if (err)
+            throw err
+
+          results.map((result: any) => {
+            const question = questions.find((q) => q.id === String(result.questionid))
+            if (!question)
+              return
+
+            question.media = [...question.media, Buffer.from(result.content)]
+          })
+
+          return resolve(questions)
+        })
       })
     })
   })
@@ -230,6 +278,18 @@ const saveQuestion = (question: Question): Promise<Question> => {
               answers(text, correct, questionid)
               values(?, ?, ?)`,
               values: [answer.text, answer.correct, question.id],
+            }, (err, results, fields) => {
+              if (err)
+                throw err
+            })
+          })
+
+          question.media.map((blob) => {
+            connection.query({
+              sql: `insert into
+              media(questionid, content)
+              values(?, ?)`,
+              values: [question.id, blob]
             }, (err, results, fields) => {
               if (err)
                 throw err
