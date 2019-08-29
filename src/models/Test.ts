@@ -30,6 +30,7 @@ class Test {
         id: question.id,
         text: question.text,
         answers: [...question.incorrectAnswers, ...question.correctAnswers],
+        media: question.media,
       }
     })
 
