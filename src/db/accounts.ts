@@ -1,6 +1,6 @@
-import mysql from 'mysql';
+import { query } from './index'
 
-import Account from '../models/Account';
+import Account from '../models/Account'
 
 const getAccountById = (accountId: String): Promise<Account|null> => {
   return new Promise<Account|null>((resolve, reject) => {
