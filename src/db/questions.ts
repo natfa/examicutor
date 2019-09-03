@@ -157,14 +157,14 @@ const updateQuestionById = (questionId: string, update: any): Promise<Question|n
 
 
 // TODO: Make the deletion cascade as well
-const removeQuestionById = (questionId: string): Promise<Question|null> => {
-  return new Promise<Question|null>((resolve, reject) => {
+const removeQuestionById = (questionId: string): Promise<boolean> => {
+  return new Promise((resolve, reject) => {
     query({ sql: 'delete from questions where id = ?', values: [questionId] })
       .then((results) => {
         if (results.affectedRows === 0)
-          return reject(new Error('No affected rows, please contact developers'))
+          return resolve(false)
         else if (results.affectedRows === 1)
-          return resolve(null)
+          return resolve(true)
       })
       .catch((err) => {
         return reject(err)
