@@ -6,6 +6,7 @@ import fs from 'fs'
 import { validatePOST, validatePUT } from '../validators/question'
 import questiondb from '../db/questions'
 import Question from '../models/Question'
+import Answer from '../models/Answer'
 
 const router = express.Router()
 const upload = multer({ dest: 'uploads/'})
@@ -29,7 +30,6 @@ router.get('/:questionID', (req, res, next) => {
     .then((question) => {
       if (!question)
         return res.status(404).send('Not Found');
-
       return res.status(200).send(question);
     })
     .catch((err) => {
@@ -40,10 +40,12 @@ router.get('/:questionID', (req, res, next) => {
 // POST /quesiton/
 // Create a new question
 router.post('/', upload.array('media', 10), validatePOST, (req, res, next) => {
-  const { text, subject, points, correct, incorrect } = req.body
-  const correctAnswers = correct
-  const incorrectAnswers = incorrect
+  const { text, subject, theme, points, correctAnswers, incorrectAnswers } = req.body
   const uploadsDir = path.resolve('./uploads')
+
+  let answers: Array<Answer> = []
+  correctAnswers.map((a: string) => answers = [...answers, new Answer(null, a, true)])
+  incorrectAnswers.map((a: string) => answers = [...answers, new Answer(null, a, false)])
 
   // Apparently typescript's type definitions for multer are
   // fucked up, so you gotta use the any escape :D
@@ -55,10 +57,10 @@ router.post('/', upload.array('media', 10), validatePOST, (req, res, next) => {
   const newQuestion = new Question(
     null,
     text,
-    incorrectAnswers,
-    correctAnswers,
+    answers,
     Number(points),
     subject,
+    theme || null,
     fileBuffers,
   )
 
@@ -71,21 +73,30 @@ router.post('/', upload.array('media', 10), validatePOST, (req, res, next) => {
     })
 })
 
-// TODO: finish
-router.put('/:questionID', validatePUT, (req, res, next) => {
-  return next(new Error('This functionality is not working at the moment'))
-});
+router.put('/:questionID', validatePUT, (req, res) => {
+  const { text, points } = req.body
+
+  questiondb.updateQuestionById(req.params.questionID, text, points)
+    .then((success) => {
+      if (!success)
+        return res.status(404).send('Not Found')
+      return res.status(201).send('Success')
+    })
+    .catch((err) => {
+      return res.status(500).send(err)
+    })
+})
 
 router.delete('/:questionID', (req, res) => {
   questiondb.removeQuestionById(req.params.questionID)
     .then((success) => {
-      if (success)
-        return res.status(200).end()
-      return res.status(404).send('Not Found')
+      if (!success)
+        return res.status(404).send('Not Found')
+      return res.status(200).end()
     })
     .catch((err) => {
       return res.status(500).send(err)
-    });
-});
+    })
+})
 
 export default router
