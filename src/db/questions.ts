@@ -1,28 +1,42 @@
 import { query } from './index'
 import Question from '../models/Question'
+import Answer from '../models/Answer'
 
 
-function getAllQuestions():Promise<Array<Question>> {
+function getAllQuestions(): Promise<Array<Question>> {
   return new Promise<Array<Question>>((resolve, reject) => {
     let questions: Array<Question> = []
 
-    query({ sql: 'select * from questions' })
+    query({
+      sql: `select
+      q.id as id,
+      q.text as text,
+      q.points as points,
+      s.name as subject,
+      t.name as theme
+      from questions q
+      left join subjects s on q.subjectid = s.id
+      left join themes t on q.themeid = t.id`
+    })
       .then((results) => {
         results.map((result: any) => {
           const question = new Question(
             String(result.id),
             result.text,
             [],
-            [],
             result.points,
-            'SUBJECT THAT I MADE UP',
+            result.subject,
+            result.theme,
             [],
           )
-
           questions = [...questions, question]
         })
 
-        return query({ sql: 'select * from answers' })
+        return query({
+          sql: `select
+          id, text, correct, questionid
+          from answers`
+        })
       })
       .then((results) => {
         results.map((result: any) => {
@@ -30,13 +44,11 @@ function getAllQuestions():Promise<Array<Question>> {
           if (!question)
             return
 
-          if (result.correct)
-            question.correctAnswers = [...question.correctAnswers, result.text]
-          else
-            question.incorrectAnswers = [...question.incorrectAnswers, result.text]
+          const answer = new Answer(String(result.id), result.text, result.correct)
+          question.answers = [...question.answers, answer]
         })
 
-        return query({ sql: 'select * from media' })
+        return query({ sql: `select content, questionid from media` })
       })
       .then((results) => {
         results.map((result: any) => {
@@ -60,32 +72,51 @@ function getQuestionById(questionId: string): Promise<Question|null> {
 
   return new Promise<Question|null>((resolve, reject) => {
     query({
-      sql: `select q.*, a.*
+      sql: `select
+      q.id as id,
+      q.text as text,
+      q.points as points,
+      s.name as subject,
+      t.name as theme
       from questions q
-      inner join answers a
-      on q.id = a.questionid
+      left join subjects s on q.subjectid = s.id
+      left join themes t on q.themeid = t.id
       where q.id = ?`,
       values: [questionId],
-      nestTables: true,
     })
       .then((results) => {
         if (results.length === 0)
           return resolve(null)
 
+        const result = results[0]
         question = new Question(
-          String(results[0].q.id),
-          results[0].q.text,
-          [], [],
-          results[0].q.points,
-          'Implement subjects',
+          String(result.id),
+          result.text,
+          [],
+          result.points,
+          result.subject,
+          result.theme,
           []
         )
 
+        return query({
+          sql: `select
+          a.id as id,
+          a.text as text,
+          a.correct as correct
+          from answers a
+          inner join questions q on a.questionid = q.id
+          where q.id = ?`,
+          values: [questionId],
+        })
+      })
+      .then((results) => {
+        if (!results)
+          return
+
         results.map((result: any) => {
-          if (result.a.correct)
-            question.correctAnswers = [...question.correctAnswers, result.a.text]
-          else
-            question.incorrectAnswers = [...question.incorrectAnswers, result.a.text]
+          const answer = new Answer(String(result.id), result.text, result.correct)
+          question.answers = [...question.answers, answer]
         })
 
         return query({
@@ -94,6 +125,9 @@ function getQuestionById(questionId: string): Promise<Question|null> {
         })
       })
       .then((results) => {
+        if (!results)
+          return
+
         results.map((result: any) => {
           question.media = [...question.media, result.content]
         })
@@ -106,42 +140,73 @@ function getQuestionById(questionId: string): Promise<Question|null> {
   })
 }
 
+function saveQuestion(question: Question): Promise<boolean> {
+  return new Promise<boolean>((resolve, reject) => {
+    console.log(question)
+    let sqlquery
+    let values
 
-function getQuestionsBySubjects(...subjects: Array<string>):Promise<Array<Question>> {
-  return new Promise<Array<Question>>((resolve, reject) => {
-    return reject(new Error('Not implemented'))
-  })
-}
-
-
-const saveQuestion = (question: Question): Promise<Question> => {
-  return new Promise<Question>((resolve, reject) => {
-    const answers: Array<any> = [
-      ...question.incorrectAnswers.map(answer => ({ text: answer, correct: false })),
-      ...question.correctAnswers.map(answer => ({ text: answer, correct: true }))
-    ]
+    if (question.theme !== null) {
+      sqlquery = `select
+      s.id as subjectid,
+      t.id as themeid
+      from subjects s
+      left join themes t on t.subjectid = s.id
+      where s.name = ?
+      and t.name = ?`
+      values = [question.subject, question.theme]
+    } else {
+      sqlquery = `select
+      s.id as subjectid
+      from subjects s
+      where s.name = ?`
+      values = [question.subject]
+    }
 
     query({
-      sql: 'insert into questions(text, points) values(?, ?)',
-      values: [question.text, question.points],
+      sql: sqlquery,
+      values: [...values]
     })
       .then((results) => {
-        question.id = results.insertId;
+        if (results.length < 1)
+          return resolve(false)
 
-        answers.map((answer) => {
+        const subjectid = results.subjectid || null
+        const themeid = results.themeid || null
+
+        return query({
+          sql: `insert into questions
+          (text, points, subjectid, themeid) values
+          (?, ?, ?, ?)`,
+          values: [question.text, question.points, subjectid, themeid]
+        })
+      })
+      .then((results) => {
+        if (!results)
+          return
+
+        if (results.affectedRows !== 1)
+          return resolve(false)
+
+        question.id = results.insertId
+
+        question.answers.map((answer) => {
           query({
-            sql: 'insert into answers(text, correct, questionid) values(?, ?, ?)',
+            sql: `insert into answers (text, correct, questionid)
+            values (?, ?, ?)`,
             values: [answer.text, answer.correct, question.id],
           })
         })
 
         question.media.map((blob) => {
           query({
-            sql: 'insert into media(questionid, content) values (?, ?)',
+            sql: `insert into media (questionid, content)
+            values (?, ?)`,
             values: [question.id, blob],
           })
         })
-        return resolve(question)
+
+        return resolve(true)
       })
       .catch((err) => {
         return reject(err)
@@ -149,17 +214,12 @@ const saveQuestion = (question: Question): Promise<Question> => {
   })
 }
 
-
-const updateQuestionById = (questionId: string, update: any): Promise<Question|null> => {
-  return new Promise<Question|null>((resolve, reject) => {
-  });
-}
-
-
-// TODO: Make the deletion cascade as well
-const removeQuestionById = (questionId: string): Promise<boolean> => {
+function removeQuestionById(questionId: string): Promise<boolean> {
   return new Promise((resolve, reject) => {
-    query({ sql: 'delete from questions where id = ?', values: [questionId] })
+    query({
+      sql: 'delete from questions where id = ?',
+      values: [questionId],
+    })
       .then((results) => {
         if (results.affectedRows === 0)
           return resolve(false)
@@ -172,11 +232,54 @@ const removeQuestionById = (questionId: string): Promise<boolean> => {
   })
 }
 
+function updateQuestionById(
+  questionId: string,
+  text: string,
+  points: number,
+  media: Array<Buffer>
+): Promise<boolean> {
+  return new Promise<boolean>((resolve, reject) => {
+    query({
+      sql: `update questions set
+      text = ?,
+      points = ?
+      where questions.id = ?`,
+      values: [text, points, questionId],
+    })
+      .then((results) => {
+        if (results.affectedRows !== 1)
+          return resolve(false)
+
+        return query({
+          sql: `delete from media
+          where media.questionid = ?`,
+          values: [questionId],
+        })
+      })
+      .then((results) => {
+        if (!results)
+          return
+
+        media.map((m) => {
+          query({
+            sql: `insert into media
+            (questionid, content) values
+            (?, ?)`,
+            values: [questionId, m],
+          })
+        })
+
+        return resolve(true)
+      })
+      .catch((err) => {
+        return reject(err)
+      })
+  })
+}
 
 export default {
   getAllQuestions,
   getQuestionById,
-  getQuestionsBySubjects,
   saveQuestion,
   updateQuestionById,
   removeQuestionById,
