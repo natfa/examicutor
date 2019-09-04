@@ -140,7 +140,10 @@ const validatePoints = (points: any): ValidatorReturnValue => {
     errors = Object.assign({}, errors, {
       points: `Must be a number`,
     })
-
+  else if (points < 0)
+    errors = Object.assign({}, errors, {
+      points: `Can't be negative`
+    })
 
   return {
     isValid: Object.keys(errors).length === 0,
