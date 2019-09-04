@@ -1,4 +1,5 @@
 import Question from './Question'
+import Answer from './Answer'
 
 class Test {
   id: string|undefined
@@ -25,11 +26,11 @@ class Test {
   }
 
   publish () {
-    const questions = this.questions.map((question) => {
+    const questions: any = this.questions.map((question) => {
       return {
         id: question.id,
         text: question.text,
-        answers: [...question.incorrectAnswers, ...question.correctAnswers],
+        answers: [...questions.answers.map((answer: Answer) => answer.text)],
         media: question.media,
       }
     })

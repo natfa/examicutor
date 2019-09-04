@@ -1,27 +1,29 @@
+import Answer from './Answer'
+
 class Question {
-  id: string | null
+  id: string|null
   text: string
-  incorrectAnswers: Array<string>
-  correctAnswers: Array<string>
+  answers: Array<Answer>
   points: number
   subject: string
+  theme: string|null
   media: Array<Buffer>
 
   constructor (
-    id: string | null = null,
+    id: string|null = null,
     text: string,
-    incorrectAnswers: Array<string>,
-    correctAnswers: Array<string>,
+    answers: Array<Answer>,
     points: number,
     subject: string,
+    theme: string|null,
     media: Array<Buffer>,
   ) {
     this.id = id
     this.text = text
-    this.incorrectAnswers = incorrectAnswers
-    this.correctAnswers = correctAnswers
+    this.answers = answers
     this.points = points
     this.subject = subject
+    this.theme = theme
     this.media = media
   }
 }
