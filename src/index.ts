@@ -7,6 +7,7 @@ import accountController from './controllers/account'
 import questionController from './controllers/question'
 import testController from './controllers/test'
 import subjectController from './controllers/subject'
+import answerController from './controllers/answer'
 
 // load config
 import config from './config/default'
@@ -27,6 +28,7 @@ app.use('/api/account/', accountController)
 app.use('/api/question/', questionController)
 app.use('/api/test/', testController)
 app.use('/api/subject/', subjectController)
+app.use('/api/answer/', answerController)
 
 function reqLogger(req: Request, res: Response, next: NextFunction) {
   const log = `[${req.method}] ${req.originalUrl}`

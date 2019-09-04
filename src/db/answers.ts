@@ -59,3 +59,9 @@ function saveAnswer(questionId: string, answer: Answer): Promise<Answer|null> {
       })
   })
 }
+
+export default {
+  updateAnswer,
+  deleteAnswer,
+  saveAnswer,
+}
