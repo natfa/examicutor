@@ -232,12 +232,7 @@ function removeQuestionById(questionId: string): Promise<boolean> {
   })
 }
 
-function updateQuestionById(
-  questionId: string,
-  text: string,
-  points: number,
-  media: Array<Buffer>
-): Promise<boolean> {
+function updateQuestionById(questionId: string, text: string, points: number): Promise<boolean> {
   return new Promise<boolean>((resolve, reject) => {
     query({
       sql: `update questions set
@@ -255,21 +250,6 @@ function updateQuestionById(
           where media.questionid = ?`,
           values: [questionId],
         })
-      })
-      .then((results) => {
-        if (!results)
-          return
-
-        media.map((m) => {
-          query({
-            sql: `insert into media
-            (questionid, content) values
-            (?, ?)`,
-            values: [questionId, m],
-          })
-        })
-
-        return resolve(true)
       })
       .catch((err) => {
         return reject(err)
