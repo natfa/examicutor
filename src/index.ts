@@ -8,6 +8,7 @@ import questionController from './controllers/question'
 import testController from './controllers/test'
 import subjectController from './controllers/subject'
 import answerController from './controllers/answer'
+import mediaController from './controllers/media'
 
 // load config
 import config from './config/default'
@@ -29,6 +30,7 @@ app.use('/api/question/', questionController)
 app.use('/api/test/', testController)
 app.use('/api/subject/', subjectController)
 app.use('/api/answer/', answerController)
+app.use('/api/media/', mediaController)
 
 function reqLogger(req: Request, res: Response, next: NextFunction) {
   const log = `[${req.method}] ${req.originalUrl}`
