@@ -5,8 +5,7 @@ interface ValidatorReturnValue {
   err: any;
 }
 
-
-export const validatePOST = (req: Request, res: Response, next: NextFunction) => {
+export const validateQuestionBody = (req: Request, res: Response, next: NextFunction) => {
   let errors = {}
   const { text, incorrectAnswers, correctAnswers, points, subject, theme } = req.body
 
@@ -52,27 +51,6 @@ export const validatePOST = (req: Request, res: Response, next: NextFunction) =>
 
   if (theme !== undefined) {
     const { isValid, err } = validateTheme(theme)
-    if (!isValid)
-      errors = Object.assign({}, errors, err)
-  }
-
-  if (Object.keys(errors).length > 0)
-    return res.status(400).send(errors)
-  return next()
-}
-
-export const validatePUT = (req: Request, res: Response, next: NextFunction) => {
-  let errors = {}
-  const { text, points } = req.body
-
-  if (text !== undefined) {
-    const { isValid, err } = validateText(text)
-    if (!isValid)
-      errors = Object.assign({}, errors, err)
-  }
-
-  if (points !== undefined) {
-    const { isValid, err } = validatePoints(points)
     if (!isValid)
       errors = Object.assign({}, errors, err)
   }
