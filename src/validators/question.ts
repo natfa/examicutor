@@ -19,7 +19,7 @@ export const validatePOST = (req: Request, res: Response, next: NextFunction) =>
   }
 
   if (incorrectAnswers === undefined) {
-    errors = Object.assign({}, errors, { incorrect: `Required` })
+    errors = Object.assign({}, errors, { incorrectAnswers: `Required` })
   } else {
     const { isValid, err } = validateAnswers(incorrectAnswers)
     if (!isValid)
@@ -27,7 +27,7 @@ export const validatePOST = (req: Request, res: Response, next: NextFunction) =>
   }
 
   if (correctAnswers === undefined) {
-    errors = Object.assign({}, errors, { correct: `Required` })
+    errors = Object.assign({}, errors, { correctAnswers: `Required` })
   } else {
     const { isValid, err } = validateAnswers(correctAnswers)
     if (!isValid)
