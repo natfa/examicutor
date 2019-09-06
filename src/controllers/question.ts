@@ -66,6 +66,9 @@ router.post('/', upload.array('media', 10), validatePOST, (req, res, next) => {
 
   questiondb.saveQuestion(newQuestion)
     .then((question) => {
+      if (!question) {
+        return res.status(500).send('Internal Server Error')
+      }
       return res.status(200).send(question)
     })
     .catch((err) => {
@@ -80,7 +83,7 @@ router.put('/:questionID', validatePUT, (req, res) => {
     .then((success) => {
       if (!success)
         return res.status(404).send('Not Found')
-      return res.status(201).send('Success')
+      return res.status(204).send('No Content')
     })
     .catch((err) => {
       return res.status(500).send(err)
@@ -92,7 +95,7 @@ router.delete('/:questionID', (req, res) => {
     .then((success) => {
       if (!success)
         return res.status(404).send('Not Found')
-      return res.status(200).end()
+      return res.status(204).send('No Content')
     })
     .catch((err) => {
       return res.status(500).send(err)
