@@ -56,19 +56,7 @@ router.get('/', validateQuery, (req, res) => {
   if (subjectsTotal > total)
     return res.status(400).send(`Subjects count more than total`)
 
-  questiondb.getQuestionsBySubjects(...Object.keys(subjects))
-    .then((questions: Array<Question>) => {
-      if (questions.length < total)
-        return res.status(400).send('Not enough questions in the system')
-
-      const testFilters: TestFilters = { ...subjects }
-      const test = compileTest(questions, total, testFilters)
-
-      return res.status(200).send(test.publish())
-    })
-    .catch((err) => {
-      return res.status(500).send(err)
-    })
+  return res.status(500).send('Not implemented')
 })
 
 router.post('/', (req, res) => {
