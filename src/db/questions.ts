@@ -140,9 +140,8 @@ function getQuestionById(questionId: string): Promise<Question|null> {
   })
 }
 
-function saveQuestion(question: Question): Promise<boolean> {
-  return new Promise<boolean>((resolve, reject) => {
-    console.log(question)
+function saveQuestion(question: Question): Promise<Question|null> {
+  return new Promise<Question|null>((resolve, reject) => {
     let sqlquery
     let values
 
@@ -169,10 +168,10 @@ function saveQuestion(question: Question): Promise<boolean> {
     })
       .then((results) => {
         if (results.length < 1)
-          return resolve(false)
+          return resolve(null)
 
-        const subjectid = results.subjectid || null
-        const themeid = results.themeid || null
+        const subjectid = results[0].subjectid || null
+        const themeid = results[0].themeid || null
 
         return query({
           sql: `insert into questions
@@ -186,7 +185,7 @@ function saveQuestion(question: Question): Promise<boolean> {
           return
 
         if (results.affectedRows !== 1)
-          return resolve(false)
+          return resolve(null)
 
         question.id = results.insertId
 
@@ -206,7 +205,7 @@ function saveQuestion(question: Question): Promise<boolean> {
           })
         })
 
-        return resolve(true)
+        return resolve(question)
       })
       .catch((err) => {
         return reject(err)
@@ -244,12 +243,7 @@ function updateQuestionById(questionId: string, text: string, points: number): P
       .then((results) => {
         if (results.affectedRows !== 1)
           return resolve(false)
-
-        return query({
-          sql: `delete from media
-          where media.questionid = ?`,
-          values: [questionId],
-        })
+        return resolve(true)
       })
       .catch((err) => {
         return reject(err)
