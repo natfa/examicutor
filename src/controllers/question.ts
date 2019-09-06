@@ -3,7 +3,7 @@ import multer from 'multer'
 import path from 'path'
 import fs from 'fs'
 
-import { validatePOST, validatePUT } from '../validators/question'
+import { validateQuestionBody } from '../validators/question'
 import questiondb from '../db/questions'
 import Question from '../models/Question'
 import Answer from '../models/Answer'
@@ -14,7 +14,7 @@ const upload = multer({ dest: 'uploads/'})
 // GET /question/
 // Get all questions
 router.get('/', (req, res, next) => {
-  questiondb.getAllQuestions()
+  questiondb.getAll()
     .then((questions) => {
       return res.status(200).send(questions);
     })
@@ -26,7 +26,7 @@ router.get('/', (req, res, next) => {
 // GET /question/questionID
 // Get a question by it's ID
 router.get('/:questionID', (req, res, next) => {
-  questiondb.getQuestionById(req.params.questionID)
+  questiondb.getById(req.params.questionID)
     .then((question) => {
       if (!question)
         return res.status(404).send('Not Found');
@@ -39,7 +39,7 @@ router.get('/:questionID', (req, res, next) => {
 
 // POST /quesiton/
 // Create a new question
-router.post('/', upload.array('media', 10), validatePOST, (req, res, next) => {
+router.post('/', upload.array('media', 10), validateQuestionBody, (req, res, next) => {
   const { text, subject, theme, points, correctAnswers, incorrectAnswers } = req.body
   const uploadsDir = path.resolve('./uploads')
 
@@ -64,7 +64,7 @@ router.post('/', upload.array('media', 10), validatePOST, (req, res, next) => {
     fileBuffers,
   )
 
-  questiondb.saveQuestion(newQuestion)
+  questiondb.save(newQuestion)
     .then((question) => {
       if (!question) {
         return res.status(500).send('Internal Server Error')
@@ -76,22 +76,8 @@ router.post('/', upload.array('media', 10), validatePOST, (req, res, next) => {
     })
 })
 
-router.put('/:questionID', validatePUT, (req, res) => {
-  const { text, points } = req.body
-
-  questiondb.updateQuestionById(req.params.questionID, text, points)
-    .then((success) => {
-      if (!success)
-        return res.status(404).send('Not Found')
-      return res.status(204).send('No Content')
-    })
-    .catch((err) => {
-      return res.status(500).send(err)
-    })
-})
-
 router.delete('/:questionID', (req, res) => {
-  questiondb.removeQuestionById(req.params.questionID)
+  questiondb.deleteById(req.params.questionID)
     .then((success) => {
       if (!success)
         return res.status(404).send('Not Found')
