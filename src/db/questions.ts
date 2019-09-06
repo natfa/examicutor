@@ -231,7 +231,78 @@ function removeQuestionById(questionId: string): Promise<boolean> {
   })
 }
 
-function updateQuestionById(questionId: string, text: string, points: number): Promise<boolean> {
+function updateQuestionById(question: Question): Promise<Question|null> {
+  if (question.id === null || question.id === undefined) {
+    throw new Error(`Question doesn't have an id`)
+  }
+
+  return new Promise<Question|null>((resolve, reject) => {
+    const answersToBeInserted = question.answers.filter(answer => answer.id === null)
+
+    query({
+      sql: `select id, text, correct
+      from answers a
+      where a.questionid = ?`,
+      values: [question.id],
+    })
+      .then((results) => {
+        const answersInDb: Array<Answer> = results.map((result: any) => {
+          new Answer(String(result.id), result.text, result.correct)
+        })
+
+        // Update and delete existing answers
+        answersInDb.map((dbAnswer: Answer) => {
+          const modelAnswer = question.answers.find((a) => a.id === dbAnswer.id)
+
+          if (!modelAnswer)
+            return query({ sql: 'delete from answers where answers.id = ?', values: [dbAnswer.id] })
+
+          if (modelAnswer.text !== dbAnswer.text || modelAnswer.correct !== dbAnswer.correct)
+            return query({
+              sql: 'update answers set text = ?, correct = ? where answers.id = ?',
+              values: [dbAnswer.id]
+            })
+        })
+
+        // Insert new answers
+        answersToBeInserted.map((answer: Answer) => {
+          query({
+            sql: 'insert into answers(text, correct) values (?, ?)',
+            values: [answer.text, answer.correct]
+          })
+        })
+
+        query({
+          sql: `update questions set
+          text = ?,
+          points = ?
+          where quesitons.id = ?`,
+          values: [question.id],
+        })
+          .then((results) => {
+            if (results.affectedRows !== 1)
+              return resolve(null)
+
+            // I've put this here because typescript is anxious about id being null although
+            // the check at the top of the function checks for that specifically
+            if (question.id === null)
+              throw new Error(`Question doesn't have an id`)
+
+            getQuestionById(question.id)
+              .then((question) => {
+                if (question === null)
+                  return resolve(null)
+                return resolve(question)
+              })
+          })
+      })
+      .catch((err) => {
+        return reject(err)
+      })
+  })
+}
+
+function updateQuestionByIdOld(questionId: string, text: string, points: number): Promise<boolean> {
   return new Promise<boolean>((resolve, reject) => {
     query({
       sql: `update questions set
