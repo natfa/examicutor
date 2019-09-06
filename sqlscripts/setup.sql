@@ -28,7 +28,15 @@ CREATE TABLE `themes` (
 CREATE TABLE `questions` (
   `id` INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
   `text` VARCHAR(150) NOT NULL,
-  `points` INT UNSIGNED NOT NULL
+  `points` INT UNSIGNED NOT NULL,
+  `subjectid` INT UNSIGNED,
+  `themeid` INT UNSIGNED,
+  FOREIGN KEY (subjectid)
+    REFERENCES subjects (id)
+    ON DELETE SET NULL,
+  FOREIGN KEY (themeid)
+    REFERENCES themes (id)
+    ON DELETE SET NULL
 );
 
 

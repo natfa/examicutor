@@ -19,8 +19,8 @@ INSERT INTO `themes` (name, subjectid, themeid) VALUES
   ("NodeJS", @sid, @tid);
 
 
-INSERT INTO `questions` (text, points)
-  VALUES ("Which programming language is used for this project?", 2);
+INSERT INTO `questions` (text, points, subjectid, themeid)
+  VALUES ("Which programming language is used for this project?", 2, @sid, @tid);
 SET @qid = LAST_INSERT_ID();
 INSERT INTO `answers` (text, correct, questionid) VALUES
   ("C#", FALSE, @qid),
@@ -30,8 +30,8 @@ INSERT INTO `answers` (text, correct, questionid) VALUES
   ("Golang", FALSE, @qid);
 
 
-INSERT INTO `questions` (text, points)
-  VALUES ("Which database is used for this project?", 3);
+INSERT INTO `questions` (text, points, subjectid, themeid)
+  VALUES ("Which database is used for this project?", 3, @sid, @tid);
 SET @qid = LAST_INSERT_ID();
 INSERT INTO `answers` (text, correct, questionid) VALUES
   ("MongoDB", FALSE, @qid),
@@ -40,8 +40,8 @@ INSERT INTO `answers` (text, correct, questionid) VALUES
   ("MS SQL", FALSE, @qid);
 
 
-INSERT INTO `questions` (text, points)
-  VALUES ("What does this picture represent?", 1);
+INSERT INTO `questions` (text, points, subjectid, themeid)
+  VALUES ("What does this picture represent?", 1, @sid, @tid);
 SET @qid = LAST_INSERT_ID();
 INSERT INTO `answers` (text, correct, questionid) VALUES
   ("An old lady", FALSE, @qid),
