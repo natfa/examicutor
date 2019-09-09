@@ -44,7 +44,7 @@ function getAll(): Promise<Array<Question>> {
           if (!question)
             return
 
-          const answer = new Answer(String(result.id), result.text, result.correct)
+          const answer = new Answer(String(result.id), result.text, Boolean(result.correct))
           question.answers = [...question.answers, answer]
         })
 
@@ -115,7 +115,7 @@ function getById(questionId: string): Promise<Question|null> {
           return
 
         results.map((result: any) => {
-          const answer = new Answer(String(result.id), result.text, result.correct)
+          const answer = new Answer(String(result.id), result.text, Boolean(result.correct))
           question.answers = [...question.answers, answer]
         })
 
