@@ -7,13 +7,13 @@ DROP TABLE IF EXISTS `subjects`;
 
 CREATE TABLE `subjects` (
   `id` INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
-  `name` varchar(50) NOT NULL
+  `name` varchar(50) NOT NULL UNIQUE
 );
 
 
 CREATE TABLE `themes` (
   `id` INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
-  `name` varchar(50) NOT NULL,
+  `name` varchar(50) NOT NULL UNIQUE,
   `subjectid` INT UNSIGNED NOT NULL,
   `themeid` INT UNSIGNED,
   FOREIGN KEY (subjectid)
