@@ -7,6 +7,7 @@ import accountController from './controllers/account'
 import questionController from './controllers/question'
 import testController from './controllers/test'
 import subjectController from './controllers/subject'
+import themeController from './controllers/theme'
 import answerController from './controllers/answer'
 import mediaController from './controllers/media'
 
@@ -29,6 +30,7 @@ app.use('/api/account/', accountController)
 app.use('/api/question/', questionController)
 app.use('/api/test/', testController)
 app.use('/api/subject/', subjectController)
+app.use('/api/theme/', themeController)
 app.use('/api/answer/', answerController)
 app.use('/api/media/', mediaController)
 
