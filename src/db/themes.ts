@@ -27,6 +27,7 @@ const getThemesBySubject = (subject: string): Promise<Array<string>> => {
         })
           .then((results) => {
             const themes = results.map((result: any) => result.name)
+            return resolve(themes)
           })
       })
   })
