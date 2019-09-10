@@ -1,14 +1,14 @@
 import { query } from './index'
+
 import Question from '../models/Question'
+import { IQuestionFilters } from '../models/IQuestionFilters'
 import Answer from '../models/Answer'
 
 
-function getAll(): Promise<Array<Question>> {
+function getAll(filters?: IQuestionFilters): Promise<Array<Question>> {
   return new Promise<Array<Question>>((resolve, reject) => {
     let questions: Array<Question> = []
-
-    query({
-      sql: `select
+    let sql = `select
       q.id as id,
       q.text as text,
       q.points as points,
@@ -17,7 +17,19 @@ function getAll(): Promise<Array<Question>> {
       from questions q
       left join subjects s on q.subjectid = s.id
       left join themes t on q.themeid = t.id`
-    })
+    let values: Array<any> = []
+
+    if (filters) {
+      sql += ` where s.name = ?`
+      values = [...values, filters.subject]
+
+      if (filters.text) {
+        sql +=  ` and q.text like ?`
+        values = [...values, `%${filters.text}%`]
+      }
+    }
+
+    query({ sql, values })
       .then((results) => {
         results.map((result: any) => {
           const question = new Question(
@@ -32,35 +44,10 @@ function getAll(): Promise<Array<Question>> {
           questions = [...questions, question]
         })
 
-        return query({
-          sql: `select
-          id, text, correct, questionid
-          from answers`
-        })
-      })
-      .then((results) => {
-        results.map((result: any) => {
-          const question = questions.find(q => q.id === String(result.questionid))
-          if (!question)
-            return
-
-          const answer = new Answer(String(result.id), result.text, Boolean(result.correct))
-          question.answers = [...question.answers, answer]
-        })
-
-        return query({ sql: `select content, questionid from media` })
-      })
-      .then((results) => {
-        results.map((result: any) => {
-          const question = questions.find(q => q.id === String(result.questionid))
-          if (!question)
-            return
-
-          question.media = [...question.media, result.content]
-        })
         return resolve(questions)
       })
       .catch((err) => {
+        console.log(err)
         return reject(err)
       })
   })
