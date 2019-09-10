@@ -5,6 +5,25 @@ interface ValidatorReturnValue {
   err: any;
 }
 
+export const validateFilters = (req: Request, res: Response, next: NextFunction) => {
+  let errors = {}
+  const { subject, text } = req.params
+
+  if (subject === undefined) {
+    errors = Object.assign({}, errors, { subject: `Required` })
+  } else {
+    const { isValid, err } = validateSubject(subject)
+  }
+
+  if (text !== undefined) {
+    const { isValid, err } = validateText(text)
+  }
+
+  if (Object.keys(errors).length > 0)
+    return res.status(400).send(errors)
+  return next()
+}
+
 export const validateQuestionBody = (req: Request, res: Response, next: NextFunction) => {
   let errors = {}
   const { text, incorrectAnswers, correctAnswers, points, subject, theme } = req.body
@@ -71,9 +90,9 @@ const validateText = (text: any): ValidatorReturnValue => {
     errors = Object.assign({}, errors, {
       text: `Max length: 150`,
     })
-  else if (text.length === 0)
+  else if (text.length <= 2)
     errors = Object.assign({}, errors, {
-      text: `Can't be empty`,
+      text: `Can't be less than 3 characters`,
     })
 
   return {

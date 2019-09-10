@@ -3,9 +3,11 @@ import multer from 'multer'
 import path from 'path'
 import fs from 'fs'
 
-import { validateQuestionBody } from '../validators/question'
+import { validateQuestionBody, validateFilters } from '../validators/question'
 import questiondb from '../db/questions'
+
 import Question from '../models/Question'
+import { IQuestionFilters } from '../models/IQuestionFilters'
 import Answer from '../models/Answer'
 
 const router = express.Router()
@@ -22,6 +24,21 @@ router.get('/', (req, res, next) => {
       return next(err)
     })
 });
+
+// GET /question/subject/text
+// Get's questions while applying fiters
+router.get('/filter/:subject/:text?', validateFilters, (req, res, next) => {
+  const { subject, text } = req.params
+
+  const filters: IQuestionFilters = { subject, text }
+  questiondb.getAll(filters)
+    .then((questions) => {
+      return res.status(200).send(questions)
+    })
+    .catch((err) => {
+      return res.status(500).send(err)
+    })
+})
 
 // GET /question/questionID
 // Get a question by it's ID
