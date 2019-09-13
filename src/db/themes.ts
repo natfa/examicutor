@@ -1,84 +1,146 @@
 import { query } from './index'
 
-const save = (subject: string, theme: string): Promise<string|null> => {
-  return new Promise<string|null>((resolve, reject) => {
-    query({ sql: 'select * from subjects where subjects.name = ?', values: [subject]})
-      .then((results) => {
-        if (results.length === 0)
-          return resolve(null)
+import Theme from '../models/Theme'
 
-        const subject = { id: results[0].id, name: results[0].name }
-
-        return query({
-          sql: `insert into themes
-          (name, subjectid) values
-          (? , ?)`,
-          values: [theme, subject.id],
-        })
+const saveOne = (theme: Theme): Promise<Theme> => {
+  return new Promise<Theme>(async(resolve, reject) => {
+    try {
+      const result = await query({
+        sql: `insert into themes
+        (name, subjectid) values
+        (?, ?)`,
+        values: [theme.name, theme.subjectid],
       })
-      .then((results) => {
-        if (!results)
-          return
 
-        if (results.affectedRows === 0)
-          return resolve(null)
-        if (results.affectedRows === 1)
-          return resolve(theme)
-        return reject(new Error('An inconsistency with the DB has occured, please double check'))
-      })
+      return resolve(new Theme(
+        String(result.insertId),
+        theme.name,
+        theme.subjectid,
+      ))
+    }
+    catch (err) {
+      return reject(err)
+    }
   })
 }
 
-const getAllThemes = (): Promise<Array<string>> => {
-  return new Promise<Array<string>>((resolve, reject) => {
-    query({ sql: 'select * from themes' })
-      .then((results) => {
-        const themes = results.map((result: any) => result.name)
-
-        resolve(themes)
+const getOneById = (id: string): Promise<Theme|null> => {
+  return new Promise<Theme|null>(async(resolve, reject) => {
+    try {
+      const results = await query({
+        sql: `select id, name, subjectid
+        from themes
+        where themes.id = ?`,
+        values: [id],
       })
+
+      if (results.length === 0)
+        return resolve(null)
+
+      const theme = { id: results[0].id, name: results[0].name, subjectid: results[0].subjectid}
+
+      return resolve(new Theme(
+        String(theme.id),
+        theme.name,
+        String(theme.subjectid),
+      ))
+    }
+    catch(err) {
+      return reject(err)
+    }
   })
 }
 
-const getThemesBySubject = (subject: string): Promise<Array<string>> => {
-  return new Promise<Array<string>>((resolve, reject) => {
-    query({ sql: 'select * from subjects' })
-      .then((results) => {
-        const subjectResult = results.find((result: any) => result.name === subject)
-
-        if (!subjectResult) {
-          return resolve([])
-        }
-
-        query({
-          sql: 'select * from themes where themes.subjectid = ?',
-          values: [subjectResult.id],
-        })
-          .then((results) => {
-            const themes = results.map((result: any) => result.name)
-            return resolve(themes)
-          })
+const getAll = (): Promise<Array<Theme>> => {
+  return new Promise<Array<Theme>>(async(resolve, reject) => {
+    try {
+      const results = await query({
+        sql: `select id, name, subjectid
+        from themes`,
       })
+
+      const array = results.map((result: any) => {
+        return new Theme(
+          String(result.id),
+          result.name,
+          String(result.subjectid),
+        )
+      })
+
+      return resolve(array)
+    }
+    catch(err) {
+      return reject(err)
+    }
   })
 }
 
-const exists = (theme: string): Promise<boolean> => {
-  return new Promise<boolean>((resolve, reject) => {
-    query({
-      sql: 'select * from themes where themes.name = ?',
-      values: [theme],
-    })
-      .then((results) => {
-        if (results.length === 0)
-          return resolve(false)
+const deleteOneById = (id: string): Promise<boolean> => {
+  return new Promise<boolean>(async(resolve, reject) => {
+    try {
+      const result = await query({
+        sql: `delete from themes
+        where themes.id = ?`,
+        values: [id],
+      })
+
+      if (result.affectedRows === 1)
         return resolve(true)
-      })
+      else if (result.affectedRows === 0)
+        return resolve(false)
+      else
+        throw new Error('Something is wrong with the database consistency')
+    }
+    catch(err) {
+      return reject(err)
+    }
   })
+}
+
+const getManyBySubjectid = (id: string): Promise<Array<Theme>> => {
+  return new Promise<Array<Theme>>(async(resolve, reject) => {
+    try {
+      const results = await query({
+        sql: `select id, name, subjectid
+        from themes
+        where themes.subjectid = ?`,
+        values: [id],
+      })
+
+      const array = results.map((result: any) => {
+        return new Theme(
+          String(result.id),
+          result.name,
+          String(result.subjectid),
+        )
+      })
+
+      return resolve(array)
+    }
+    catch(err) {
+      return reject(err)
+    }
+  })
+}
+
+// TODO: Delete me
+const save = (subject: string, theme: string): Promise<string|null> => {
+  throw new Error('Not implemented')
+}
+
+// TODO: Delete me
+const exists = (theme: string): Promise<boolean> => {
+  throw new Error('Not implemented')
 }
 
 export default {
-  getAllThemes,
-  getThemesBySubject,
-  exists,
+  saveOne,
+  getOneById,
+  getAll,
+  deleteOneById,
+  getManyBySubjectid,
+
+
   save,
+  exists,
 }
