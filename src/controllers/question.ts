@@ -5,6 +5,7 @@ import fs from 'fs'
 
 import { validateQuestionBody, validateFilters } from '../validators/question'
 import questiondb from '../db/questions'
+import themedb from '../db/themes'
 
 import Question from '../models/Question'
 import { IQuestionFilters } from '../models/IQuestionFilters'
@@ -81,15 +82,25 @@ router.post('/', upload.array('media', 10), validateQuestionBody, (req, res, nex
     fileBuffers,
   )
 
-  questiondb.save(newQuestion)
-    .then((question) => {
-      if (!question) {
-        return res.status(500).send('Internal Server Error')
+  themedb.exists(theme)
+    .then((exists) => {
+      if (!exists) {
+        themedb.save(subject, theme)
+          .then((success) => {
+            if(!success)
+              return res.status(500).send('Internal server error')
+          })
       }
-      return res.status(200).send(question)
-    })
-    .catch((err) => {
-      return next(err)
+      questiondb.save(newQuestion)
+        .then((question) => {
+          if (!question) {
+            return res.status(500).send('Internal Server Error')
+          }
+          return res.status(200).send(question)
+        })
+        .catch((err) => {
+          return next(err)
+        })
     })
 })
 
