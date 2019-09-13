@@ -2,7 +2,7 @@ import mysql from 'mysql'
 
 import config from '../config/default';
 
-export const pool = mysql.createPool({
+const pool = mysql.createPool({
   host: config.db.host,
   user: config.db.user,
   password: config.db.password,
@@ -10,13 +10,13 @@ export const pool = mysql.createPool({
   waitForConnections: true,
 })
 
-export function query(queryOpts: any):Promise<any> {
+export const query = (opts: any): Promise<any> => {
   return new Promise((resolve, reject) => {
     pool.getConnection((err, connection) => {
       if (err)
         throw err
 
-      connection.query(queryOpts, (err, results, fields) => {
+      connection.query(opts, (err, results, fields) => {
         connection.release()
         if (err)
           return reject(err)
