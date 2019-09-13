@@ -1,22 +1,18 @@
 INSERT INTO `subjects` (name) VALUES
   ("Math");
 SET @sid = LAST_INSERT_ID();
-INSERT INTO `themes` (name, subjectid, themeid) VALUES
-  ("Geometry", @sid, NULL);
-SET @tid = LAST_INSERT_ID();
-INSERT INTO `themes` (name, subjectid, themeid) VALUES
-  ("Trigonometry", @sid, @tid);
+INSERT INTO `themes` (name, subjectid) VALUES
+  ("Geometry", @sid),
+  ("Trigonometry", @sid);
 
 
 INSERT INTO `subjects` (name) VALUES
   ("Programming");
 SET @sid = LAST_INSERT_ID();
-INSERT INTO `themes` (name, subjectid, themeid) VALUES
-  ("Software development", @sid, NULL),
-  ("Web development", @sid, NULL);
-SET @tid = LAST_INSERT_ID();
-INSERT INTO `themes` (name, subjectid, themeid) VALUES
-  ("NodeJS", @sid, @tid);
+INSERT INTO `themes` (name, subjectid) VALUES
+  ("Software development", @sid),
+  ("Web development", @sid),
+  ("NodeJS", @sid);
 
 
 INSERT INTO `questions` (text, points, subjectid, themeid)
