@@ -7,12 +7,14 @@ interface ValidatorReturnValue {
 
 export const validateFilters = (req: Request, res: Response, next: NextFunction) => {
   let errors = {}
-  const { subject, text } = req.params
+  const { subjectid, text } = req.params
 
-  if (subject === undefined) {
+  if (subjectid === undefined) {
     errors = Object.assign({}, errors, { subject: `Required` })
   } else {
-    const { isValid, err } = validateSubject(subject)
+    // Important: This is currently using the same method to check the subject name
+    // If the id of the subject changes, this should be changed as well
+    const { isValid, err } = validateSubject(subjectid)
   }
 
   if (text !== undefined) {
