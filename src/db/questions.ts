@@ -1,226 +1,185 @@
 import { query } from './index'
 
-import Question from '../models/Question'
-import { IQuestionFilters } from '../models/IQuestionFilters'
-import Answer from '../models/Answer'
+import answerdb from './answers'
+import mediadb from './media'
+import subjectdb from './subjects'
+import themedb from './themes'
 
+import Question, { QuestionBase } from '../models/Question'
+import Subject from '../models/Subject'
+import Theme from '../models/Theme'
 
-function getAll(filters?: IQuestionFilters): Promise<Array<Question>> {
-  return new Promise<Array<Question>>((resolve, reject) => {
-    let questions: Array<Question> = []
-    let sql = `select
-      q.id as id,
-      q.text as text,
-      q.points as points,
-      s.name as subject,
-      t.name as theme
-      from questions q
-      left join subjects s on q.subjectid = s.id
-      left join themes t on q.themeid = t.id`
-    let values: Array<any> = []
+const saveOne = async (question: Question): Promise<Question> => {
+  return new Promise<Question>(async(resolve, reject) => {
+    try {
+      const questionInsertResult = await query({
+        sql: `insert into questions
+        (text, points, subjectid, themeid) values
+        (?, ?, ?, ?)`,
+        values: [question.text, question.points, question.subject.id, question.theme.id],
+      })
 
-    if (filters) {
-      sql += ` where s.name = ?`
-      values = [...values, filters.subject]
+      const questionid = String(questionInsertResult.insertId)
+      const answers = await Promise.all(question.answers.map(a => answerdb.saveOne(a, questionid)))
+      await Promise.all(question.media.map(m => mediadb.saveOne(m, questionid)))
 
-      if (filters.text) {
-        sql +=  ` and q.text like ?`
-        values = [...values, `%${filters.text}%`]
-      }
+      return resolve(new Question(
+        String(questionInsertResult.insertId),
+        question.text,
+        answers,
+        question.points,
+        question.subject,
+        question.theme,
+        question.media,
+      ))
+
     }
-
-    query({ sql, values })
-      .then((results) => {
-        results.map((result: any) => {
-          const question = new Question(
-            String(result.id),
-            result.text,
-            [],
-            result.points,
-            result.subject,
-            result.theme,
-            [],
-          )
-          questions = [...questions, question]
-        })
-
-        return resolve(questions)
-      })
-      .catch((err) => {
-        console.log(err)
-        return reject(err)
-      })
+    catch(err) {
+      return reject(err)
+    }
   })
 }
 
+const getOneById = async (id: string): Promise<Question|null> => {
+  return new Promise<Question|null>(async(resolve, reject) => {
+    try {
+      const results = await query({
+        sql: `select id, text, points, subjectid, themeid
+        from questions
+        where questions.id = ?`,
+        values: [id],
+      })
 
-function getById(questionId: string): Promise<Question|null> {
-  let question: Question
+      if (results.length === 0)
+        return resolve(null)
 
-  return new Promise<Question|null>((resolve, reject) => {
-    query({
-      sql: `select
-      q.id as id,
-      q.text as text,
-      q.points as points,
-      s.name as subject,
-      t.name as theme
-      from questions q
-      left join subjects s on q.subjectid = s.id
-      left join themes t on q.themeid = t.id
-      where q.id = ?`,
-      values: [questionId],
-    })
-      .then((results) => {
-        if (results.length === 0)
-          return resolve(null)
+      const questionResult = results[0]
 
-        const result = results[0]
-        question = new Question(
+      const [subject, theme] = await Promise.all([
+        subjectdb.getOneById(questionResult.subjectid),
+        themedb.getOneById(questionResult.themeid)
+      ])
+
+      if (subject === null || theme === null)
+        return resolve(null)
+
+      const [answers, media] = await Promise.all([
+        answerdb.getManyByQuestionid(String(questionResult.id)),
+        mediadb.getManyByQuestionid(questionResult.id),
+      ])
+
+      const question = new Question(
+        String(questionResult.id),
+        questionResult.text,
+        answers,
+        questionResult.points,
+        subject,
+        theme,
+        media,
+      )
+    }
+    catch(err) {
+      return reject(err)
+    }
+  })
+}
+
+const getAll = (): Promise<Array<QuestionBase>> => {
+  return new Promise<Array<QuestionBase>>(async(resolve, reject) => {
+    try {
+      const results = await query({
+        sql: `select
+        q.id as id,
+        q.text as text,
+        q.points as points,
+        s.id as subjectid,
+        s.name as subject,
+        t.id as themeid,
+        t.name as theme
+        from questions q
+        inner join subjects s
+          on q.subjectid = s.id
+        inner join themes t
+          on q.themeid = t.id`
+      })
+
+      const questions = results.map((result: any) => {
+        return new QuestionBase(
           String(result.id),
           result.text,
-          [],
           result.points,
-          result.subject,
-          result.theme,
-          []
+          new Subject(String(result.subjectid), result.subject),
+          new Theme(String(result.themeid), result.theme, String(result.subjectid)),
         )
-
-        return query({
-          sql: `select
-          a.id as id,
-          a.text as text,
-          a.correct as correct
-          from answers a
-          inner join questions q on a.questionid = q.id
-          where q.id = ?`,
-          values: [questionId],
-        })
       })
-      .then((results) => {
-        if (!results)
-          return
 
-        results.map((result: any) => {
-          const answer = new Answer(String(result.id), result.text, Boolean(result.correct))
-          question.answers = [...question.answers, answer]
-        })
-
-        return query({
-          sql: 'select * from media where media.questionid = ?',
-          values: [questionId],
-        })
-      })
-      .then((results) => {
-        if (!results)
-          return
-
-        results.map((result: any) => {
-          question.media = [...question.media, result.content]
-        })
-
-        return resolve(question)
-      })
-      .catch((err) => {
-        reject(err)
-      })
-  })
-}
-
-function save(question: Question): Promise<Question|null> {
-  return new Promise<Question|null>((resolve, reject) => {
-    let sqlquery
-    let values
-
-    if (question.theme !== null) {
-      sqlquery = `select
-      s.id as subjectid,
-      t.id as themeid
-      from subjects s
-      left join themes t on t.subjectid = s.id
-      where s.name = ?
-      and t.name = ?`
-      values = [question.subject, question.theme]
-    } else {
-      sqlquery = `select
-      s.id as subjectid
-      from subjects s
-      where s.name = ?`
-      values = [question.subject]
+      return resolve(questions)
     }
-
-    query({
-      sql: sqlquery,
-      values: [...values]
-    })
-      .then((results) => {
-        if (results.length < 1)
-          return resolve(null)
-
-        const subjectid = results[0].subjectid || null
-        const themeid = results[0].themeid || null
-
-        return query({
-          sql: `insert into questions
-          (text, points, subjectid, themeid) values
-          (?, ?, ?, ?)`,
-          values: [question.text, question.points, subjectid, themeid]
-        })
-      })
-      .then((results) => {
-        if (!results)
-          return
-
-        if (results.affectedRows !== 1)
-          return resolve(null)
-
-        question.id = results.insertId
-
-        question.answers.map((answer) => {
-          query({
-            sql: `insert into answers (text, correct, questionid)
-            values (?, ?, ?)`,
-            values: [answer.text, answer.correct, question.id],
-          })
-        })
-
-        question.media.map((blob) => {
-          query({
-            sql: `insert into media (questionid, content)
-            values (?, ?)`,
-            values: [question.id, blob],
-          })
-        })
-
-        return resolve(question)
-      })
-      .catch((err) => {
-        return reject(err)
-      })
+    catch(err) {
+      return reject(err)
+    }
   })
 }
 
-function deleteById(questionId: string): Promise<boolean> {
-  return new Promise((resolve, reject) => {
-    query({
-      sql: 'delete from questions where id = ?',
-      values: [questionId],
-    })
-      .then((results) => {
-        if (results.affectedRows === 0)
-          return resolve(false)
-        else if (results.affectedRows === 1)
-          return resolve(true)
+const deleteOneById = (id: string): Promise<boolean> => {
+  return new Promise<boolean>(async(resolve, reject) => {
+    try {
+      const result = await query({
+        sql: `delete from questions where id = ?`,
+        values: [id],
       })
-      .catch((err) => {
-        return reject(err)
+
+      if (result.affectedRows === 0)
+        return resolve(false)
+      return resolve(true)
+    }
+    catch(err) {
+      return reject(err)
+    }
+  })
+}
+
+const getManyBySubjectid = (subjectid: string): Promise<Array<QuestionBase>> => {
+  return new Promise<Array<QuestionBase>>(async(resolve, reject) => {
+    try {
+      const results = await query({
+        sql: `select
+        q.id as id,
+        q.text as text,
+        q.points as points,
+        s.id as subjectid,
+        s.name as subject,
+        t.id as themeid,
+        t.name as theme
+        from questions q
+        inner join subjects s
+          on q.subjectid = s.id
+        inner join themes t
+          on q.themeid = t.id
+        where q.subjectid = ?`,
+        value: [subjectid]
       })
+
+      const questions = results.map((result: any) => {
+        return new QuestionBase(
+          String(result.id),
+          result.text,
+          result.points,
+          new Subject(String(result.subjectid), result.subject),
+          new Theme(String(result.themeid), result.theme, String(result.subjectid)),
+        )
+      })
+    }
+    catch(err) {
+      return reject(err)
+    }
   })
 }
 
 export default {
+  saveOne,
+  getOneById,
   getAll,
-  getById,
-  save,
-  deleteById,
+  getManyBySubjectid,
+  deleteOneById,
 }
