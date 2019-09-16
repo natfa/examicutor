@@ -77,6 +77,8 @@ const getOneById = async (id: string): Promise<Question|null> => {
         theme,
         media,
       )
+
+      return resolve(question)
     }
     catch(err) {
       return reject(err)
@@ -88,7 +90,7 @@ const getMany = (n?: number): Promise<Array<QuestionBase>> => {
   return new Promise<Array<QuestionBase>>(async(resolve, reject) => {
     try {
       const results = await query({
-        sql: `select top ?
+        sql: `select
         q.id as id,
         q.text as text,
         q.points as points,
@@ -100,8 +102,9 @@ const getMany = (n?: number): Promise<Array<QuestionBase>> => {
         inner join subjects s
           on q.subjectid = s.id
         inner join themes t
-          on q.themeid = t.id`,
-        value: [n||100],
+          on q.themeid = t.id
+        limit ?`,
+        values: [n||100]
       })
 
       const questions = results.map((result: any) => {
@@ -158,7 +161,7 @@ const getManyBySubjectid = (subjectid: string): Promise<Array<QuestionBase>> => 
         inner join themes t
           on q.themeid = t.id
         where q.subjectid = ?`,
-        value: [subjectid]
+        values: [subjectid]
       })
 
       const questions = results.map((result: any) => {
@@ -170,6 +173,8 @@ const getManyBySubjectid = (subjectid: string): Promise<Array<QuestionBase>> => 
           new Theme(String(result.themeid), result.theme, String(result.subjectid)),
         )
       })
+      
+      return resolve(questions)
     }
     catch(err) {
       return reject(err)
