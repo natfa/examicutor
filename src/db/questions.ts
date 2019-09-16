@@ -84,11 +84,11 @@ const getOneById = async (id: string): Promise<Question|null> => {
   })
 }
 
-const getAll = (): Promise<Array<QuestionBase>> => {
+const getMany = (n?: number): Promise<Array<QuestionBase>> => {
   return new Promise<Array<QuestionBase>>(async(resolve, reject) => {
     try {
       const results = await query({
-        sql: `select
+        sql: `select top ?
         q.id as id,
         q.text as text,
         q.points as points,
@@ -100,7 +100,8 @@ const getAll = (): Promise<Array<QuestionBase>> => {
         inner join subjects s
           on q.subjectid = s.id
         inner join themes t
-          on q.themeid = t.id`
+          on q.themeid = t.id`,
+        value: [n||100],
       })
 
       const questions = results.map((result: any) => {
@@ -179,7 +180,7 @@ const getManyBySubjectid = (subjectid: string): Promise<Array<QuestionBase>> => 
 export default {
   saveOne,
   getOneById,
-  getAll,
+  getMany,
   getManyBySubjectid,
   deleteOneById,
 }
