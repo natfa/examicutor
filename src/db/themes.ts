@@ -123,24 +123,10 @@ const getManyBySubjectid = (id: string): Promise<Array<Theme>> => {
   })
 }
 
-// TODO: Delete me
-const save = (subject: string, theme: string): Promise<string|null> => {
-  throw new Error('Not implemented')
-}
-
-// TODO: Delete me
-const exists = (theme: string): Promise<boolean> => {
-  throw new Error('Not implemented')
-}
-
 export default {
   saveOne,
   getOneById,
   getAll,
   deleteOneById,
   getManyBySubjectid,
-
-
-  save,
-  exists,
 }
