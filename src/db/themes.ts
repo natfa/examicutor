@@ -123,10 +123,36 @@ const getManyBySubjectid = (id: string): Promise<Array<Theme>> => {
   })
 }
 
+const getOneByName = (name: string): Promise<Theme|null> => {
+  return new Promise<Theme|null>(async(resolve, reject) => {
+    try {
+      const results = await query({
+        sql: `select id, name, subjectid
+        from themes
+        where themes.name = ?`,
+        values: [name]
+      })
+
+      if (results.length === 0)
+        return resolve(null)
+
+      return resolve(new Theme(
+        String(results[0].id),
+        results[0].name,
+        String(results[0].subjectid)
+      ))
+    }
+    catch(err) {
+      return reject(err)
+    }
+  })
+}
+
 export default {
   saveOne,
   getOneById,
   getAll,
   deleteOneById,
   getManyBySubjectid,
+  getOneByName,
 }

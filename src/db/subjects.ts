@@ -86,9 +86,34 @@ const deleteOneById = async (id: string): Promise<boolean> => {
   })
 }
 
+const getOneByName = async (name: string): Promise<Subject|null> => {
+  return new Promise<Subject|null>(async(resolve, reject) => {
+    try {
+      const results = await query({
+        sql: `select id, name
+        from subjects
+        where subjects.name = ?`,
+        values: [name],
+      })
+
+      if (results.length === 0)
+        return resolve(null)
+
+      return resolve(new Subject(
+        String(results[0].id),
+        results[0].name,
+      ))
+    }
+    catch(err) {
+      return reject(err)
+    }
+  })
+}
+
 export default {
   saveOne,
   getOneById,
   getAll,
   deleteOneById,
+  getOneByName,
 }
