@@ -2,17 +2,25 @@ INSERT INTO `subjects` (name) VALUES
   ("Math");
 SET @sid = LAST_INSERT_ID();
 INSERT INTO `themes` (name, subjectid) VALUES
-  ("Geometry", @sid),
-  ("Trigonometry", @sid);
+  ("Geometry", @sid);
+SET @tid = LAST_INSERT_ID();
+
+
+INSERT INTO `questions` (text, points, subjectid, themeid)
+  VALUES ("What's this figure?", 1, @sid, @tid);
+SET @qid = LAST_INSERT_ID();
+INSERT INTO `answers` (text, correct, questionid) VALUES
+  ("A triangle", FALSE, @qid),
+  ("A circle", TRUE, @qid),
+  ("A batka", FALSE, @qid);
 
 
 INSERT INTO `subjects` (name) VALUES
   ("Programming");
 SET @sid = LAST_INSERT_ID();
 INSERT INTO `themes` (name, subjectid) VALUES
-  ("Software development", @sid),
-  ("Web development", @sid),
-  ("NodeJS", @sid);
+  ("Software development", @sid);
+SET @tid = LAST_INSERT_ID();
 
 
 INSERT INTO `questions` (text, points, subjectid, themeid)
@@ -26,21 +34,4 @@ INSERT INTO `answers` (text, correct, questionid) VALUES
   ("Golang", FALSE, @qid);
 
 
-INSERT INTO `questions` (text, points, subjectid, themeid)
-  VALUES ("Which database is used for this project?", 3, @sid, @tid);
-SET @qid = LAST_INSERT_ID();
-INSERT INTO `answers` (text, correct, questionid) VALUES
-  ("MongoDB", FALSE, @qid),
-  ("MySQL", TRUE, @qid),
-  ("PostgreSQL", FALSE, @qid),
-  ("MS SQL", FALSE, @qid);
 
-
-INSERT INTO `questions` (text, points, subjectid, themeid)
-  VALUES ("What does this picture represent?", 1, @sid, @tid);
-SET @qid = LAST_INSERT_ID();
-INSERT INTO `answers` (text, correct, questionid) VALUES
-  ("An old lady", FALSE, @qid),
-  ("A cute girl", TRUE, @qid),
-  ("A batka", FALSE, @qid),
-  ("Some friend I saw last night", FALSE, @qid);
