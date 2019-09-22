@@ -4,6 +4,8 @@ import path from 'path'
 import fs from 'fs'
 
 import { validateQuestionBody, validateFilters } from '../validators/question'
+import { isAuthenticated } from '../middleware/isAuthenticated'
+
 import questiondb from '../db/questions'
 import subjectdb from '../db/subjects'
 import themedb from '../db/themes'
@@ -114,6 +116,8 @@ const deleteQuestion = async (req: Request, res: Response, next: NextFunction) =
 
 const router = express.Router()
 const upload = multer({ dest: 'uploads/'})
+
+router.use(isAuthenticated)
 
 router.get('/', getQuestions)
 router.get('/:id', getQuestionById)

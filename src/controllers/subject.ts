@@ -1,11 +1,12 @@
 import express, { Request, Response, NextFunction } from 'express'
+
+import { isAuthenticated } from '../middleware/isAuthenticated'
 import { validateSubjectBody } from '../validators/subject'
 
 import subjectdb from '../db/subjects'
 
 import Subject from '../models/Subject'
 
-const router = express()
 
 const createSubject = async(req: Request, res: Response, next: NextFunction) => {
   try {
@@ -39,6 +40,11 @@ const deleteSubject = async(req: Request, res: Response, next: NextFunction) => 
     next(err)
   }
 }
+
+
+const router = express.Router()
+
+router.use(isAuthenticated)
 
 router.get('/', getAllSubjects)
 router.post('/', validateSubjectBody, createSubject)

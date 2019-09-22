@@ -1,5 +1,7 @@
 import express, { Request, Response, NextFunction } from 'express'
 
+import { isAuthenticated } from '../middleware/isAuthenticated'
+
 import themedb from '../db/themes'
 
 import Theme from '../models/Theme'
@@ -24,7 +26,9 @@ const getThemesFromSubject = async (req: Request, res: Response, next: NextFunct
   }
 }
 
-const router = express()
+const router = express.Router()
+
+router.use(isAuthenticated)
 
 router.get('/', getAllThemes)
 router.get('/:subjectid', getThemesFromSubject)
