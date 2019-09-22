@@ -1,3 +1,6 @@
+INSERT INTO `accounts` (email, passwordhash, isadmin) VALUES
+  ("federlizer@gmail.com", "XFXdoubled7770", TRUE);
+
 INSERT INTO `subjects` (name) VALUES
   ("Math");
 SET @sid = LAST_INSERT_ID();
