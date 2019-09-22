@@ -19,7 +19,7 @@ const SessionStore = FileStore(session)
 // session config
 const sessionConfig = {
   cookie: {
-    maxAge: 36000,
+    maxAge: 3600000,
     httpOnly: true,
     // Turn to true when HTTPS is enabled
     secure: false,
