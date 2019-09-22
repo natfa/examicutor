@@ -1,20 +1,20 @@
 class Account {
-  id: String | null;
-  facultyNumber: String;
-  email: String;
-  passwordHash: String;
+  id: string|null|undefined
+  email: string
+  passwordHash: string
+  isAdmin: boolean
 
-  constructor(
-    id: String | null = null,
-    facultyNumber: String,
-    email: String,
-    passwordHash: String,
+  constructor (
+    id: string|null|undefined,
+    email: string,
+    passwordHash: string,
+    isAdmin: boolean,
   ) {
-    this.id = id;
-    this.facultyNumber = facultyNumber;
-    this.email = email;
-    this.passwordHash = passwordHash;
+    this.id = id
+    this.email = email
+    this.passwordHash = passwordHash
+    this.isAdmin = isAdmin
   }
 }
 
-export default Account;
+export default Account
