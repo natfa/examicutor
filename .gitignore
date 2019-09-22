@@ -8,6 +8,8 @@
 # configs and environment specific
 **/config/
 **/uploads/
+**/sessions/
+**/.vscode/
 
 # personal and client files
 questions.md
