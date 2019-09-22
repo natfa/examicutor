@@ -38,7 +38,7 @@ const validateEmail = (email: any) => {
         errors = Object.assign({}, errors, {
             email: `Can't be empty`
         })
-    } else if (email.length >= 100 || !isEmail(email)) {
+    } else if (email.length >= 50 || !isEmail(email)) {
         errors = Object.assign({}, errors, {
             email: `Please provide a valid email`
         })
