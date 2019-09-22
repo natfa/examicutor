@@ -1,10 +1,12 @@
 import express, { Request, Response, NextFunction } from 'express'
 import session from 'express-session'
 import cors from 'cors'
+import FileStore from 'session-file-store'
 
 import questionController from './controllers/question'
 import subjectController from './controllers/subject'
 import themeController from './controllers/theme'
+import authController from './controllers/auth'
 
 // load config
 import config from './config/default'
@@ -12,17 +14,37 @@ import config from './config/default'
 // global config
 const app = express()
 const secret = config.sessionSecret
+const SessionStore = FileStore(session)
+
+// session config
+const sessionConfig = {
+  cookie: {
+    maxAge: 36000,
+    httpOnly: true,
+    // Turn to true when HTTPS is enabled
+    secure: false,
+  },
+  secret: secret,
+  resave: false,
+  saveUninitialized: false,
+  rolling: true,
+  unset: 'destroy',
+  store: new SessionStore({
+    retries: 1,
+  })
+}
 
 // Express config
 app.use(cors())
 app.use(express.json())
-app.use(session({ secret }))
+app.use(session(sessionConfig))
 app.use(reqLogger)
 
 // Apply controllers
 app.use('/api/question/', questionController)
 app.use('/api/subject/', subjectController)
 app.use('/api/theme/', themeController)
+app.use('/api/auth/', authController)
 
 function reqLogger(req: Request, res: Response, next: NextFunction) {
   const log = `[${req.method}] ${req.originalUrl}`
