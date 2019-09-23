@@ -29,8 +29,7 @@ const authenticate = async (req: Request, res: Response, next: NextFunction) => 
     }
 
     req.session.isAuthenticated = true
-    if (account.isAdmin)
-      req.session.isAdmin = true
+    req.session.account = account
 
     return res.status(200).end()
   }
@@ -63,8 +62,27 @@ const createAccount = async(req: Request, res: Response, next: NextFunction) => 
   }
 }
 
+const getActiveSession = async(req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (!req.session)
+      return next(new Error('req.session is undefined'))
+
+    if (!req.session.isAuthenticated)
+      return res.status(401).end()
+
+    return res.status(200).send({
+      email: req.session.account.email,
+      isAdmin: req.session.account.isAdmin,
+    })
+  }
+  catch(err) {
+    return next(err)
+  }
+}
+
 const router = express.Router()
 
+router.get('/', getActiveSession)
 // The validateLoginCredentials only checks for gramatical errors,
 // such as mistyped email or an empty password. The authenticate
 // method actually makes the authentication and checks the DB
