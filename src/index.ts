@@ -35,8 +35,14 @@ const sessionConfig = {
   })
 }
 
+const corsConfig = {
+  origin: ['http://localhost:3000'],
+  methods: ['GET', 'POST', 'PUT', 'UPDATE'],
+  credentials: true,
+}
+
 // express config
-app.use(cors())
+app.use(cors(corsConfig))
 app.use(express.json())
 app.use(session(sessionConfig))
 app.use(reqLogger)
