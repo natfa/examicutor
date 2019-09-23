@@ -1,6 +1,8 @@
 import express, { Request, Response, NextFunction } from 'express'
+import bcrypt from 'bcrypt'
 
 import { validateLoginCredentials } from '../validators/auth'
+import { validateAccountBody } from '../validators/account'
 import { isAuthenticated } from '../middleware/isAuthenticated'
 import { isAdmin } from '../middleware/isAdmin'
 
@@ -22,7 +24,7 @@ const authenticate = async (req: Request, res: Response, next: NextFunction) => 
       return res.status(401).end()
     }
 
-    if (password !== account.passwordHash) {
+    if (!(await bcrypt.compare(password, account.passwordHash))) {
       return res.status(401).end()
     }
 
@@ -39,12 +41,21 @@ const authenticate = async (req: Request, res: Response, next: NextFunction) => 
 
 const createAccount = async(req: Request, res: Response, next: NextFunction) => {
   try {
+    const saltRounds = 10
     const { email, password, isAdmin } = req.body
 
-    let account = new Account(null, email, password, isAdmin)
+    const exists = await accountdb.getOneByEmail(email)
+    if (exists) {
+      return res.status(400).send('Email already in use')
+    }
+
+    // hash
+    const pHash = await bcrypt.hash(password, saltRounds)
+
+    let account = new Account(null, email, pHash, isAdmin)
     account = await accountdb.saveOne(account)
     // don't send password hash... duh..
-    account.passwordHash = ''
+    delete(account.passwordHash)
     return res.status(200).send(account)
   }
   catch(err) {
@@ -58,6 +69,6 @@ const router = express.Router()
 // such as mistyped email or an empty password. The authenticate
 // method actually makes the authentication and checks the DB
 router.post('/', validateLoginCredentials, authenticate)
-router.post('/create', isAuthenticated, isAdmin, createAccount)
+router.post('/create', validateAccountBody, isAuthenticated, isAdmin, createAccount)
 
 export default router

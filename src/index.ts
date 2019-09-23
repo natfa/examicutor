@@ -21,7 +21,7 @@ const sessionConfig = {
   cookie: {
     maxAge: 3600000,
     httpOnly: true,
-    // Turn to true when HTTPS is enabled
+    // TODO: turn to true when HTTPS is enabled
     secure: false,
   },
   secret: secret,
@@ -31,10 +31,11 @@ const sessionConfig = {
   unset: 'destroy',
   store: new SessionStore({
     retries: 1,
+    reapInterval: 43200,
   })
 }
 
-// Express config
+// express config
 app.use(cors())
 app.use(express.json())
 app.use(session(sessionConfig))

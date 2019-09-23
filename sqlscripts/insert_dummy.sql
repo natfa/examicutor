@@ -1,5 +1,5 @@
 INSERT INTO `accounts` (email, passwordhash, isadmin) VALUES
-  ("federlizer@gmail.com", "XFXdoubled7770", TRUE);
+  ("federlizer@gmail.com", "$2b$10$rrw67ImHaK/KGi6yTlON4.3TdDea0KC6/M8KkeXaRLY0Uakmmmhky", TRUE);
 
 INSERT INTO `subjects` (name) VALUES
   ("Math");
