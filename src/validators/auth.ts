@@ -21,8 +21,6 @@ export const validateLoginCredentials = (req: Request, res: Response, next: Next
         errors = Object.assign({}, errors, validatePassword(password))
     }
 
-    console.log(errors)
-
     if (Object.keys(errors).length !== 0)
         return res.status(400).send(errors)
     return next()
