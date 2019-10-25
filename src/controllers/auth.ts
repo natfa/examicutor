@@ -31,7 +31,10 @@ const authenticate = async (req: Request, res: Response, next: NextFunction) => 
     req.session.isAuthenticated = true
     req.session.account = account
 
-    return res.status(200).end()
+    // don't send pass hash
+    delete(account.passwordHash)
+
+    return res.status(200).send(account)
   }
   catch(err) {
     return next(err)
