@@ -1,4 +1,5 @@
 import express, { Request, Response, NextFunction } from 'express'
+import path from 'path';
 import session from 'express-session'
 import cors from 'cors'
 import FileStore from 'session-file-store'
@@ -47,12 +48,21 @@ app.use(express.json())
 app.use(session(sessionConfig))
 app.use(reqLogger)
 
-// Apply controllers
+// apply controllers
 app.use('/api/question/', questionController)
 app.use('/api/subject/', subjectController)
 app.use('/api/theme/', themeController)
 app.use('/api/auth/', authController)
 
+// serve javascript bundles
+app.use('/', express.static(path.resolve(config.clientPath)));
+
+// serve react apps with routers
+app.get('/teacher/*', (req, res) => {
+  return res.sendFile(path.resolve(config.clientPath, 'teacher/index.html'));
+});
+
+// simple request logger
 function reqLogger(req: Request, res: Response, next: NextFunction) {
   const log = `[${req.method}] ${req.originalUrl}`
   console.log(log)
