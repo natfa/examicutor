@@ -1,5 +1,5 @@
 import express, { Request, Response, NextFunction} from 'express'
-import multer from 'multer'
+import multer from 'multer';
 import path from 'path'
 import fs from 'fs'
 
@@ -51,53 +51,17 @@ const getQuestionsByFilter = async (req: Request, res: Response, next: NextFunct
 }
 
 const createQuestion = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { text, subject, theme, points, correctAnswers, incorrectAnswers } = req.body
-    const uploadsDir = path.resolve('./uploads')
+  // get question data
+  // get uploaded data (go to /uploads and grab the buffers for each file uploaded)
+  //
+  // figure out if you need to create a new subject and theme
+  //   create them
+  //
+  // compile answers
+  // insert question
+  // return question to client
 
-    let answers = [
-      ...correctAnswers.map((a: string) => new Answer(null, a, true)),
-      ...incorrectAnswers.map((a: string) => new Answer(null, a, false)),
-    ]
-
-    // Apparently typescript's type definitions for multer are
-    // fucked up, so you gotta use the any escape :D
-    const files: any = req.files
-    const fileBuffers: Array<Buffer> = files.map((file: any) => {
-      return fs.readFileSync(path.resolve(file.path))
-    })
-
-    let subjectFound: Subject|null
-    let themeFound: Theme|null
-
-    [subjectFound, themeFound] = await Promise.all([
-      subjectdb.getOneByName(subject),
-      themedb.getOneByName(theme),
-    ])
-
-    if (subjectFound === null || subjectFound.id === null || subjectFound.id === undefined)
-      return res.status(400).send(`Subject doesn't exist`)
-
-    if (themeFound === null)
-      themeFound = await themedb.saveOne(new Theme(null, theme, subjectFound.id))
-
-
-    let question = new Question(
-      null,
-      text,
-      answers,
-      Number(points),
-      subjectFound,
-      themeFound,
-      fileBuffers,
-    )
-
-    question = await questiondb.saveOne(question)
-    return res.status(200).send(question)
-  }
-  catch(err) {
-    next(err)
-  }
+  return res.status(500).send('Not implemented');
 }
 
 const deleteQuestion = async (req: Request, res: Response, next: NextFunction) => {
@@ -115,14 +79,14 @@ const deleteQuestion = async (req: Request, res: Response, next: NextFunction) =
 }
 
 const router = express.Router()
-const upload = multer({ dest: 'uploads/'})
+const upload = multer({ dest: 'uploads/' });
 
 router.use(isAuthenticated)
 
 router.get('/', getQuestions)
 router.get('/:id', getQuestionById)
 router.get('/filter/:subjectid/:text?', validateFilters, getQuestionsByFilter)
-router.post('/', upload.array('media', 10), validateQuestionBody, createQuestion)
+router.post('/', upload.array('media'), createQuestion) // TODO: intoduce a questionBody validator
 router.delete('/:id', deleteQuestion)
 
 export default router
