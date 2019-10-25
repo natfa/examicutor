@@ -37,7 +37,7 @@ const sessionConfig = {
 
 const corsConfig = {
   origin: ['http://localhost:3000'],
-  methods: ['GET', 'POST', 'PUT', 'UPDATE'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true,
 }
 
