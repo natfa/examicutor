@@ -1,7 +1,6 @@
 import express, { Request, Response, NextFunction } from 'express'
 import path from 'path';
 import session from 'express-session'
-import cors from 'cors'
 import FileStore from 'session-file-store'
 
 import questionController from './controllers/question'
@@ -36,14 +35,7 @@ const sessionConfig = {
   })
 }
 
-const corsConfig = {
-  origin: ['http://localhost:3000'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true,
-}
-
 // express config
-app.use(cors(corsConfig))
 app.use(express.json())
 app.use(session(sessionConfig))
 app.use(reqLogger)
@@ -60,6 +52,10 @@ app.use('/', express.static(path.resolve(config.clientPath)));
 // serve react apps with routers
 app.get('/teacher/*', (req, res) => {
   return res.sendFile(path.resolve(config.clientPath, 'teacher/index.html'));
+});
+
+app.get('/', (req, res) => {
+  res.redirect('/landing');
 });
 
 // simple request logger
