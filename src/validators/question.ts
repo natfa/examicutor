@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 
+import removeUploadedFiles from '../utils/removeUploadedFiles';
+
 interface ValidatorReturnValue {
   isValid: boolean;
   err: any;
@@ -28,12 +30,27 @@ export const validateFilters = (req: Request, res: Response, next: NextFunction)
 
 export const validateQuestionBody = (req: Request, res: Response, next: NextFunction) => {
   let errors = {}
-  const { text, incorrectAnswers, correctAnswers, points, subject, theme } = req.body
+  const {
+    text,
+    points,
+    subjectName,
+    themeName,
+    correctAnswers,
+    incorrectAnswers
+  } = req.body;
 
   if (text === undefined){
     errors = Object.assign({}, errors, { text: `Required` })
   } else {
     const { isValid, err } = validateText(text)
+    if (!isValid)
+      errors = Object.assign({}, errors, err)
+  }
+
+  if (points === undefined) {
+    errors = Object.assign({}, errors, { points: `Required` })
+  } else {
+    const { isValid, err } = validatePoints(points)
     if (!isValid)
       errors = Object.assign({}, errors, err)
   }
@@ -54,30 +71,28 @@ export const validateQuestionBody = (req: Request, res: Response, next: NextFunc
       errors = Object.assign({}, errors, err)
   }
 
-  if (points === undefined) {
-    errors = Object.assign({}, errors, { points: `Required` })
+  if (subjectName === undefined) {
+    errors = Object.assign({}, errors, { subjectName: `Required` })
   } else {
-    const { isValid, err } = validatePoints(points)
+    const { isValid, err } = validateSubject(subjectName)
     if (!isValid)
       errors = Object.assign({}, errors, err)
   }
 
-  if (subject === undefined) {
-    errors = Object.assign({}, errors, { subject: `Required` })
-  } else {
-    const { isValid, err } = validateSubject(subject)
+  if (themeName !== undefined) {
+    const { isValid, err } = validateTheme(themeName)
     if (!isValid)
       errors = Object.assign({}, errors, err)
   }
 
-  if (theme !== undefined) {
-    const { isValid, err } = validateTheme(theme)
-    if (!isValid)
-      errors = Object.assign({}, errors, err)
-  }
+  if (Object.keys(errors).length > 0) {
+    // cleanup
+    const filenames = (req.files as Express.Multer.File[])
+      .map((file) => file.filename);
+    removeUploadedFiles(...filenames);
 
-  if (Object.keys(errors).length > 0)
     return res.status(400).send(errors)
+  }
   return next()
 }
 
