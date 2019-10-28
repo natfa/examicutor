@@ -1,6 +1,5 @@
 import express, { Request, Response, NextFunction } from 'express'
 import path from 'path';
-import cors from 'cors';
 import session from 'express-session'
 import FileStore from 'session-file-store'
 
@@ -37,11 +36,6 @@ const sessionConfig = {
 }
 
 // express config
-app.use(cors({
-  origin: ['http://velichkov-bg.com'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true,
-}));
 app.use(express.json())
 app.use(session(sessionConfig))
 app.use(reqLogger)
