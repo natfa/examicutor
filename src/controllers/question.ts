@@ -138,8 +138,8 @@ const createQuestion = async (req: Request, res: Response, next: NextFunction) =
     id: question.id,
     text: question.text,
     points: question.points,
-    subjectName: question.subject.name,
-    themeName: question.theme.name,
+    subject: question.subject,
+    theme: question.theme,
   };
 
   return res.status(200).json(responseData);
