@@ -2,87 +2,242 @@ import { Request, Response, NextFunction } from 'express';
 
 import removeUploadedFiles from '../utils/removeUploadedFiles';
 
-interface ValidatorReturnValue {
-  isValid: boolean;
-  err: any;
+interface QuestionValidationResult {
+  text?: string;
+  points?: string;
+  subjectName?: string;
+  themeName?: string;
+
+  answers?: string;
+  correctAnswers?: string;
+  incorrectAnswers?: string;
 }
 
-export const validateFilters = (req: Request, res: Response, next: NextFunction) => {
-  let errors = {}
-  const { subjectid, text } = req.params
+function validateText(text: string): QuestionValidationResult {
+  let errors: QuestionValidationResult = {};
+
+  if (typeof text !== 'string') {
+    errors = {
+      ...errors,
+      text: 'Must be a string',
+    };
+  } else if (text.length > 500) {
+    errors = {
+      ...errors,
+      text: 'Max length: 500',
+    };
+  } else if (text.length <= 2) {
+    errors = {
+      ...errors,
+      text: 'Can\'t be less than 3 characters',
+    };
+  }
+  return errors;
+}
+
+function validateAnswers(answers: Array<string>): QuestionValidationResult {
+  let errors: QuestionValidationResult = {};
+
+  if (!Array.isArray(answers)) {
+    errors = {
+      ...errors,
+      answers: 'Must be an array',
+    };
+  } else if (answers.length === 0) {
+    errors = {
+      ...errors,
+      answers: 'At least 1 correct and 1 incorrect answers are required',
+    };
+  } else {
+    answers.forEach((answer) => {
+      if (typeof answer !== 'string') {
+        errors = {
+          ...errors,
+          answers: 'All answers must be strings',
+        };
+      }
+    });
+  }
+  return errors;
+}
+
+function validatePoints(points: number): QuestionValidationResult {
+  let errors: QuestionValidationResult = {};
+
+  if (typeof points !== 'number') {
+    errors = {
+      ...errors,
+      points: 'Must be a number',
+    };
+  } else if (points < 0) {
+    errors = {
+      ...errors,
+      points: 'Can\'t be negative',
+    };
+  }
+  return errors;
+}
+
+function validateSubjectName(subjectName: string): QuestionValidationResult {
+  let errors: QuestionValidationResult = {};
+
+  if (typeof subjectName !== 'string') {
+    errors = {
+      ...errors,
+      subjectName: 'Must be a string',
+    };
+  } else if (subjectName.length === 0) {
+    errors = {
+      ...errors,
+      subjectName: 'Can\'t be empty',
+    };
+  }
+  return errors;
+}
+
+function validateThemeName(themeName: string): QuestionValidationResult {
+  let errors: QuestionValidationResult = {};
+
+  if (typeof themeName !== 'string') {
+    errors = {
+      ...errors,
+      themeName: 'Must be a string',
+    };
+  } else if (themeName.length === 0) {
+    errors = {
+      ...errors,
+      themeName: 'Can\'t be empty',
+    };
+  }
+  return errors;
+}
+
+export function validateFilters(req: Request, res: Response, next: NextFunction): void {
+  let errors: QuestionValidationResult = {};
+  const { subjectid, text } = req.params;
 
   if (subjectid === undefined) {
-    errors = Object.assign({}, errors, { subject: `Required` })
+    errors = {
+      ...errors,
+      subjectName: 'Required',
+    };
   } else {
-    // Important: This is currently using the same method to check the subject name
-    // If the id of the subject changes, this should be changed as well
-    const { isValid, err } = validateSubject(subjectid)
+    // Important: Since the subject id is a string (same as the name),
+    // the check here uses the validateSubjectName function
+    // which is meant to be used for the name.
+    // If the ID of the subject model changes, there should be a new method created
+    // that would handle this specific check
+    const subjectIdErrors = validateSubjectName(subjectid);
+    errors = {
+      ...errors,
+      ...subjectIdErrors,
+    };
   }
 
   if (text !== undefined) {
-    const { isValid, err } = validateText(text)
+    const textErrors = validateText(text);
+    errors = {
+      ...errors,
+      ...textErrors,
+    };
   }
 
-  if (Object.keys(errors).length > 0)
-    return res.status(400).send(errors)
-  return next()
+  if (Object.keys(errors).length > 0) {
+    res.status(400).send(errors);
+    return;
+  }
+
+  next();
 }
 
-export const validateQuestionBody = (req: Request, res: Response, next: NextFunction) => {
-  let errors = {}
+export function validateQuestionBody(req: Request, res: Response, next: NextFunction): void {
+  let errors: QuestionValidationResult = {};
+
   const {
     text,
     points,
     subjectName,
     themeName,
     correctAnswers,
-    incorrectAnswers
+    incorrectAnswers,
   } = req.body;
 
-  if (text === undefined){
-    errors = Object.assign({}, errors, { text: `Required` })
+  if (text === undefined) {
+    errors = {
+      ...errors,
+      text: 'Required',
+    };
   } else {
-    const { isValid, err } = validateText(text)
-    if (!isValid)
-      errors = Object.assign({}, errors, err)
+    const textErrors = validateText(text);
+    errors = {
+      ...errors,
+      ...textErrors,
+    };
   }
 
   if (points === undefined) {
-    errors = Object.assign({}, errors, { points: `Required` })
+    errors = {
+      ...errors,
+      points: 'Required',
+    };
   } else {
-    const { isValid, err } = validatePoints(points)
-    if (!isValid)
-      errors = Object.assign({}, errors, err)
+    const pointsErrors = validatePoints(points);
+    errors = {
+      ...errors,
+      ...pointsErrors,
+    };
   }
 
   if (incorrectAnswers === undefined) {
-    errors = Object.assign({}, errors, { incorrectAnswers: `Required` })
+    errors = {
+      ...errors,
+      incorrectAnswers: 'Required',
+    };
   } else {
-    const { isValid, err } = validateAnswers(incorrectAnswers)
-    if (!isValid)
-      errors = Object.assign({}, errors, err)
+    const incorrectAnswersErrors = validateAnswers(incorrectAnswers);
+    errors = {
+      ...errors,
+      ...incorrectAnswersErrors,
+    };
   }
 
   if (correctAnswers === undefined) {
-    errors = Object.assign({}, errors, { correctAnswers: `Required` })
+    errors = {
+      ...errors,
+      correctAnswers: 'Required',
+    };
   } else {
-    const { isValid, err } = validateAnswers(correctAnswers)
-    if (!isValid)
-      errors = Object.assign({}, errors, err)
+    const correctAnswersErrors = validateAnswers(correctAnswers);
+    errors = {
+      ...errors,
+      ...correctAnswersErrors,
+    };
   }
 
   if (subjectName === undefined) {
-    errors = Object.assign({}, errors, { subjectName: `Required` })
+    errors = {
+      ...errors,
+      subjectName: 'Required',
+    };
   } else {
-    const { isValid, err } = validateSubject(subjectName)
-    if (!isValid)
-      errors = Object.assign({}, errors, err)
+    const subjectNameErrors = validateSubjectName(subjectName);
+    errors = {
+      ...errors,
+      ...subjectNameErrors,
+    };
   }
 
-  if (themeName !== undefined) {
-    const { isValid, err } = validateTheme(themeName)
-    if (!isValid)
-      errors = Object.assign({}, errors, err)
+  if (themeName === undefined) {
+    errors = {
+      ...errors,
+      themeName: 'Required',
+    };
+  } else {
+    const themeNameErrors = validateThemeName(themeName);
+    errors = {
+      ...errors,
+      ...themeNameErrors,
+    };
   }
 
   if (Object.keys(errors).length > 0) {
@@ -91,112 +246,8 @@ export const validateQuestionBody = (req: Request, res: Response, next: NextFunc
       .map((file) => file.filename);
     removeUploadedFiles(...filenames);
 
-    return res.status(400).send(errors)
+    res.status(400).send(errors);
+    return;
   }
-  return next()
-}
-
-const validateText = (text: any): ValidatorReturnValue => {
-  let errors = {}
-
-  if (typeof(text) !== 'string')
-    errors = Object.assign({}, errors, {
-      text: `Must be string`,
-    })
-  else if (text.length > 150)
-    errors = Object.assign({}, errors, {
-      text: `Max length: 150`,
-    })
-  else if (text.length <= 2)
-    errors = Object.assign({}, errors, {
-      text: `Can't be less than 3 characters`,
-    })
-
-  return {
-    isValid: Object.keys(errors).length === 0,
-    err: errors,
-  }
-}
-
-const validateAnswers = (answers: any): ValidatorReturnValue => {
-  let errors = {}
-
-  if (!Array.isArray(answers))
-    errors = Object.assign({}, errors, {
-      answers: `Must be array`,
-    })
-  else if (answers.length === 0)
-    errors = Object.assign({}, errors, {
-      answers: `At least 1 correct and 1 incorrect answers are required`,
-    })
-  else {
-    for (let i = 0, len = answers.length; i < len; i++) {
-      // save the error and break the loop, no need to check all values if one is incorrect
-      if (typeof(answers[i]) !== 'string') {
-        errors = Object.assign({}, errors, {
-          answers: `All answers must be string`,
-        })
-        break
-      }
-    }
-  }
-
-  return {
-    isValid: Object.keys(errors).length === 0,
-    err: errors,
-  }
-}
-
-const validatePoints = (points: any): ValidatorReturnValue => {
-  let errors = {}
-
-  if (typeof(points) !== 'number' && isNaN(Number(points)))
-    errors = Object.assign({}, errors, {
-      points: `Must be a number`,
-    })
-  else if (points < 0)
-    errors = Object.assign({}, errors, {
-      points: `Can't be negative`
-    })
-
-  return {
-    isValid: Object.keys(errors).length === 0,
-    err: errors,
-  }
-}
-
-const validateSubject = (subject: any): ValidatorReturnValue => {
-  let errors = {}
-
-  if (typeof(subject) !== 'string')
-    errors = Object.assign({}, errors, {
-      subject: `Must be a string`,
-    })
-  else if(subject.length === 0)
-    errors = Object.assign({}, errors, {
-      subject: `Can't be empty`,
-    })
-
-  return {
-    isValid: Object.keys(errors).length === 0,
-    err: errors,
-  }
-}
-
-const validateTheme = (theme: any): ValidatorReturnValue => {
-  let errors = {}
-
-  if (typeof(theme) !== 'string')
-    errors = Object.assign({}, errors, {
-      theme: `Must be a string`,
-    })
-  else if (theme.length === 0)
-    errors = Object.assign({}, errors, {
-      theme: `Can't be empty`,
-    })
-
-  return {
-    isValid: Object.keys(errors).length === 0,
-    err: errors,
-  }
+  next();
 }

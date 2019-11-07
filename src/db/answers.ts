@@ -1,56 +1,48 @@
-import { query } from './index'
+import { query } from './index';
 
-import Answer from '../models/Answer'
+import Answer from '../models/Answer';
 
-const saveOne = async (answer: Answer, questionid: string): Promise<Answer> => {
-  return new Promise<Answer>(async(resolve, reject) => {
-    try {
-      const answerInsertResult = await query({
-        sql: `insert into answers
-        (text, correct, questionid) values
-        (?, ?, ?)`,
-        values: [answer.text, answer.correct, questionid],
-      })
-
-      return resolve(new Answer(
-        String(answerInsertResult.insertId),
+function saveOne(answer: Answer, questionid: string): Promise<Answer> {
+  return new Promise<Answer>((resolve, reject) => {
+    query({
+      sql: `insert into answers
+      (text, correct, questionid) values
+      (?, ?, ?)`,
+      values: [answer.text, answer.correct, questionid],
+    }).then((result) => {
+      resolve(new Answer(
+        String(result.insertId),
         answer.text,
         Boolean(answer.correct),
-      ))
-    }
-    catch(err) {
-      return reject(err)
-    }
-  })
+      ));
+    }).catch((err) => {
+      reject(err);
+    });
+  });
 }
 
-const getManyByQuestionid = async (questionid: string): Promise<Array<Answer>> => {
-  return new Promise<Array<Answer>>(async(resolve, reject) => {
-    try {
-      const results = await query({
-        sql: `select id, text, correct
-        from answers
-        where answers.questionid = ?`,
-        values: [questionid],
-      })
+function getManyByQuestionid(questionid: string): Promise<Array<Answer>> {
+  return new Promise<Array<Answer>>((resolve, reject) => {
+    query({
+      sql: `select id, text, correct
+      from answers
+      where answers.questionid = ?`,
+      values: [questionid],
+    }).then((results) => {
+      const array = results.map((result: any) => new Answer(
+        String(result.id),
+        result.text,
+        Boolean(result.correct),
+      ));
 
-      const array = results.map((result: any) => {
-        return new Answer(
-          String(result.id),
-          result.text,
-          Boolean(result.correct)
-        )
-      })
-
-      return resolve(array)
-    }
-    catch(err) {
-      return resolve(err)
-    }
-  })
+      resolve(array);
+    }).catch((err) => {
+      reject(err);
+    });
+  });
 }
 
 export default {
   saveOne,
   getManyByQuestionid,
-}
+};

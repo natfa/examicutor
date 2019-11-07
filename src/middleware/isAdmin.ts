@@ -1,12 +1,17 @@
-import { Request, Response, NextFunction } from 'express'
+import { Request, Response, NextFunction } from 'express';
 
-export const isAdmin = (req: Request, res: Response, next: NextFunction) => {
-    if (!req.session)
-        return next(new Error('req.session is undefined'))
+export const isAdmin = (req: Request, res: Response, next: NextFunction): void => {
+  if (!req.session) {
+    next(new Error('req.session is undefined'));
+    return;
+  }
 
-    if (!req.session.account.isAdmin)
-        return res.status(403).send('Forbidden')
-    return next()
-}
+  if (!req.session.account.isAdmin) {
+    res.status(403).send('Forbidden');
+    return;
+  }
 
-export default isAdmin
+  next();
+};
+
+export default isAdmin;

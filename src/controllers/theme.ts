@@ -1,36 +1,37 @@
-import express, { Request, Response, NextFunction } from 'express'
+import express, { Request, Response, NextFunction } from 'express';
 
-import { isAuthenticated } from '../middleware/isAuthenticated'
+import { isAuthenticated } from '../middleware/isAuthenticated';
 
-import themedb from '../db/themes'
-
-import Theme from '../models/Theme'
+import themedb from '../db/themes';
 
 
-const getAllThemes = async (req: Request, res: Response, next: NextFunction) => {
+const getAllThemes = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const themes = await themedb.getAll()
-    return res.status(200).send(themes)
+    const themes = await themedb.getAll();
+    res.status(200).send(themes);
+  } catch (err) {
+    next(err);
   }
-  catch(err) {
-    next(err)
-  }
-}
-const getThemesFromSubject = async (req: Request, res: Response, next: NextFunction) => {
+};
+
+const getThemesFromSubject = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
   try {
-    const themes = await themedb.getManyBySubjectid(req.params.subjectid)
-    return res.status(200).send(themes)
+    const themes = await themedb.getManyBySubjectid(req.params.subjectid);
+    res.status(200).send(themes);
+  } catch (err) {
+    next(err);
   }
-  catch(err) {
-    next(err)
-  }
-}
+};
 
-const router = express.Router()
+const router = express.Router();
 
-router.use(isAuthenticated)
+router.use(isAuthenticated);
 
-router.get('/', getAllThemes)
-router.get('/:subjectid', getThemesFromSubject)
+router.get('/', getAllThemes);
+router.get('/:subjectid', getThemesFromSubject);
 
-export default router
+export default router;

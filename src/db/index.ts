@@ -1,4 +1,4 @@
-import mysql from 'mysql'
+import mysql from 'mysql';
 
 import config from '../config/default';
 
@@ -8,20 +8,25 @@ const pool = mysql.createPool({
   password: config.db.password,
   database: config.db.database,
   waitForConnections: true,
-})
+});
 
-export const query = (opts: any): Promise<any> => {
+export function query(opts: any): Promise<any> {
   return new Promise((resolve, reject) => {
-    pool.getConnection((err, connection) => {
-      if (err)
-        throw err
+    pool.getConnection((connectionErr, connection) => {
+      if (connectionErr) {
+        throw connectionErr;
+      }
 
-      connection.query(opts, (err, results, fields) => {
-        connection.release()
-        if (err)
-          return reject(err)
-        return resolve(results)
-      })
-    })
-  })
+      connection.query(opts, (queryErr, results) => {
+        connection.release();
+        if (queryErr) {
+          reject(queryErr);
+        } else {
+          resolve(results);
+        }
+      });
+    });
+  });
 }
+
+export default query;

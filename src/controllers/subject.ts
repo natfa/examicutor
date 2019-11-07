@@ -1,54 +1,51 @@
-import express, { Request, Response, NextFunction } from 'express'
+import express, { Request, Response, NextFunction } from 'express';
 
-import { isAuthenticated } from '../middleware/isAuthenticated'
-import { validateSubjectBody } from '../validators/subject'
+import { isAuthenticated } from '../middleware/isAuthenticated';
 
-import subjectdb from '../db/subjects'
+import subjectdb from '../db/subjects';
 
-import Subject from '../models/Subject'
+import Subject from '../models/Subject';
 
 
-const createSubject = async(req: Request, res: Response, next: NextFunction) => {
+const createSubject = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { name } = req.body
-    const subject = await subjectdb.saveOne(new Subject(null, name))
-    return res.status(201).send(subject)
+    const { name } = req.body;
+    const subject = await subjectdb.saveOne(new Subject(null, name));
+    res.status(201).send(subject);
+  } catch (err) {
+    next(err);
   }
-  catch (err) {
-    next(err)
-  }
-}
+};
 
-const getAllSubjects = async(req: Request, res: Response, next: NextFunction) => {
+const getAllSubjects = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const subjects = await subjectdb.getAll()
-    return res.status(200).send(subjects)
+    const subjects = await subjectdb.getAll();
+    res.status(200).send(subjects);
+  } catch (err) {
+    next(err);
   }
-  catch (err) {
-    next(err)
-  }
-}
+};
 
-const deleteSubject = async(req: Request, res: Response, next: NextFunction) => {
+const deleteSubject = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const success = await subjectdb.deleteOneById(req.params.id)
-    if (!success)
-      return res.status(400).end()
-    return res.status(204).end()
+    const success = await subjectdb.deleteOneById(req.params.id);
+    if (!success) {
+      res.status(400).end();
+    }
+    res.status(204).end();
+  } catch (err) {
+    next(err);
   }
-  catch (err) {
-    next(err)
-  }
-}
+};
 
 
-const router = express.Router()
+const router = express.Router();
 
-router.use(isAuthenticated)
+router.use(isAuthenticated);
 
-router.get('/', getAllSubjects)
-router.post('/', validateSubjectBody, createSubject)
-router.delete('/:id', deleteSubject)
+router.get('/', getAllSubjects);
+// router.post('/', createSubject);
+// router.delete('/:id', deleteSubject);
 
 
-export default router
+export default router;

@@ -1,20 +1,22 @@
-import express, { Request, Response, NextFunction } from 'express'
+import express from 'express';
 import path from 'path';
-import session from 'express-session'
-import FileStore from 'session-file-store'
+import session from 'express-session';
+import FileStore from 'session-file-store';
 
-import questionController from './controllers/question'
-import subjectController from './controllers/subject'
-import themeController from './controllers/theme'
-import authController from './controllers/auth'
+import requestLogger from './utils/requestLogger';
+
+import questionController from './controllers/question';
+import subjectController from './controllers/subject';
+import themeController from './controllers/theme';
+import authController from './controllers/auth';
 
 // load config
-import config from './config/default'
+import config from './config/default';
 
 // global config
-const app = express()
-const secret = config.sessionSecret
-const SessionStore = FileStore(session)
+const app = express();
+const secret = config.sessionSecret;
+const SessionStore = FileStore(session);
 
 // session config
 const sessionConfig = {
@@ -24,7 +26,7 @@ const sessionConfig = {
     // TODO: turn to true when HTTPS is enabled
     secure: false,
   },
-  secret: secret,
+  secret,
   resave: false,
   saveUninitialized: false,
   rolling: true,
@@ -32,37 +34,28 @@ const sessionConfig = {
   store: new SessionStore({
     retries: 1,
     reapInterval: 43200,
-  })
-}
+  }),
+};
 
 // express config
-app.use(express.json())
-app.use(session(sessionConfig))
-app.use(reqLogger)
+app.use(express.json());
+app.use(session(sessionConfig));
+app.use(requestLogger);
 
 // apply controllers
-app.use('/api/question/', questionController)
-app.use('/api/subject/', subjectController)
-app.use('/api/theme/', themeController)
-app.use('/api/auth/', authController)
+app.use('/api/question/', questionController);
+app.use('/api/subject/', subjectController);
+app.use('/api/theme/', themeController);
+app.use('/api/auth/', authController);
 
 // serve javascript bundles
 app.use('/', express.static(path.resolve(config.clientPath)));
 
 // serve react apps with routers
-app.get('/teacher/*', (req, res) => {
-  return res.sendFile(path.resolve(config.clientPath, 'teacher/index.html'));
-});
+app.get('/teacher/*', (req, res) => res.sendFile(path.resolve(config.clientPath, 'teacher/index.html')));
 
 app.get('/', (req, res) => {
   res.redirect('/landing');
 });
-
-// simple request logger
-function reqLogger(req: Request, res: Response, next: NextFunction) {
-  const log = `[${req.method}] ${req.originalUrl}`
-  console.log(log)
-  next()
-}
 
 export default app;

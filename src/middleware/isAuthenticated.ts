@@ -1,12 +1,16 @@
-import { Request, Response, NextFunction } from 'express'
+import { Request, Response, NextFunction } from 'express';
 
-export const isAuthenticated = (req: Request, res: Response, next: NextFunction) => {
-    if (!req.session)
-        return next(new Error('req.session is undefined'))
+export const isAuthenticated = (req: Request, res: Response, next: NextFunction): void => {
+  if (!req.session) {
+    next(new Error('req.session is undefined'));
+    return;
+  }
 
-    if (!req.session.isAuthenticated)
-        return res.status(401).send('Unauthorized')
-    return next()
-}
+  if (!req.session.isAuthenticated) {
+    res.status(401).send('Unauthorized');
+    return;
+  }
+  next();
+};
 
-export default isAuthenticated
+export default isAuthenticated;

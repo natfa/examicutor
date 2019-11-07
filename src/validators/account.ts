@@ -1,83 +1,114 @@
-import { Request, Response, NextFunction } from 'express'
+import { Request, Response, NextFunction } from 'express';
 
-export const validateAccountBody = (req: Request, res: Response, next: NextFunction) => {
-    let errors = {}
-    const { email, password, isAdmin } = req.body
-
-    if (email === undefined) {
-        errors = Object.assign({}, errors, {
-            email: `Required`
-        })
-    } else {
-        errors = Object.assign({}, errors, validateEmail(email))
-    }
-
-    if (password === undefined) {
-        errors = Object.assign({}, errors, {
-            password: `Required`
-        })
-    } else {
-        errors = Object.assign({}, errors, validatePassword(password))
-    }
-
-    if (isAdmin !== undefined) {
-        errors = Object.assign({}, errors, validateIsAdmin(isAdmin))
-    }
-
-    if (Object.keys(errors).length !== 0)
-        return res.status(400).send(errors)
-    return next()
+interface AccountValidationResult {
+  email?: string;
+  password?: string;
+  isAdmin?: string;
 }
 
-export const validateEmail = (email: any) => {
-    let errors = {}
-
-    if (typeof(email) !== 'string') {
-        errors = Object.assign({}, errors, {
-            email: `Must be a string`,
-        })
-    } else if (email.length === 0) {
-        errors = Object.assign({}, errors, {
-            email: `Can't be empty`
-        })
-    } else if (email.length >= 50 || !isEmail(email)) {
-        errors = Object.assign({}, errors, {
-            email: `Please provide a valid email`
-        })
-    }
-
-    return errors
+function isEmail(email: string): boolean {
+  const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  return re.test(String(email).toLowerCase());
 }
 
-export const validatePassword = (password: any) => {
-    let errors = {}
+export function validateEmail(email: string): AccountValidationResult {
+  let errors: AccountValidationResult = {};
 
-    if (typeof(password) !== 'string') {
-        errors = Object.assign({}, errors, {
-            password: `Must be a string`
-        })
-    } else if (password.length === 0) {
-        errors = Object.assign({}, errors, {
-            password: `Can't be empty`
-        })
-    }
+  if (typeof email !== 'string') {
+    errors = {
+      ...errors,
+      email: 'Must be a string',
+    };
+  } else if (email.length === 0) {
+    errors = {
+      ...errors,
+      email: 'Can\'t be empty',
+    };
+  } else if (email.length >= 50 || !isEmail(email)) {
+    errors = {
+      ...errors,
+      email: 'Please provide a valid email',
+    };
+  }
 
-    return errors
+  return errors;
 }
 
-export const validateIsAdmin = (isAdmin: any) => {
-    let errors = {}
+export function validatePassword(password: string): AccountValidationResult {
+  let errors: AccountValidationResult = {};
 
-    if (typeof(isAdmin) !== 'boolean') {
-        errors = Object.assign({}, errors, {
-            isAdmin: `Must be a boolean`
-        })
-    }
+  if (typeof password !== 'string') {
+    errors = {
+      ...errors,
+      password: 'Must be a string',
+    };
+  } else if (password.length === 0) {
+    errors = {
+      ...errors,
+      password: 'Can\'t be empty',
+    };
+  }
 
-    return errors
+  return errors;
 }
 
-const isEmail = (email: string) => {
-    var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    return re.test(String(email).toLowerCase());
+function validateIsAdmin(isAdmin: boolean): AccountValidationResult {
+  let errors: AccountValidationResult = {};
+
+  if (typeof isAdmin !== 'boolean') {
+    errors = {
+      ...errors,
+      isAdmin: 'Must be a boolean',
+    };
+  }
+
+  return errors;
 }
+
+
+export function validateAccountBody(req: Request, res: Response, next: NextFunction): void {
+  let errors: AccountValidationResult = {};
+  const { email, password, isAdmin } = req.body;
+
+  if (email === undefined) {
+    errors = {
+      ...errors,
+      email: 'Required',
+    };
+  } else {
+    const emailErrors = validateEmail(email);
+    errors = {
+      ...errors,
+      ...emailErrors,
+    };
+  }
+
+  if (password === undefined) {
+    errors = {
+      ...errors,
+      password: 'Required',
+    };
+  } else {
+    const passwordErrors = validatePassword(password);
+    errors = {
+      ...errors,
+      ...passwordErrors,
+    };
+  }
+
+  if (isAdmin !== undefined) {
+    const isAdminErrors = validateIsAdmin(isAdmin);
+    errors = {
+      ...errors,
+      ...isAdminErrors,
+    };
+  }
+
+  if (Object.keys(errors).length !== 0) {
+    res.status(400).send(errors);
+    return;
+  }
+  next();
+}
+
+export default validateAccountBody;

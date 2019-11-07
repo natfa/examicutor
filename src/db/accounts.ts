@@ -1,75 +1,73 @@
-import { query } from './index'
+import { query } from './index';
 
-import Account from '../models/Account'
+import Account from '../models/Account';
 
-const saveOne = async (account: Account): Promise<Account> => {
-  return new Promise<Account>(async(resolve, reject) => {
-    try {
-      const result = await query({
-        sql: `insert into accounts
-        (email, passwordhash, isadmin) values
-        (?, ?, ?)`,
-        values: [account.email, account.passwordHash, account.isAdmin],
-      })
-
-      const accountid = result.insertId
+function saveOne(account: Account): Promise<Account> {
+  return new Promise<Account>((resolve, reject) => {
+    query({
+      sql: `insert into accounts
+      (email, passwordhash, isadmin) values
+      (?, ?, ?)`,
+      values: [account.email, account.passwordHash, account.isAdmin],
+    }).then((result) => {
+      const accountId = result.insertId;
 
       return resolve(new Account(
-        String(accountid),
+        String(accountId),
         account.email,
         account.passwordHash,
         account.isAdmin,
-      ))
-    }
-    catch(err) {
-      return reject(err)
-    }
-  })
+      ));
+    }).catch((err) => {
+      reject(err);
+    });
+  });
 }
 
-const getOneById = async (id: string): Promise<Account|null> => {
-  return new Promise<Account|null>(async(resolve, reject) => {
-    return reject(new Error('Not Implemented'))
-  })
+function getOneById(id: string): Promise<Account|null> {
+  return new Promise<Account|null>((resolve, reject) => {
+    reject(new Error('Not implemented'));
+  });
 }
 
-const getAll = async (): Promise<Array<Account>> => {
-  return new Promise<Array<Account>>(async(resolve, reject) => {
-    return reject(new Error('Not Implemented'))
-  })
+
+function getAll(): Promise<Array<Account>> {
+  return new Promise<Array<Account>>((resolve, reject) => {
+    reject(new Error('Not Implemented'));
+  });
 }
 
-const deleteOneById = async (id: string): Promise<boolean> => {
-  return new Promise<boolean>(async(resolve, reject) => {
-    return reject(new Error('Not Implemented'))
-  })
+function deleteOneById(id: string): Promise<boolean> {
+  return new Promise<boolean>((resolve, reject) => {
+    reject(new Error('Not Implemented'));
+  });
 }
 
-const getOneByEmail = async (email: string): Promise<Account|null> => {
-  return new Promise<Account|null>(async(resolve, reject) => {
-    try {
-      const results = await query({
-        sql: `select id, email, passwordhash, isadmin
-        from accounts
-        where email = ?`,
-        values: [email],
-      })
+function getOneByEmail(email: string): Promise<Account|null> {
+  return new Promise<Account|null>((resolve, reject) => {
+    query({
+      sql: `select id, email, passwordhash, isadmin
+      from accounts
+      where email = ?`,
+      values: [email],
+    }).then((results) => {
+      if (results.length === 0) {
+        resolve(null);
+        return;
+      }
 
-      if (results.length === 0)
-        return resolve(null)
+      const accountResult = results[0];
 
-      const accountResult = results[0]
-      return resolve(new Account(
+      resolve(new Account(
         String(accountResult.id),
         accountResult.email,
         accountResult.passwordhash,
         Boolean(accountResult.isadmin),
-      ))
-    }
-    catch(err) {
-      return reject(err)
-    }
-  })
+      ));
+    }).catch((err) => {
+      reject(err);
+    });
+  });
 }
 
 export default {
@@ -78,4 +76,4 @@ export default {
   getOneByEmail,
   getAll,
   deleteOneById,
-}
+};
