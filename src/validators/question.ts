@@ -64,7 +64,7 @@ function validateAnswers(answers: Array<string>): QuestionValidationResult {
 function validatePoints(points: number): QuestionValidationResult {
   let errors: QuestionValidationResult = {};
 
-  if (typeof points !== 'number') {
+  if (typeof points !== 'number' && !Number.isNaN(points)) {
     errors = {
       ...errors,
       points: 'Must be a number',
@@ -181,7 +181,7 @@ export function validateQuestionBody(req: Request, res: Response, next: NextFunc
       points: 'Required',
     };
   } else {
-    const pointsErrors = validatePoints(points);
+    const pointsErrors = validatePoints(Number(points));
     errors = {
       ...errors,
       ...pointsErrors,
