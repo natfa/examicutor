@@ -10,11 +10,13 @@ function saveOne(answer: Answer, questionid: string): Promise<Answer> {
       (?, ?, ?)`,
       values: [answer.text, answer.correct, questionid],
     }).then((result) => {
-      resolve(new Answer(
-        String(result.insertId),
-        answer.text,
-        Boolean(answer.correct),
-      ));
+      const newAnswer: Answer = {
+        id: String(result.insertId),
+        text: answer.text,
+        correct: Boolean(answer.correct),
+      };
+
+      resolve(newAnswer);
     }).catch((err) => {
       reject(err);
     });
@@ -29,11 +31,11 @@ function getManyByQuestionid(questionid: string): Promise<Array<Answer>> {
       where answers.questionid = ?`,
       values: [questionid],
     }).then((results) => {
-      const array = results.map((result: any) => new Answer(
-        String(result.id),
-        result.text,
-        Boolean(result.correct),
-      ));
+      const array: Answer[] = results.map((result: any) => ({
+        id: String(result.id),
+        text: result.text,
+        correct: Boolean(result.correct),
+      }));
 
       resolve(array);
     }).catch((err) => {

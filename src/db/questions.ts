@@ -25,15 +25,17 @@ function saveOne(question: Question): Promise<Question> {
         Promise.all(question.answers.map((a) => answerdb.saveOne(a, questionId))),
         Promise.all(question.media.map((m) => mediadb.saveOne(m, questionId))),
       ]).then(([answers]) => {
-        resolve(new Question(
-          String(result.insertId),
-          question.text,
+        const newQuestion: Question = {
+          id: String(result.insertId),
+          text: question.text,
           answers,
-          question.points,
-          question.subject,
-          question.theme,
-          question.media,
-        ));
+          points: question.points,
+          subject: question.subject,
+          theme: question.theme,
+          media: question.media,
+        }
+
+        resolve(newQuestion);
       });
     }).catch((err) => {
       reject(err);
@@ -77,15 +79,15 @@ function getOneById(id: string): Promise<Question|null> {
           return;
         }
 
-        const question = new Question(
-          String(questionResult.id),
-          questionResult.text,
+        const question: Question = {
+          id: String(questionResult.id),
+          text: questionResult.text,
           answers,
-          questionResult.points,
+          points: questionResult.points,
           subject,
           theme,
           media,
-        );
+        }
 
         resolve(question);
       });
@@ -114,13 +116,21 @@ function getMany(n?: number): Promise<Array<QuestionBase>> {
       limit ?`,
       values: [n || 100],
     }).then((results) => {
-      const questions = results.map((result: any) => new QuestionBase(
-        String(result.id),
-        result.text,
-        result.points,
-        { id: String(result.subjectid), name: result.subject },
-        { id: String(result.themeid), name: result.theme, subjectId: String(result.subjectid) },
-      ));
+      const questions: QuestionBase[] = results.map((result: any) => ({
+        id: String(result.id),
+        text: result.text,
+        points: result.points,
+        subject: {
+          id: String(result.subjectid),
+          name:
+          result.subject
+        } as Subject,
+        theme: {
+          id: String(result.themeid),
+          name: result.theme,
+          subjectId: String(result.subjectid)
+        } as Theme,
+      }));
 
       resolve(questions);
     }).catch((err) => {
@@ -159,13 +169,22 @@ function getManyBySubjectid(subjectid: string): Promise<Array<QuestionBase>> {
       where q.subjectid = ?`,
       values: [subjectid],
     }).then((results) => {
-      const questions = results.map((result: any) => new QuestionBase(
-        String(result.id),
-        result.text,
-        result.points,
-        { id: String(result.subjectid), name: result.subject },
-        { id: String(result.themeid), name: result.theme, subjectId: String(result.subjectid) },
-      ));
+
+      const questions: QuestionBase[] = results.map((result: any) => ({
+        id: String(result.id),
+        text: result.text,
+        points: result.points,
+        subject: {
+          id: String(result.subjectid),
+          name:
+          result.subject
+        } as Subject,
+        theme: {
+          id: String(result.themeid),
+          name: result.theme,
+          subjectId: String(result.subjectid)
+        } as Theme,
+      }));
 
       resolve(questions);
     }).catch((err) => {
@@ -193,13 +212,22 @@ function getManyByThemeId(themeId: string): Promise<Array<QuestionBase>> {
       where q.themeid = ?`,
       values: [themeId],
     }).then((results) => {
-      const questions = results.map((result: any) => new QuestionBase(
-        String(result.id),
-        result.text,
-        result.points,
-        { id: String(result.subjectid), name: result.subject },
-        { id: String(result.subjectid), name: result.theme, subjectId: String(result.subjectid) },
-      ));
+
+      const questions: QuestionBase[] = results.map((result: any) => ({
+        id: String(result.id),
+        text: result.text,
+        points: result.points,
+        subject: {
+          id: String(result.subjectid),
+          name:
+          result.subject
+        } as Subject,
+        theme: {
+          id: String(result.themeid),
+          name: result.theme,
+          subjectId: String(result.subjectid)
+        } as Theme,
+      }));
 
       resolve(questions);
     }).catch((err) => {

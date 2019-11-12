@@ -124,15 +124,14 @@ const createQuestion = async (req: Request, res: Response, next: NextFunction): 
     ...incorrectAnswers.map((answer: string) => ({ text: answer, correct: false })),
   ];
 
-  let question = new Question(
-    null,
+  let question: Question = {
     text,
     answers,
-    Number(points),
-    subjectFound,
-    themeFound,
+    points: Number(points),
+    subject: subjectFound,
+    theme: themeFound,
     media,
-  );
+  };
 
   try {
     question = await questiondb.saveOne(question);
