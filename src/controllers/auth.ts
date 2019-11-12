@@ -60,7 +60,13 @@ const createAccount = async (req: Request, res: Response, next: NextFunction): P
     // hash
     const pHash = await bcrypt.hash(password, saltRounds);
 
-    let account = new Account(null, email, pHash, admin);
+    let account: Account = {
+      id: undefined,
+      email,
+      passwordHash: pHash,
+      isAdmin: admin,
+    }
+
     account = await accountdb.saveOne(account);
     // don't send password hash... duh..
     delete account.passwordHash;

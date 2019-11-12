@@ -12,12 +12,12 @@ function saveOne(account: Account): Promise<Account> {
     }).then((result) => {
       const accountId = result.insertId;
 
-      return resolve(new Account(
-        String(accountId),
-        account.email,
-        account.passwordHash,
-        account.isAdmin,
-      ));
+      resolve({
+        id: String(accountId),
+        email: account.email,
+        passwordHash: account.passwordHash,
+        isAdmin: account.isAdmin,
+      });
     }).catch((err) => {
       reject(err);
     });
@@ -58,12 +58,12 @@ function getOneByEmail(email: string): Promise<Account|null> {
 
       const accountResult = results[0];
 
-      resolve(new Account(
-        String(accountResult.id),
-        accountResult.email,
-        accountResult.passwordhash,
-        Boolean(accountResult.isadmin),
-      ));
+      resolve({
+        id: String(accountResult.id),
+        email: accountResult.email,
+        passwordHash: accountResult.passwordhash,
+        isAdmin: Boolean(accountResult.isadmin),
+      });
     }).catch((err) => {
       reject(err);
     });
