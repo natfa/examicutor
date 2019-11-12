@@ -9,10 +9,10 @@ function saveOne(model: Subject): Promise<Subject> {
       (name) values (?)`,
       values: [model.name],
     }).then((result) => {
-      resolve(new Subject(
-        String(result.insertId),
-        model.name,
-      ));
+      resolve({
+        id: String(result.insertId),
+        name: model.name,
+      });
     }).catch((err) => {
       reject(err);
     });
@@ -35,10 +35,10 @@ function getOneById(id: string): Promise<Subject|null> {
         name: results[0].name,
       };
 
-      resolve(new Subject(
-        String(subject.id),
-        subject.name,
-      ));
+      resolve({
+        id: String(subject.id),
+        name: subject.name,
+      });
     }).catch((err) => {
       reject(err);
     });
@@ -50,10 +50,10 @@ function getAll(): Promise<Array<Subject>> {
     query({
       sql: 'select * from subjects',
     }).then((results) => {
-      const array = results.map((result: any) => new Subject(
-        String(result.id),
-        result.name,
-      ));
+      const array = results.map((result: any) => ({
+        id: String(result.id),
+        name: result.name,
+      }));
 
       resolve(array);
     }).catch((err) => {
@@ -95,10 +95,10 @@ function getOneByName(name: string): Promise<Subject|null> {
         return;
       }
 
-      resolve(new Subject(
-        String(results[0].id),
-        results[0].name,
-      ));
+      resolve({
+        id: String(results[0].id),
+        name: results[0].name,
+      });
     }).catch((err) => {
       reject(err);
     });

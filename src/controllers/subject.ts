@@ -4,13 +4,10 @@ import { isAuthenticated } from '../middleware/isAuthenticated';
 
 import subjectdb from '../db/subjects';
 
-import Subject from '../models/Subject';
-
-
 const createSubject = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { name } = req.body;
-    const subject = await subjectdb.saveOne(new Subject(null, name));
+    const subject = await subjectdb.saveOne({ id: undefined, name });
     res.status(201).send(subject);
   } catch (err) {
     next(err);

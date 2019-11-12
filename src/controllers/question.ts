@@ -100,9 +100,9 @@ const createQuestion = async (req: Request, res: Response, next: NextFunction): 
   // save subject and theme if nessessary
   if (!subjectFound) {
     try {
-      subjectFound = await subjectdb.saveOne(new Subject(null, subjectName));
+      subjectFound = await subjectdb.saveOne({ name: subjectName });
       if (!subjectFound.id) throw Error('subject id is null|undefined');
-      themeFound = await themedb.saveOne(new Theme(null, themeName, subjectFound.id));
+      themeFound = await themedb.saveOne({ name: themeName, subjectId: subjectFound.id });
     } catch (err) {
       next(err);
       return;
@@ -110,7 +110,7 @@ const createQuestion = async (req: Request, res: Response, next: NextFunction): 
   } else if (!themeFound) {
     try {
       if (!subjectFound.id) throw Error('subject id is null|undefined');
-      themeFound = await themedb.saveOne(new Theme(null, themeName, subjectFound.id));
+      themeFound = await themedb.saveOne({ name: themeName, subjectId: subjectFound.id });
     } catch (err) {
       next(err);
       return;

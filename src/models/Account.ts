@@ -1,5 +1,5 @@
 interface Account {
-  id: string | undefined;
+  id?: string;
   email: string;
   passwordHash: string;
   isAdmin: boolean;

@@ -118,8 +118,8 @@ function getMany(n?: number): Promise<Array<QuestionBase>> {
         String(result.id),
         result.text,
         result.points,
-        new Subject(String(result.subjectid), result.subject),
-        new Theme(String(result.themeid), result.theme, String(result.subjectid)),
+        { id: String(result.subjectid), name: result.subject },
+        { id: String(result.themeid), name: result.theme, subjectId: String(result.subjectid) },
       ));
 
       resolve(questions);
@@ -163,8 +163,8 @@ function getManyBySubjectid(subjectid: string): Promise<Array<QuestionBase>> {
         String(result.id),
         result.text,
         result.points,
-        new Subject(String(result.subjectid), result.subject),
-        new Theme(String(result.themeid), result.theme, String(result.subjectid)),
+        { id: String(result.subjectid), name: result.subject },
+        { id: String(result.themeid), name: result.theme, subjectId: String(result.subjectid) },
       ));
 
       resolve(questions);
@@ -197,8 +197,8 @@ function getManyByThemeId(themeId: string): Promise<Array<QuestionBase>> {
         String(result.id),
         result.text,
         result.points,
-        new Subject(String(result.subjectid), result.subject),
-        new Theme(String(result.themeid), result.theme, String(result.subjectid)),
+        { id: String(result.subjectid), name: result.subject },
+        { id: String(result.subjectid), name: result.theme, subjectId: String(result.subjectid) },
       ));
 
       resolve(questions);

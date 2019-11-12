@@ -8,13 +8,13 @@ function saveOne(theme: Theme): Promise<Theme> {
       sql: `insert into themes
       (name, subjectid) values
       (?, ?)`,
-      values: [theme.name, theme.subjectid],
+      values: [theme.name, theme.subjectId],
     }).then((result) => {
-      resolve(new Theme(
-        String(result.insertId),
-        theme.name,
-        theme.subjectid,
-      ));
+      resolve({
+        id: String(result.insertId),
+        name: theme.name,
+        subjectId: theme.subjectId,
+      });
     }).catch((err) => {
       reject(err);
     });
@@ -34,17 +34,13 @@ function getOneById(id: string): Promise<Theme|null> {
         return;
       }
 
-      const theme = {
+      const theme: Theme = {
         id: results[0].id,
         name: results[0].name,
-        subjectid: results[0].subjectid,
+        subjectId: results[0].subjectid,
       };
 
-      resolve(new Theme(
-        String(theme.id),
-        theme.name,
-        String(theme.subjectid),
-      ));
+      resolve(theme);
     }).catch((err) => {
       reject(err);
     });
@@ -57,11 +53,11 @@ function getAll(): Promise<Array<Theme>> {
       sql: `select id, name, subjectid
       from themes`,
     }).then((results) => {
-      const array = results.map((result: any) => new Theme(
-        String(result.id),
-        result.name,
-        String(result.subjectid),
-      ));
+      const array: Theme[] = results.map((result: any) => ({
+        id: String(result.id),
+        name: result.name,
+        subjectId: String(result.subjectid),
+      }));
 
       resolve(array);
     }).catch((err) => {
@@ -98,11 +94,11 @@ function getManyBySubjectid(id: string): Promise<Array<Theme>> {
       where themes.subjectid = ?`,
       values: [id],
     }).then((results) => {
-      const array = results.map((result: any) => new Theme(
-        String(result.id),
-        result.name,
-        String(result.subjectid),
-      ));
+      const array: Theme[] = results.map((result: any) => ({
+        id: String(result.id),
+        name: result.name,
+        subjectId: String(result.subjectid),
+      }));
 
       resolve(array);
     }).catch((err) => {
@@ -124,11 +120,13 @@ function getOneByName(name: string): Promise<Theme|null> {
         return;
       }
 
-      resolve(new Theme(
-        String(results[0].id),
-        results[0].name,
-        String(results[0].subjectid),
-      ));
+      const theme: Theme = {
+        id: String(results[0].id),
+        name: results[0].name,
+        subjectId: String(results[0].subjectid),
+      };
+
+      resolve(theme);
     }).catch((err) => {
       reject(err);
     });
