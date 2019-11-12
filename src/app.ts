@@ -9,6 +9,7 @@ import questionController from './controllers/question';
 import subjectController from './controllers/subject';
 import themeController from './controllers/theme';
 import authController from './controllers/auth';
+import examController from './controllers/exam';
 
 // load config
 import config from './config/default';
@@ -47,6 +48,7 @@ app.use('/api/question/', questionController);
 app.use('/api/subject/', subjectController);
 app.use('/api/theme/', themeController);
 app.use('/api/auth/', authController);
+app.use('/api/exam/', examController);
 
 // serve javascript bundles
 app.use('/', express.static(path.resolve(config.clientPath)));
