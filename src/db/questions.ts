@@ -174,10 +174,45 @@ function getManyBySubjectid(subjectid: string): Promise<Array<QuestionBase>> {
   });
 }
 
+function getManyByThemeId(themeId: string): Promise<Array<QuestionBase>> {
+  return new Promise<Array<QuestionBase>>((resolve, reject) => {
+    query({
+      sql: `select
+      q.id as id,
+      q.text as text,
+      q.points as points,
+      s.id as subjectid,
+      s.name as subject,
+      t.id as themeid,
+      t.name as theme
+      from questions q
+      inner join subjects s
+        on q.subjectid = s.id
+      inner join themes t
+        on q.themeid = t.id
+      where q.themeid = ?`,
+      values: [themeId],
+    }).then((results) => {
+      const questions = results.map((result: any) => new QuestionBase(
+        String(result.id),
+        result.text,
+        result.points,
+        new Subject(String(result.subjectid), result.subject),
+        new Theme(String(result.themeid), result.theme, String(result.subjectid)),
+      ));
+
+      resolve(questions);
+    }).catch((err) => {
+      reject(err);
+    });
+  });
+}
+
 export default {
   saveOne,
   getOneById,
   getMany,
   getManyBySubjectid,
+  getManyByThemeId,
   deleteOneById,
 };
