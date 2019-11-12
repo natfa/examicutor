@@ -55,7 +55,10 @@ const createNewExam = async (req: Request, res: Response, next: NextFunction): P
           }
 
           const shuffledQuestions = shuffle(pointValueQuestions);
-          questionsToGoIn = [...questionsToGoIn, ...shuffledQuestions.slice(0, themeFilter[pointValue])];
+          questionsToGoIn = [
+            ...questionsToGoIn,
+            ...shuffledQuestions.slice(0, themeFilter[pointValue]),
+          ];
         }
       }
 

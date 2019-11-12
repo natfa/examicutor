@@ -23,6 +23,6 @@ export const shuffle = (array: Array<any>): Array<any> => {
   }
 
   return returnArray;
-}
+};
 
 export default shuffle;

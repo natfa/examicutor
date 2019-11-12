@@ -65,7 +65,7 @@ const createAccount = async (req: Request, res: Response, next: NextFunction): P
       email,
       passwordHash: pHash,
       isAdmin: admin,
-    }
+    };
 
     account = await accountdb.saveOne(account);
     // don't send password hash... duh..

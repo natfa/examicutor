@@ -33,7 +33,7 @@ function saveOne(question: Question): Promise<Question> {
           subject: question.subject,
           theme: question.theme,
           media: question.media,
-        }
+        };
 
         resolve(newQuestion);
       });
@@ -87,7 +87,7 @@ function getOneById(id: string): Promise<Question|null> {
           subject,
           theme,
           media,
-        }
+        };
 
         resolve(question);
       });
@@ -122,13 +122,12 @@ function getMany(n?: number): Promise<Array<QuestionBase>> {
         points: result.points,
         subject: {
           id: String(result.subjectid),
-          name:
-          result.subject
+          name: result.subject,
         } as Subject,
         theme: {
           id: String(result.themeid),
           name: result.theme,
-          subjectId: String(result.subjectid)
+          subjectId: String(result.subjectid),
         } as Theme,
       }));
 
@@ -169,20 +168,18 @@ function getManyBySubjectid(subjectid: string): Promise<Array<QuestionBase>> {
       where q.subjectid = ?`,
       values: [subjectid],
     }).then((results) => {
-
       const questions: QuestionBase[] = results.map((result: any) => ({
         id: String(result.id),
         text: result.text,
         points: result.points,
         subject: {
           id: String(result.subjectid),
-          name:
-          result.subject
+          name: result.subject,
         } as Subject,
         theme: {
           id: String(result.themeid),
           name: result.theme,
-          subjectId: String(result.subjectid)
+          subjectId: String(result.subjectid),
         } as Theme,
       }));
 
@@ -212,20 +209,18 @@ function getManyByThemeId(themeId: string): Promise<Array<QuestionBase>> {
       where q.themeid = ?`,
       values: [themeId],
     }).then((results) => {
-
       const questions: QuestionBase[] = results.map((result: any) => ({
         id: String(result.id),
         text: result.text,
         points: result.points,
         subject: {
           id: String(result.subjectid),
-          name:
-          result.subject
+          name: result.subject,
         } as Subject,
         theme: {
           id: String(result.themeid),
           name: result.theme,
-          subjectId: String(result.subjectid)
+          subjectId: String(result.subjectid),
         } as Theme,
       }));
 
