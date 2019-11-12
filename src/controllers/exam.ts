@@ -13,8 +13,8 @@ const pointValues = [1, 2, 3, 4, 5];
 const createNewExam = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const {
     name,
-    start,
-    end,
+    startDate,
+    endDate,
     timeToSolve,
     filters,
     boundaries,
@@ -70,8 +70,8 @@ const createNewExam = async (req: Request, res: Response, next: NextFunction): P
 
   const exam = {
     name,
-    startDate: start,
-    endDate: end,
+    startDate,
+    endDate,
     timeToSolve,
     questions,
     creator: req.session.account.id,
