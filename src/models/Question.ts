@@ -1,8 +1,8 @@
-import Answer from './Answer';
-import Subject from './Subject';
-import Theme from './Theme';
+import { Answer } from './Answer';
+import { Subject } from './Subject';
+import { Theme } from './Theme';
 
-interface Question {
+export interface Question {
   id?: string;
   text: string;
   answers: Array<Answer>;
@@ -11,5 +11,3 @@ interface Question {
   theme: Theme;
   media: Array<Buffer>;
 }
-
-export default Question;

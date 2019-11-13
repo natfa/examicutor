@@ -1,8 +1,9 @@
-import Time from './Time';
-import QuestionBase from './QuestionBase';
-import Account from './Account';
+import { Time } from './Time';
+import { QuestionBase } from './QuestionBase';
+import { Account } from './Account';
 
-interface Exam {
+export interface Exam {
+  id?: string;
   name: string;
   startDate: Date;
   endDate: Date;
@@ -10,5 +11,3 @@ interface Exam {
   questions: Array<QuestionBase>;
   creator: Account;
 }
-
-export default Exam;

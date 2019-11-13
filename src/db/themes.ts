@@ -1,6 +1,6 @@
 import { query } from './index';
 
-import Theme from '../models/Theme';
+import { Theme } from '../models/Theme';
 
 function saveOne(theme: Theme): Promise<Theme> {
   return new Promise<Theme>((resolve, reject) => {

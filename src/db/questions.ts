@@ -5,11 +5,11 @@ import mediadb from './media';
 import subjectdb from './subjects';
 import themedb from './themes';
 
-import Question from '../models/Question';
-import QuestionBase from '../models/QuestionBase';
-import Subject from '../models/Subject';
-import Theme from '../models/Theme';
-import Answer from '../models/Answer';
+import { Question } from '../models/Question';
+import { QuestionBase } from '../models/QuestionBase';
+import { Subject } from '../models/Subject';
+import { Theme } from '../models/Theme';
+import { Answer } from '../models/Answer';
 
 function saveOne(question: Question): Promise<Question> {
   return new Promise<Question>((resolve, reject) => {

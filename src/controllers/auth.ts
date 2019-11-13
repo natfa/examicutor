@@ -7,7 +7,7 @@ import { isAuthenticated } from '../middleware/isAuthenticated';
 import { isAdmin } from '../middleware/isAdmin';
 
 import accountdb from '../db/accounts';
-import Account from '../models/Account';
+import { Account } from '../models/Account';
 
 const authenticate = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {

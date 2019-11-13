@@ -1,6 +1,6 @@
 import { query } from './index';
 
-import Subject from '../models/Subject';
+import { Subject } from '../models/Subject';
 
 function saveOne(model: Subject): Promise<Subject> {
   return new Promise<Subject>((resolve, reject) => {

@@ -1,9 +1,7 @@
-import Subject from './Subject';
-import ThemeFilter from './ThemeFilter';
+import { Subject } from './Subject';
+import { ThemeFilter } from './ThemeFilter';
 
-interface ExamCreationFilter {
+export interface ExamCreationFilter {
   subject: Subject;
-  themeFilters: Array<ThemeFilter>;
+  themeFilters: ThemeFilter[];
 }
-
-export default ExamCreationFilter;

@@ -11,9 +11,9 @@ import questiondb from '../db/questions';
 import subjectdb from '../db/subjects';
 import themedb from '../db/themes';
 
-import Question from '../models/Question';
-import Theme from '../models/Theme';
-import Subject from '../models/Subject';
+import { Question } from '../models/Question';
+import { Theme } from '../models/Theme';
+import { Subject } from '../models/Subject';
 
 // es6 imports don't support equivalent syntax to
 // `const fs = require('fs').promises` yet
@@ -101,7 +101,8 @@ const createQuestion = async (req: Request, res: Response, next: NextFunction): 
   if (!subjectFound) {
     try {
       subjectFound = await subjectdb.saveOne({ name: subjectName });
-      if (!subjectFound.id) throw Error('subject id is null|undefined');
+      if (!subjectFound) throw new Error('subjectFound is undefined');
+      if (!subjectFound.id) throw new Error('subjectFound.id is undefined');
       themeFound = await themedb.saveOne({ name: themeName, subjectId: subjectFound.id });
     } catch (err) {
       next(err);
@@ -123,6 +124,8 @@ const createQuestion = async (req: Request, res: Response, next: NextFunction): 
     ...correctAnswers.map((answer: string) => ({ text: answer, correct: true })),
     ...incorrectAnswers.map((answer: string) => ({ text: answer, correct: false })),
   ];
+
+  if (!themeFound) throw new Error('themeFound is undefined');
 
   let question: Question = {
     text,

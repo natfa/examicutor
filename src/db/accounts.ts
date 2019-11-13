@@ -1,6 +1,6 @@
 import { query } from './index';
 
-import Account from '../models/Account';
+import { Account } from '../models/Account';
 
 function saveOne(account: Account): Promise<Account> {
   return new Promise<Account>((resolve, reject) => {

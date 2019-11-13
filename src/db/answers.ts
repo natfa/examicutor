@@ -1,6 +1,6 @@
 import { query } from './index';
 
-import Answer from '../models/Answer';
+import { Answer } from '../models/Answer';
 
 function saveOne(answer: Answer, questionid: string): Promise<Answer> {
   return new Promise<Answer>((resolve, reject) => {

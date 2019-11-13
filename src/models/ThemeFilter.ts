@@ -1,6 +1,6 @@
-import Theme from './Theme';
+import { Theme } from './Theme';
 
-interface ThemeFilter {
+export interface ThemeFilter {
   theme: Theme;
   1: number;
   2: number;
@@ -10,5 +10,3 @@ interface ThemeFilter {
 
   [pointValue: number]: number;
 }
-
-export default ThemeFilter;
