@@ -2,6 +2,7 @@ import express, { Request, Response, NextFunction } from 'express';
 
 import { isAuthenticated } from '../middleware/isAuthenticated';
 import shuffle from '../utils/shuffle';
+import { validateExamRequestBody } from '../validators/exam';
 
 import questiondb from '../db/questions';
 import examdb from '../db/exams';
@@ -99,6 +100,6 @@ const router = express.Router();
 
 router.use(isAuthenticated);
 
-router.post('/', createNewExam);
+router.post('/', validateExamRequestBody, createNewExam);
 
 export default router;
