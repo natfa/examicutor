@@ -4,11 +4,22 @@ import { isAuthenticated } from '../middleware/isAuthenticated';
 import shuffle from '../utils/shuffle';
 
 import questiondb from '../db/questions';
+import examdb from '../db/exams';
 
-import ExamCreationFilter from '../models/ExamCreationFilter';
-import QuestionBase from '../models/QuestionBase';
+import { ExamCreationFilter } from '../models/ExamCreationFilter';
+import { QuestionBase } from '../models/QuestionBase';
+import { Time } from '../models/Time';
+import { Exam } from '../models/Exam';
 
 const pointValues = [1, 2, 3, 4, 5];
+
+interface ExamRequestBody {
+  name: string;
+  startDate: string;
+  endDate: string;
+  timeToSolve: Time;
+  filters: ExamCreationFilter[];
+}
 
 const createNewExam = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const {
@@ -17,8 +28,7 @@ const createNewExam = async (req: Request, res: Response, next: NextFunction): P
     endDate,
     timeToSolve,
     filters,
-    boundaries,
-  } = req.body;
+  } = req.body as ExamRequestBody;
 
   // get all questions for each theme filter
   let promises: Promise<QuestionBase[]>[] = [];
@@ -71,14 +81,16 @@ const createNewExam = async (req: Request, res: Response, next: NextFunction): P
     return;
   }
 
-  const exam = {
+  const exam: Exam = {
     name,
-    startDate,
-    endDate,
+    startDate: new Date(startDate),
+    endDate: new Date(endDate),
     timeToSolve,
     questions,
     creator: req.session.account.id,
   };
+
+  await examdb.saveOne(exam);
 
   res.status(200).json(exam);
 };
