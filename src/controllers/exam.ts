@@ -1,4 +1,5 @@
 import express, { Request, Response, NextFunction } from 'express';
+import dayjs from 'dayjs';
 
 import { isAuthenticated } from '../middleware/isAuthenticated';
 import shuffle from '../utils/shuffle';
@@ -84,8 +85,8 @@ const createNewExam = async (req: Request, res: Response, next: NextFunction): P
 
   const exam: Exam = {
     name,
-    startDate: new Date(startDate),
-    endDate: new Date(endDate),
+    startDate: dayjs(startDate),
+    endDate: dayjs(endDate),
     timeToSolve,
     questions,
     creator: req.session.account.id,

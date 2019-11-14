@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import query from './index';
 
 import { QuestionBase } from '../models/QuestionBase';
@@ -6,11 +7,11 @@ import { OkPacket } from './OkPacket';
 
 function saveOne(exam: Exam): Promise<Exam> {
   return new Promise<Exam>((resolve, reject) => {
-    // convert our Time object to a MySQL compatible Date object
-    const timeToSolve = new Date(Date.now());
-    // reset seconds and mseconds, otherwise when inserting
-    // mysql will round up/down (minutes might increase by 1)
-    timeToSolve.setHours(exam.timeToSolve.hours, exam.timeToSolve.minutes, 0, 0);
+    const timeToSolve = dayjs()
+      .hour(exam.timeToSolve.hours)
+      .minute(exam.timeToSolve.minutes)
+      .second(0)
+      .millisecond(0);
 
     query({
       sql: `insert into exams
@@ -18,9 +19,10 @@ function saveOne(exam: Exam): Promise<Exam> {
       (?, ?, ?, ?, ?)`,
       values: [
         exam.name,
-        exam.startDate,
-        exam.endDate,
-        timeToSolve,
+        // we must use std Date objects so that the mysql lib can parse correctly
+        new Date(exam.startDate.toString()),
+        new Date(exam.endDate.toString()),
+        new Date(timeToSolve.toString()),
         1,
       ],
     }).then((result: OkPacket) => {
