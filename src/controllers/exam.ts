@@ -92,9 +92,9 @@ const createNewExam = async (req: Request, res: Response, next: NextFunction): P
     creator: req.session.account.id,
   };
 
-  await examdb.saveOne(exam);
+  const examId = await examdb.saveOne(exam);
 
-  res.status(200).json(exam);
+  res.status(200).json({ examId });
 };
 
 const router = express.Router();

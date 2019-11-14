@@ -5,8 +5,8 @@ import { QuestionBase } from '../models/QuestionBase';
 import { Exam } from '../models/Exam';
 import { OkPacket } from './OkPacket';
 
-function saveOne(exam: Exam): Promise<Exam> {
-  return new Promise<Exam>((resolve, reject) => {
+function saveOne(exam: Exam): Promise<string> {
+  return new Promise<string>((resolve, reject) => {
     const timeToSolve = dayjs()
       .hour(exam.timeToSolve.hours)
       .minute(exam.timeToSolve.minutes)
@@ -26,28 +26,20 @@ function saveOne(exam: Exam): Promise<Exam> {
         1,
       ],
     }).then((result: OkPacket) => {
-      const newExam: Exam = {
-        id: String(result.insertId),
-        name: exam.name,
-        startDate: exam.startDate,
-        endDate: exam.endDate,
-        timeToSolve: exam.timeToSolve,
-        creator: exam.creator,
-        questions: exam.questions,
-      };
+      const examId = result.insertId;
 
-      const examQuestionsInserts = newExam.questions.map((question: QuestionBase) => {
+      const examQuestionsInserts = exam.questions.map((question: QuestionBase) => {
         const promise = query({
           sql: `insert into exam_questions
           (examid, questionid) values
           (?, ?)`,
-          values: [newExam.id, question.id],
+          values: [examId, question.id],
         });
 
         return promise;
       });
 
-      Promise.all(examQuestionsInserts).then(() => resolve(newExam));
+      Promise.all(examQuestionsInserts).then(() => resolve(String(examId)));
     }).catch((err) => {
       reject(err);
     });
