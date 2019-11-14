@@ -1,11 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
+import dayjs from 'dayjs';
 
 import { Time } from '../models/Time';
 import { ExamCreationFilter } from '../models/ExamCreationFilter';
 
 interface ExamValidationResult {
   name?: string;
-  date?: string;
+  startDate?: string;
+  endDate?: string;
   timeToSolve?: string;
   filters?: string;
 }
@@ -28,55 +30,61 @@ function validateName(name: string): ExamValidationResult {
   return errors;
 }
 
-function validateDate(date: string): ExamValidationResult {
-  let errors: ExamValidationResult = {};
-
-  if (typeof date !== 'string') {
-    errors = {
-      ...errors,
-      date: 'Must be a date string',
-    };
-  } else {
-    const dateobj = new Date(date);
-
-    if (dateobj.toString() === 'Invalid Date') {
-      errors = {
-        ...errors,
-        date: 'Must be a valid date string',
-      };
-    }
-  }
-
-  return errors;
-}
-
 function validateTimeToSolve(timeToSolve: Time): ExamValidationResult {
-  let errors: ExamValidationResult = {};
-
   if (typeof timeToSolve !== 'object') {
-    errors = {
-      timeToSolve: 'Must be an object',
-    };
-    return errors;
+    return { timeToSolve: 'Must be an object' };
   }
 
   if (
     !Object.prototype.hasOwnProperty.call(timeToSolve, 'hours')
     || !Object.prototype.hasOwnProperty.call(timeToSolve, 'minutes')
   ) {
-    errors = {
-      timeToSolve: 'hours and minutes must be present as properties',
-    };
-  } else if (
+    return { timeToSolve: 'Hours and minutes must be present as properties' };
+  }
+  if (
     typeof timeToSolve.hours !== 'number'
     || typeof timeToSolve.minutes !== 'number'
   ) {
-    errors = {
-      timeToSolve: 'hours and minutes must be numbers',
-    };
+    return { timeToSolve: 'hours and minutes must be numbers' };
   }
 
-  return errors;
+  return {};
+}
+
+function validateDates(start: string, end: string, timeToSolve: Time): ExamValidationResult {
+  const timeToSolveErrors = validateTimeToSolve(timeToSolve);
+
+  if (Object.keys(timeToSolveErrors).length > 0) {
+    return timeToSolveErrors;
+  }
+
+  const now = dayjs();
+  const startDate = dayjs(start);
+  const endDate = dayjs(end);
+
+  if (typeof start !== 'string' || !startDate.isValid()) {
+    return { startDate: 'Must be a valid date string' };
+  }
+  if (typeof end !== 'string' || !endDate.isValid()) {
+    return { endDate: 'Must be a valid date string' };
+  }
+
+  if (startDate.isBefore(now)) {
+    return { startDate: 'Must be after current date' };
+  }
+  if (endDate.isBefore(startDate)) {
+    return { endDate: 'Must be after startDate' };
+  }
+
+  const startDateAfterSolving = startDate
+    .add(timeToSolve.hours, 'hour')
+    .add(timeToSolve.minutes, 'minute');
+
+  if (startDateAfterSolving.isAfter(endDate)) {
+    return { endDate: 'You must give enough time to the students to solve the exam' };
+  }
+
+  return {};
 }
 
 function validateFilters(filters: ExamCreationFilter[]): ExamValidationResult {
@@ -184,39 +192,23 @@ export function validateExamRequestBody(req: Request, res: Response, next: NextF
   if (startDate === undefined) {
     errors = {
       ...errors,
-      date: 'Required',
+      startDate: 'Required',
     };
-  } else {
-    const startDateErrors = validateDate(startDate);
+  } else if (endDate === undefined) {
     errors = {
       ...errors,
-      ...startDateErrors,
+      endDate: 'Required',
     };
-  }
-
-  if (endDate === undefined) {
-    errors = {
-      ...errors,
-      date: 'Required',
-    };
-  } else {
-    const endDateErrors = validateDate(endDate);
-    errors = {
-      ...errors,
-      ...endDateErrors,
-    };
-  }
-
-  if (timeToSolve === undefined) {
+  } else if (timeToSolve === undefined) {
     errors = {
       ...errors,
       timeToSolve: 'Required',
     };
   } else {
-    const timeToSolveErrors = validateTimeToSolve(timeToSolve);
+    const datesErrors = validateDates(startDate, endDate, timeToSolve);
     errors = {
       ...errors,
-      ...timeToSolveErrors,
+      ...datesErrors,
     };
   }
 
