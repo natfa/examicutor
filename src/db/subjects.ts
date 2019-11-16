@@ -1,6 +1,22 @@
 import { query } from './index';
 
+import { OkPacket } from './OkPacket';
+
 import { Subject } from '../models/Subject';
+
+export interface SubjectsRowDataPacket {
+  id: number;
+  name: string;
+}
+
+export function buildSubject(dataPacket: SubjectsRowDataPacket): Subject {
+  const subject: Subject = {
+    id: String(dataPacket.id),
+    name: dataPacket.name,
+  };
+
+  return subject;
+}
 
 function saveOne(model: Subject): Promise<Subject> {
   return new Promise<Subject>((resolve, reject) => {
@@ -8,7 +24,7 @@ function saveOne(model: Subject): Promise<Subject> {
       sql: `insert into subjects
       (name) values (?)`,
       values: [model.name],
-    }).then((result) => {
+    }).then((result: OkPacket) => {
       resolve({
         id: String(result.insertId),
         name: model.name,
@@ -24,21 +40,14 @@ function getOneById(id: string): Promise<Subject|null> {
     query({
       sql: 'select * from subjects where subjects.id = ?',
       values: [id],
-    }).then((results) => {
+    }).then((results: SubjectsRowDataPacket[]) => {
       if (results.length === 0) {
         resolve(null);
         return;
       }
 
-      const subject = {
-        id: results[0].id,
-        name: results[0].name,
-      };
-
-      resolve({
-        id: String(subject.id),
-        name: subject.name,
-      });
+      const subject = buildSubject(results[0]);
+      resolve(subject);
     }).catch((err) => {
       reject(err);
     });
@@ -49,11 +58,8 @@ function getAll(): Promise<Array<Subject>> {
   return new Promise<Array<Subject>>((resolve, reject) => {
     query({
       sql: 'select * from subjects',
-    }).then((results) => {
-      const array = results.map((result: any) => ({
-        id: String(result.id),
-        name: result.name,
-      }));
+    }).then((results: SubjectsRowDataPacket[]) => {
+      const array = results.map((result) => buildSubject(result));
 
       resolve(array);
     }).catch((err) => {
@@ -68,7 +74,7 @@ function deleteOneById(id: string): Promise<boolean> {
       sql: `delete from subjects
       where subjects.id = ?`,
       values: [id],
-    }).then((result) => {
+    }).then((result: OkPacket) => {
       if (result.affectedRows === 1) {
         resolve(true);
       } else if (result.affectedRows === 0) {
@@ -89,16 +95,14 @@ function getOneByName(name: string): Promise<Subject|null> {
       from subjects
       where subjects.name = ?`,
       values: [name],
-    }).then((results) => {
+    }).then((results: SubjectsRowDataPacket[]) => {
       if (results.length === 0) {
         resolve(null);
         return;
       }
 
-      resolve({
-        id: String(results[0].id),
-        name: results[0].name,
-      });
+      const subject = buildSubject(results[0]);
+      resolve(subject);
     }).catch((err) => {
       reject(err);
     });

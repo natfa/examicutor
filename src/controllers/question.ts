@@ -102,16 +102,14 @@ const createQuestion = async (req: Request, res: Response, next: NextFunction): 
     try {
       subjectFound = await subjectdb.saveOne({ name: subjectName });
       if (!subjectFound) throw new Error('subjectFound is undefined');
-      if (!subjectFound.id) throw new Error('subjectFound.id is undefined');
-      themeFound = await themedb.saveOne({ name: themeName, subjectId: subjectFound.id });
+      themeFound = await themedb.saveOne({ name: themeName, subject: subjectFound });
     } catch (err) {
       next(err);
       return;
     }
   } else if (!themeFound) {
     try {
-      if (!subjectFound.id) throw Error('subject id is null|undefined');
-      themeFound = await themedb.saveOne({ name: themeName, subjectId: subjectFound.id });
+      themeFound = await themedb.saveOne({ name: themeName, subject: subjectFound });
     } catch (err) {
       next(err);
       return;

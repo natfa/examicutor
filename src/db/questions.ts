@@ -1,15 +1,116 @@
 import { query } from './index';
+import { OkPacket } from './OkPacket';
 
 import answerdb from './answers';
 import mediadb from './media';
-import subjectdb from './subjects';
-import themedb from './themes';
+import { SubjectsRowDataPacket, buildSubject } from './subjects';
+import { ThemesRowDataPacket, buildTheme } from './themes';
 
 import { Question } from '../models/Question';
 import { QuestionBase } from '../models/QuestionBase';
 import { Subject } from '../models/Subject';
 import { Theme } from '../models/Theme';
 import { Answer } from '../models/Answer';
+
+interface QuestionsRowDataPacket {
+  id: number;
+  text: string;
+  points: number;
+  subjectid: number;
+  themeid: number;
+}
+
+export interface AnswersRowDataPacket {
+  id: number;
+  text: string;
+  correct: number; // convertable to Boolean
+  questionid: number;
+}
+
+export interface FullQuestionsRowDataPacket {
+  questions: QuestionsRowDataPacket;
+  subjects: SubjectsRowDataPacket;
+  themes: ThemesRowDataPacket;
+}
+
+export function buildAnswer(dataPacket: AnswersRowDataPacket): Answer {
+  const answer: Answer = {
+    id: String(dataPacket.id),
+    text: dataPacket.text,
+    correct: Boolean(dataPacket.correct),
+  };
+
+  return answer;
+}
+
+
+// builds a question model, but leaves out the answers property
+// so that the results array can be iterated and correctly add the answers that way
+export function buildQuestion(dataPacket: FullQuestionsRowDataPacket): QuestionBase {
+  const subject: Subject = buildSubject(dataPacket.subjects);
+  const theme: Theme = buildTheme({
+    themes: dataPacket.themes,
+    subjects: dataPacket.subjects,
+  });
+
+  const question: QuestionBase = {
+    id: String(dataPacket.questions.id),
+    text: dataPacket.questions.text,
+    points: dataPacket.questions.points,
+    subject,
+    theme,
+    answers: [], // leave out answers
+  };
+
+  return question;
+}
+
+export function addAnswerToQuestion(
+  dataPacket: AnswersRowDataPacket,
+  question: QuestionBase,
+): QuestionBase {
+  const temp = question;
+  const answer: Answer = buildAnswer(dataPacket);
+
+  if (temp.answers === undefined) temp.answers = [];
+  temp.answers = [...temp.answers, answer];
+
+  return temp;
+}
+
+
+function getOneById(id: string): Promise<QuestionBase|null> {
+  let question: QuestionBase;
+
+  return new Promise<QuestionBase|null>((resolve, reject) => {
+    query({
+      sql: `select * from questions
+      inner join subjects
+        on questions.subjectid = subjects.id
+      inner join themes
+        on questions.themeid = themes.id
+      where questions.id = ?`,
+      values: [id],
+      nestTables: true,
+    }).then((results: FullQuestionsRowDataPacket[]) => {
+      question = buildQuestion(results[0]);
+
+      return query({
+        sql: `select * from answers
+        where answers.questionid = ?`,
+        values: [id],
+      });
+    }).then((results: AnswersRowDataPacket[]) => {
+      results.forEach((result) => {
+        question = addAnswerToQuestion(result, question);
+      });
+
+      resolve(question);
+    }).catch((err) => {
+      reject(err);
+    });
+  });
+}
 
 function saveOne(question: Question): Promise<Question> {
   return new Promise<Question>((resolve, reject) => {
@@ -18,7 +119,7 @@ function saveOne(question: Question): Promise<Question> {
       (text, points, subjectid, themeid) values
       (?, ?, ?, ?)`,
       values: [question.text, question.points, question.subject.id, question.theme.id],
-    }).then((result) => {
+    }).then((result: OkPacket) => {
       const questionId = String(result.insertId);
 
       Promise.all([
@@ -43,94 +144,19 @@ function saveOne(question: Question): Promise<Question> {
   });
 }
 
-function getOneById(id: string): Promise<Question|null> {
-  return new Promise<Question|null>((resolve, reject) => {
-    query({
-      sql: `select id, text, points, subjectid, themeid
-      from questions
-      where questions.id = ?`,
-      values: [id],
-    }).then((results) => {
-      if (results.length === 0) {
-        resolve(null);
-        return;
-      }
-
-      const [questionResult] = results;
-
-      Promise.all([
-        subjectdb.getOneById(questionResult.subjectid),
-        themedb.getOneById(questionResult.themeid),
-        answerdb.getManyByQuestionid(String(questionResult.id)),
-        mediadb.getManyByQuestionid(questionResult.id),
-      ]).then(([
-        subject,
-        theme,
-        answers,
-        media,
-      ]: [
-        Subject|null,
-        Theme|null,
-        Array<Answer>,
-        Array<Buffer>,
-      ]) => {
-        if (subject === null || theme === null) {
-          resolve(null);
-          return;
-        }
-
-        const question: Question = {
-          id: String(questionResult.id),
-          text: questionResult.text,
-          answers,
-          points: questionResult.points,
-          subject,
-          theme,
-          media,
-        };
-
-        resolve(question);
-      });
-    }).catch((err) => {
-      reject(err);
-    });
-  });
-}
-
 function getMany(n?: number): Promise<Array<QuestionBase>> {
   return new Promise<Array<QuestionBase>>((resolve, reject) => {
     query({
-      sql: `select
-      q.id as id,
-      q.text as text,
-      q.points as points,
-      s.id as subjectid,
-      s.name as subject,
-      t.id as themeid,
-      t.name as theme
-      from questions q
-      inner join subjects s
-        on q.subjectid = s.id
-      inner join themes t
-        on q.themeid = t.id
+      sql: `select * from questions
+      inner join subjects
+        on questions.subjectid = subjects.id
+      inner join themes
+        on questions.themeid = themes.id
       limit ?`,
       values: [n || 100],
-    }).then((results) => {
-      const questions: QuestionBase[] = results.map((result: any) => ({
-        id: String(result.id),
-        text: result.text,
-        points: result.points,
-        subject: {
-          id: String(result.subjectid),
-          name: result.subject,
-        } as Subject,
-        theme: {
-          id: String(result.themeid),
-          name: result.theme,
-          subjectId: String(result.subjectid),
-        } as Theme,
-      }));
-
+      nestTables: true,
+    }).then((results: FullQuestionsRowDataPacket[]) => {
+      const questions: QuestionBase[] = results.map((result) => buildQuestion(result));
       resolve(questions);
     }).catch((err) => {
       reject(err);
@@ -144,45 +170,24 @@ function deleteOneById(id: string): Promise<boolean> {
       sql: 'delete from questions where id = ?',
       values: [id],
     })
-      .then((result) => resolve(result.affectedRows === 1))
+      .then((result: OkPacket) => resolve(result.affectedRows === 1))
       .catch((err) => reject(err));
   });
 }
 
-function getManyBySubjectid(subjectid: string): Promise<Array<QuestionBase>> {
+function getManyBySubjectid(subjectId: string): Promise<Array<QuestionBase>> {
   return new Promise<Array<QuestionBase>>((resolve, reject) => {
     query({
-      sql: `select
-      q.id as id,
-      q.text as text,
-      q.points as points,
-      s.id as subjectid,
-      s.name as subject,
-      t.id as themeid,
-      t.name as theme
-      from questions q
-      inner join subjects s
-        on q.subjectid = s.id
-      inner join themes t
-        on q.themeid = t.id
-      where q.subjectid = ?`,
-      values: [subjectid],
-    }).then((results) => {
-      const questions: QuestionBase[] = results.map((result: any) => ({
-        id: String(result.id),
-        text: result.text,
-        points: result.points,
-        subject: {
-          id: String(result.subjectid),
-          name: result.subject,
-        } as Subject,
-        theme: {
-          id: String(result.themeid),
-          name: result.theme,
-          subjectId: String(result.subjectid),
-        } as Theme,
-      }));
-
+      sql: `select * from questions
+      inner join subjects
+        on questions.subjectid = subjects.id
+      inner join themes
+        on questions.themeid = themes.id
+      where questions.subjectid = ?`,
+      values: [subjectId],
+      nestTables: true,
+    }).then((results: FullQuestionsRowDataPacket[]) => {
+      const questions: QuestionBase[] = results.map((result) => buildQuestion(result));
       resolve(questions);
     }).catch((err) => {
       reject(err);
@@ -193,37 +198,16 @@ function getManyBySubjectid(subjectid: string): Promise<Array<QuestionBase>> {
 function getManyByThemeId(themeId: string): Promise<Array<QuestionBase>> {
   return new Promise<Array<QuestionBase>>((resolve, reject) => {
     query({
-      sql: `select
-      q.id as id,
-      q.text as text,
-      q.points as points,
-      s.id as subjectid,
-      s.name as subject,
-      t.id as themeid,
-      t.name as theme
-      from questions q
-      inner join subjects s
-        on q.subjectid = s.id
-      inner join themes t
-        on q.themeid = t.id
-      where q.themeid = ?`,
+      sql: `select from questions
+      inner join subjects
+        on questions.subjectid = subjects.id
+      inner join themes
+        on questions.themeid = themes.id
+      where questions.themeid = ?`,
       values: [themeId],
-    }).then((results) => {
-      const questions: QuestionBase[] = results.map((result: any) => ({
-        id: String(result.id),
-        text: result.text,
-        points: result.points,
-        subject: {
-          id: String(result.subjectid),
-          name: result.subject,
-        } as Subject,
-        theme: {
-          id: String(result.themeid),
-          name: result.theme,
-          subjectId: String(result.subjectid),
-        } as Theme,
-      }));
-
+      nestTables: true,
+    }).then((results: FullQuestionsRowDataPacket[]) => {
+      const questions: QuestionBase[] = results.map((result) => buildQuestion(result));
       resolve(questions);
     }).catch((err) => {
       reject(err);

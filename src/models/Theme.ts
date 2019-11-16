@@ -1,5 +1,7 @@
+import { Subject } from './Subject';
+
 export interface Theme {
   id?: string;
   name: string;
-  subjectId: string;
+  subject: Subject;
 }

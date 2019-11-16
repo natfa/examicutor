@@ -1,4 +1,4 @@
-import express, { Request, Response, NextFunction } from 'express';
+import express, { Request, Response } from 'express';
 import dayjs from 'dayjs';
 
 import { isAuthenticated } from '../middleware/isAuthenticated';
@@ -23,7 +23,7 @@ interface ExamRequestBody {
   filters: ExamCreationFilter[];
 }
 
-const createNewExam = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+const createNewExam = async (req: Request, res: Response): Promise<void> => {
   const {
     name,
     startDate,
@@ -97,10 +97,18 @@ const createNewExam = async (req: Request, res: Response, next: NextFunction): P
   res.status(200).json({ examId });
 };
 
+const getExamById = async (req: Request, res: Response): Promise<void> => {
+  const { examId } = req.params;
+
+  const exam = await examdb.getOneById(examId);
+  res.status(200).send(exam);
+};
+
 const router = express.Router();
 
 router.use(isAuthenticated);
 
+router.get('/:examId', getExamById);
 router.post('/', validateExamRequestBody, createNewExam);
 
 export default router;
