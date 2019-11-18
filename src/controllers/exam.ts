@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import dayjs from 'dayjs';
 
 import { isAuthenticated } from '../middleware/isAuthenticated';
@@ -97,11 +97,21 @@ const createNewExam = async (req: Request, res: Response): Promise<void> => {
   res.status(200).json({ examId });
 };
 
-const getExamById = async (req: Request, res: Response): Promise<void> => {
+const getExamById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const { examId } = req.params;
 
-  const exam = await examdb.getOneById(examId);
-  res.status(200).send(exam);
+  try {
+    const exam = await examdb.getOneById(examId);
+
+    if (!exam) {
+      res.status(404).end();
+      return;
+    }
+
+    res.status(200).send(exam);
+  } catch (err) {
+    next(err);
+  }
 };
 
 const router = express.Router();

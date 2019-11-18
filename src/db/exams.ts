@@ -118,6 +118,8 @@ function getOneById(id: string): Promise<Exam|null> {
       nestTables: true,
     })
       .then((results: FullExamRowDataPacket[]) => {
+        if (results.length === 0) return resolve(null);
+
         exam = buildExam(results[0]);
 
         return query({
