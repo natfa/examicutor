@@ -198,7 +198,7 @@ function getManyBySubjectid(subjectId: string): Promise<Array<QuestionBase>> {
 function getManyByThemeId(themeId: string): Promise<Array<QuestionBase>> {
   return new Promise<Array<QuestionBase>>((resolve, reject) => {
     query({
-      sql: `select from questions
+      sql: `select * from questions
       inner join subjects
         on questions.subjectid = subjects.id
       inner join themes
