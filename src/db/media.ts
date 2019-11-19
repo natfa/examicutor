@@ -1,12 +1,18 @@
 import { query } from './index';
 
-function saveOne(blob: Buffer, questionid: string): Promise<void> {
+interface MediaRowDataPacket {
+  id: number;
+  content: Buffer;
+  questionid: number;
+}
+
+function saveOne(blob: Buffer, questionId: string): Promise<void> {
   return new Promise((resolve, reject) => {
     query({
       sql: `insert into media
       (content, questionid) values
       (?, ?)`,
-      values: [blob, questionid],
+      values: [blob, questionId],
     }).then((/* result */) => {
       resolve();
     }).catch((err) => {
@@ -15,17 +21,16 @@ function saveOne(blob: Buffer, questionid: string): Promise<void> {
   });
 }
 
-function getManyByQuestionid(questionid: string): Promise<Array<Buffer>> {
+function getManyByQuestionId(questionId: string): Promise<Array<Buffer>> {
   return new Promise<Array<Buffer>>((resolve, reject) => {
     query({
-      sql: `select content
-      from media
+      sql: `select * from media
       where media.questionid = ?`,
-      values: [questionid],
-    }).then((results) => {
-      const array = results.map((result: any) => result.content);
+      values: [questionId],
+    }).then((results: MediaRowDataPacket[]) => {
+      const media = results.map((result) => result.content);
 
-      resolve(array);
+      resolve(media);
     }).catch((err) => {
       reject(err);
     });
@@ -34,5 +39,5 @@ function getManyByQuestionid(questionid: string): Promise<Array<Buffer>> {
 
 export default {
   saveOne,
-  getManyByQuestionid,
+  getManyByQuestionId,
 };

@@ -11,7 +11,7 @@ import {
   AnswersRowDataPacket,
 } from './questions';
 
-import { QuestionBase } from '../models/QuestionBase';
+import { Question } from '../models/Question';
 import { Time } from '../models/Time';
 import { Exam } from '../models/Exam';
 import { Account } from '../models/Account';
@@ -23,12 +23,6 @@ interface ExamsRowDataPacket {
   enddate: Date;
   timetosolve: string;
   creatorid: number;
-}
-
-interface ExamQuestionsRowDataPacket {
-  id: number;
-  examid: number;
-  questionid: number;
 }
 
 interface FullExamRowDataPacket {
@@ -85,7 +79,7 @@ function saveOne(exam: Exam): Promise<string> {
     }).then((result: OkPacket) => {
       const examId = result.insertId;
 
-      const examQuestionsInserts = exam.questions.map((question: QuestionBase) => {
+      const examQuestionsInserts = exam.questions.map((question: Question) => {
         const promise = query({
           sql: `insert into exam_questions
           (examid, questionid) values
