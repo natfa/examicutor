@@ -9,7 +9,7 @@ import questiondb from '../db/questions';
 import examdb from '../db/exams';
 
 import { ExamCreationFilter } from '../models/ExamCreationFilter';
-import { QuestionBase } from '../models/QuestionBase';
+import { Question } from '../models/Question';
 import { Time } from '../models/Time';
 import { Exam } from '../models/Exam';
 
@@ -33,7 +33,7 @@ const createNewExam = async (req: Request, res: Response): Promise<void> => {
   } = req.body as ExamRequestBody;
 
   // get all questions for each theme filter
-  let promises: Promise<QuestionBase[]>[] = [];
+  let promises: Promise<Question[]>[] = [];
   filters.forEach((filter: ExamCreationFilter) => {
     filter.themeFilters.forEach((themeFilter) => {
       if (themeFilter.theme.id === null || themeFilter.theme.id === undefined) return;
@@ -42,10 +42,10 @@ const createNewExam = async (req: Request, res: Response): Promise<void> => {
     });
   });
 
-  const allQuestions: QuestionBase[] = (await Promise.all(promises)).flat();
+  const allQuestions: Question[] = (await Promise.all(promises)).flat();
 
   // compile questions for exam
-  let questions: QuestionBase[] = [];
+  let questions: Question[] = [];
   for (let i = 0; i < filters.length; i += 1) {
     const filter = filters[i];
     for (let j = 0; j < filter.themeFilters.length; j += 1) {
@@ -53,7 +53,7 @@ const createNewExam = async (req: Request, res: Response): Promise<void> => {
       const themeQuestions = allQuestions
         .filter((q) => q.theme.id === themeFilter.theme.id);
 
-      let questionsToGoIn: QuestionBase[] = [];
+      let questionsToGoIn: Question[] = [];
 
       for (let k = 0; k < pointValues.length; k += 1) {
         const pointValue = pointValues[k];

@@ -7,6 +7,7 @@ import { validateQuestionBody, validateFilters } from '../validators/question';
 import { isAuthenticated } from '../middleware/isAuthenticated';
 import removeUploadedFiles from '../utils/removeUploadedFiles';
 
+import mediadb from '../db/media';
 import questiondb from '../db/questions';
 import subjectdb from '../db/subjects';
 import themedb from '../db/themes';
@@ -19,24 +20,26 @@ import { Subject } from '../models/Subject';
 // `const fs = require('fs').promises` yet
 const fs = fsCallbacks.promises;
 
-const getQuestions = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+const getQuestions = async (_: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const questions = await questiondb.getMany(100);
-    res.status(200).send(questions);
+    res.status(200).json(questions);
   } catch (err) {
     next(err);
   }
 };
 
 const getQuestionById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  const { id } = req.params;
+
   try {
-    const question = await questiondb.getOneById(req.params.id);
+    const question = await questiondb.getOneById(id);
 
     if (question === null) {
-      res.status(404).send('Not Found');
+      res.status(404).end();
       return;
     }
-    res.status(200).send(question);
+    res.status(200).json(question);
   } catch (err) {
     next(err);
   }
@@ -47,11 +50,12 @@ const getQuestionsByFilter = async (
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
-  try {
-    const { subjectid } = req.params;
+  const { subjectid } = req.params;
 
+  try {
     const questions = await questiondb.getManyBySubjectid(subjectid);
-    res.status(200).send(questions);
+
+    res.status(200).json(questions);
   } catch (err) {
     next(err);
   }
@@ -101,7 +105,6 @@ const createQuestion = async (req: Request, res: Response, next: NextFunction): 
   if (!subjectFound) {
     try {
       subjectFound = await subjectdb.saveOne({ name: subjectName });
-      if (!subjectFound) throw new Error('subjectFound is undefined');
       themeFound = await themedb.saveOne({ name: themeName, subject: subjectFound });
     } catch (err) {
       next(err);
@@ -116,40 +119,30 @@ const createQuestion = async (req: Request, res: Response, next: NextFunction): 
     }
   }
 
-
   // build answers
   const answers = [
     ...correctAnswers.map((answer: string) => ({ text: answer, correct: true })),
     ...incorrectAnswers.map((answer: string) => ({ text: answer, correct: false })),
   ];
 
-  if (!themeFound) throw new Error('themeFound is undefined');
-
-  let question: Question = {
+  const question: Question = {
     text,
     answers,
     points: Number(points),
     subject: subjectFound,
     theme: themeFound,
-    media,
   };
 
   try {
-    question = await questiondb.saveOne(question);
+    const questionId = await questiondb.saveOne(question);
+    const mediaInsertPromises = media.map((m) => mediadb.saveOne(m, questionId));
+
+    await Promise.all(mediaInsertPromises);
+
+    res.status(200).json({ questionId });
   } catch (err) {
     next(err);
-    return;
   }
-
-  const responseData = {
-    id: question.id,
-    text: question.text,
-    points: question.points,
-    subject: question.subject,
-    theme: question.theme,
-  };
-
-  res.status(200).json(responseData);
 };
 
 const deleteQuestion = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -174,7 +167,7 @@ router.use(isAuthenticated);
 
 router.get('/', getQuestions);
 router.get('/:id', getQuestionById);
-router.get('/filter/:subjectid/:text?', validateFilters, getQuestionsByFilter);
+router.get('/filter/:subjectId/:text?', validateFilters, getQuestionsByFilter);
 router.post('/', upload.array('media'), validateQuestionBody, createQuestion);
 router.delete('/:id', deleteQuestion);
 
