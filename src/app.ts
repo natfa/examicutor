@@ -6,6 +6,7 @@ import FileStore from 'session-file-store';
 import requestLogger from './utils/requestLogger';
 
 import questionController from './controllers/question';
+import mediaController from './controllers/media';
 import subjectController from './controllers/subject';
 import themeController from './controllers/theme';
 import authController from './controllers/auth';
@@ -45,6 +46,7 @@ app.use(requestLogger);
 
 // apply controllers
 app.use('/api/question/', questionController);
+app.use('/api/media/', mediaController);
 app.use('/api/subject/', subjectController);
 app.use('/api/theme/', themeController);
 app.use('/api/auth/', authController);
@@ -54,9 +56,9 @@ app.use('/api/exam/', examController);
 app.use('/', express.static(path.resolve(config.clientPath)));
 
 // serve react apps with routers
-app.get('/teacher/*', (req, res) => res.sendFile(path.resolve(config.clientPath, 'teacher/index.html')));
+app.get('/teacher/*', (_, res) => res.sendFile(path.resolve(config.clientPath, 'teacher/index.html')));
 
-app.get('/', (req, res) => {
+app.get('/', (_, res) => {
   res.redirect('/landing');
 });
 
