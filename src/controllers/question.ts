@@ -12,6 +12,7 @@ import questiondb from '../db/questions';
 import subjectdb from '../db/subjects';
 import themedb from '../db/themes';
 
+import { Answer } from '../models/Answer';
 import { Question } from '../models/Question';
 import { Theme } from '../models/Theme';
 import { Subject } from '../models/Subject';
@@ -19,6 +20,16 @@ import { Subject } from '../models/Subject';
 // es6 imports don't support equivalent syntax to
 // `const fs = require('fs').promises` yet
 const fs = fsCallbacks.promises;
+
+interface QuestionRequestBody {
+  id?: string;
+  text: string;
+  points: string;
+  subject: Subject;
+  theme: Theme;
+  correctAnswers: string[];
+  incorrectAnswers: string[];
+}
 
 const getQuestions = async (_: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
@@ -145,6 +156,107 @@ const createQuestion = async (req: Request, res: Response, next: NextFunction): 
   }
 };
 
+const ensureSubject = async (req: Request, _: Response, next: NextFunction): Promise<void> => {
+  const { subjectName } = req.body;
+
+  try {
+    let subject = await subjectdb.getOneByName(subjectName);
+
+    if (subject === null) {
+      subject = await subjectdb.saveOne({ name: subjectName });
+    }
+
+    req.body.subject = subject;
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
+
+const ensureTheme = async (req: Request, _: Response, next: NextFunction): Promise<void> => {
+  const { themeName, subject } = req.body;
+
+  try {
+    let theme = await themedb.getOneByName(themeName);
+
+    if (theme === null) {
+      theme = await themedb.saveOne({ name: themeName, subject });
+    }
+
+    req.body.theme = theme;
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
+
+
+const updateQuestion = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  const {
+    id,
+    text,
+    points,
+    subject,
+    theme,
+    correctAnswers,
+    incorrectAnswers,
+  } = req.body as QuestionRequestBody;
+
+  // the only validation done in the controller
+  if (typeof id !== 'string') {
+    res.status(400).json({ id: 'Must be string' });
+    return;
+  }
+
+  const answers: Answer[] = [
+    ...correctAnswers.map((answer: string) => ({ text: answer, correct: true })),
+    ...incorrectAnswers.map((answer: string) => ({ text: answer, correct: false })),
+  ];
+
+  const question: Question = {
+    id,
+    text,
+    points: Number(points),
+    subject,
+    theme,
+    answers,
+  };
+
+  try {
+    const success = await questiondb.updateOne(question);
+
+    if (!success) {
+      next(new Error('Something went wrong'));
+    }
+
+    const uploadsDir = path.resolve('uploads');
+
+    // build media field
+    const filenames = (req.files as Express.Multer.File[])
+      .map((file: Express.Multer.File) => file.filename);
+
+    const readFilePromises = filenames
+      .map((filename: string) => fs.readFile(path.resolve(uploadsDir, filename)));
+
+    const media: Array<Buffer> = await Promise.all(readFilePromises);
+
+    const mediaInsertPromises = media.map((m) => {
+      if (question.id === undefined) {
+        throw new Error('Question id is undefined!??!!??!?!?!?!?!?!?!');
+      }
+      return mediadb.saveOne(m, question.id);
+    });
+
+    // clean up files
+    removeUploadedFiles(...filenames);
+    await Promise.all(mediaInsertPromises);
+
+    res.status(200).json(question);
+  } catch (err) {
+    next(err);
+  }
+};
+
 const deleteQuestion = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const { id } = req.params;
   try {
@@ -169,6 +281,7 @@ router.get('/', getQuestions);
 router.get('/:id', getQuestionById);
 router.get('/filter/:subjectId/:text?', validateFilters, getQuestionsByFilter);
 router.post('/', upload.array('media'), validateQuestionBody, createQuestion);
+router.put('/', upload.array('media'), validateQuestionBody, ensureSubject, ensureTheme, updateQuestion);
 router.delete('/:id', deleteQuestion);
 
 export default router;

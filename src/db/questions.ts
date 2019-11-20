@@ -102,6 +102,29 @@ export function buildQuestions(dataPackets: FullQuestionsRowDataPacket[]): Quest
   return questions;
 }
 
+function getMany(n?: number): Promise<Array<Question>> {
+  let questions: Question[];
+
+  return new Promise<Array<Question>>((resolve, reject) => {
+    query({
+      sql: `select * from questions
+      inner join subjects
+        on questions.subjectid = subjects.id
+      inner join themes
+        on questions.themeid = themes.id
+      inner join answers
+        on questions.id = answers.questionid
+      limit ?`,
+      values: [n || 200],
+      nestTables: true,
+    }).then((results: FullQuestionsRowDataPacket[]) => {
+      questions = buildQuestions(results);
+      resolve(questions);
+    }).catch((err) => {
+      reject(err);
+    });
+  });
+}
 
 function getOneById(id: string): Promise<Question|null> {
   return new Promise<Question|null>((resolve, reject) => {
@@ -171,27 +194,59 @@ function saveOne(question: Question): Promise<string> {
   });
 }
 
-function getMany(n?: number): Promise<Array<Question>> {
-  let questions: Question[];
+function updateOne(question: Question): Promise<boolean> {
+  return new Promise<boolean>((resolve, reject) => {
+    // delete answers
+    query({ sql: 'delete from answers where answers.questionid = ?', values: [question.id] });
+    // delete media
+    query({ sql: 'delete from media where media.questionid = ?', values: [question.id] });
 
-  return new Promise<Array<Question>>((resolve, reject) => {
     query({
-      sql: `select * from questions
-      inner join subjects
-        on questions.subjectid = subjects.id
-      inner join themes
-        on questions.themeid = themes.id
-      inner join answers
-        on questions.id = answers.questionid
-      limit ?`,
-      values: [n || 200],
-      nestTables: true,
-    }).then((results: FullQuestionsRowDataPacket[]) => {
-      questions = buildQuestions(results);
-      resolve(questions);
-    }).catch((err) => {
-      reject(err);
-    });
+      sql: `update questions set
+        text = ?,
+        points = ?,
+        subjectid = ?,
+        themeid = ?
+      where questions.id = ?`,
+      values: [question.text, question.points, question.subject.id, question.theme.id, question.id],
+    })
+      .then((result: OkPacket) => {
+        if (result.affectedRows === 0) {
+          return resolve(false);
+        }
+
+        let sqlValues: (string|boolean|number)[] = [];
+        let sqlQuery = `insert into answers
+        (text, correct, questionid) values `;
+
+        sqlQuery += question.answers.map((answer: Answer) => {
+          if (question.id === undefined) {
+            throw new Error('Question id can\'t be undefined when updating');
+          }
+
+          sqlValues = [...sqlValues, answer.text, answer.correct, question.id];
+
+          return '(?, ?, ?)';
+        }).join(', ');
+        sqlQuery += ';';
+
+        return query({
+          sql: sqlQuery,
+          values: sqlValues,
+        });
+      })
+      .then((result: OkPacket) => {
+        if (result === undefined) return;
+        if (result.affectedRows !== question.answers.length) {
+          reject(new Error('Something went wrong'));
+          return;
+        }
+
+        resolve(true);
+      })
+      .catch((err) => {
+        reject(err);
+      });
   });
 }
 
@@ -253,10 +308,11 @@ function getManyByThemeId(themeId: string): Promise<Array<Question>> {
 }
 
 export default {
-  saveOne,
   getOneById,
   getMany,
+  saveOne,
+  deleteOneById,
+  updateOne,
   getManyBySubjectid,
   getManyByThemeId,
-  deleteOneById,
 };
