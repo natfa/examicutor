@@ -184,11 +184,10 @@ function getMany(n?: number): Promise<Array<Question>> {
       inner join answers
         on questions.id = answers.questionid
       limit ?`,
-      values: [n || 100],
+      values: [n || 200],
       nestTables: true,
     }).then((results: FullQuestionsRowDataPacket[]) => {
       questions = buildQuestions(results);
-
       resolve(questions);
     }).catch((err) => {
       reject(err);

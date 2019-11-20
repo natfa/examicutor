@@ -22,7 +22,7 @@ const fs = fsCallbacks.promises;
 
 const getQuestions = async (_: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const questions = await questiondb.getMany(100);
+    const questions = await questiondb.getMany(200);
     res.status(200).json(questions);
   } catch (err) {
     next(err);
