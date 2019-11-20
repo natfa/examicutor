@@ -4,12 +4,7 @@ import query from './index';
 import { OkPacket } from './OkPacket';
 
 import { buildAccount, AccountsRowDataPacket } from './accounts';
-import {
-  buildQuestion,
-  addAnswerToQuestion,
-  FullQuestionsRowDataPacket,
-  AnswersRowDataPacket,
-} from './questions';
+import { buildQuestions, FullQuestionsRowDataPacket } from './questions';
 
 import { Question } from '../models/Question';
 import { Time } from '../models/Time';
@@ -117,11 +112,13 @@ function getOneById(id: string): Promise<Exam|null> {
         exam = buildExam(results[0]);
 
         return query({
-          sql: `select questions.*, subjects.*, themes.* from questions
+          sql: `select questions.*, subjects.*, themes.*, answers.* from questions
           inner join subjects
             on questions.subjectid = subjects.id
           inner join themes
             on questions.themeid = themes.id
+          inner join answers
+            on questions.id = answers.questionid
           inner join exam_questions
             on exam_questions.questionid = questions.id
           inner join exams
@@ -132,35 +129,8 @@ function getOneById(id: string): Promise<Exam|null> {
         });
       })
       .then((results: FullQuestionsRowDataPacket[]) => {
-        const questions = results.map((result) => buildQuestion(result));
+        const questions = buildQuestions(results);
         exam.questions = questions;
-
-        return query({
-          sql: `select answers.* from answers
-          inner join questions
-            on answers.questionid = questions.id
-          inner join exam_questions
-            on exam_questions.questionid = questions.id
-          where exam_questions.examid = ?`,
-          values: [id],
-        });
-      })
-      .then((results: AnswersRowDataPacket[]) => {
-        let newQuestions = exam.questions;
-
-        // iterate over answers
-        results.forEach((result) => {
-          // for each answer, update the newQuestions array
-          // with answer added
-          newQuestions = newQuestions.map((q) => {
-            if (String(result.questionid) !== q.id) return q;
-
-            return addAnswerToQuestion(result, q);
-          });
-        });
-
-        // save updated questions array
-        exam.questions = newQuestions;
 
         resolve(exam);
       })
