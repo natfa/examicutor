@@ -13,7 +13,7 @@ import { Question } from '../models/Question';
 import { Time } from '../models/Time';
 import { Exam } from '../models/Exam';
 
-const pointValues = [1, 2, 3, 4, 5];
+import { pointValues } from '../constants';
 
 interface ExamRequestBody {
   name: string;
@@ -114,10 +114,26 @@ const getExamById = async (req: Request, res: Response, next: NextFunction): Pro
   }
 };
 
+const getAllExams = async (_: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const exams = await examdb.getAllExamsInfo();
+
+    exams.forEach((exam) => {
+      delete exam.creator; // eslint-disable-line no-param-reassign
+      delete exam.questions; // eslint-disable-line no-param-reassign
+    });
+
+    res.status(200).json(exams);
+  } catch (err) {
+    next(err);
+  }
+};
+
 const router = express.Router();
 
 router.use(isAuthenticated);
 
+router.get('/', getAllExams);
 router.get('/:examId', getExamById);
 router.post('/', validateExamRequestBody, createNewExam);
 

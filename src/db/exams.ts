@@ -98,8 +98,6 @@ function getOneById(id: string): Promise<Exam|null> {
   return new Promise<Exam|null>((resolve, reject) => {
     query({
       sql: `select exams.*, accounts.* from exams
-      inner join exam_questions
-        on exams.id = exam_questions.examid
       inner join accounts
         on exams.creatorid = accounts.id
       where exams.id = ?`,
@@ -140,7 +138,27 @@ function getOneById(id: string): Promise<Exam|null> {
   });
 }
 
+function getAllExamsInfo(): Promise<Exam[]> {
+  return new Promise<Exam[]>((resolve, reject) => {
+    query({
+      sql: `select exams.*, accounts.* from exams
+      inner join accounts
+        on exams.creatorid = accounts.id`,
+      nestTables: true,
+    })
+      .then((results: FullExamRowDataPacket[]) => {
+        const exams = results.map((result) => buildExam(result));
+
+        resolve(exams);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
 export default {
   saveOne,
   getOneById,
+  getAllExamsInfo,
 };
