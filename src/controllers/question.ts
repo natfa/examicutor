@@ -156,6 +156,20 @@ const createQuestion = async (req: Request, res: Response, next: NextFunction): 
   }
 };
 
+const saveMedia = async (
+  filenames: string[],
+  questionId: string,
+): Promise<Promise<void>[]> => {
+  const uploadsDir = path.resolve('uploads');
+
+  const readFiles = filenames.map((filename) => fs.readFile(path.resolve(uploadsDir, filename)));
+
+  const buffers: Array<Buffer> = await Promise.all(readFiles);
+
+  // start the saving promises
+  return buffers.map((buffer) => mediadb.saveOne(buffer, questionId));
+};
+
 const ensureSubject = async (req: Request, _: Response, next: NextFunction): Promise<void> => {
   const { subjectName } = req.body;
 
@@ -213,7 +227,7 @@ const updateQuestion = async (req: Request, res: Response, next: NextFunction): 
     ...incorrectAnswers.map((answer: string) => ({ text: answer, correct: false })),
   ];
 
-  const question: Question = {
+  const updatedQuestion: Question = {
     id,
     text,
     points: Number(points),
@@ -223,32 +237,26 @@ const updateQuestion = async (req: Request, res: Response, next: NextFunction): 
   };
 
   try {
-    const success = await questiondb.updateOne(question);
+    const success = await questiondb.updateOne(updatedQuestion);
 
     if (!success) {
       next(new Error('Something went wrong'));
     }
 
-    const uploadsDir = path.resolve('uploads');
+    if (updatedQuestion.id === undefined) {
+      throw new Error('Question id is undefined, which can\'t be true...');
+    }
 
-    // build media field
-    const filenames = (req.files as Express.Multer.File[])
-      .map((file: Express.Multer.File) => file.filename);
+    const files = req.files as Express.Multer.File[];
+    const filenames = files.map((file) => file.filename);
 
-    const readFilePromises = filenames
-      .map((filename: string) => fs.readFile(path.resolve(uploadsDir, filename)));
-
-    const media: Array<Buffer> = await Promise.all(readFilePromises);
-
-    const mediaInsertPromises = media.map((m) => {
-      if (question.id === undefined) {
-        throw new Error('Question id is undefined!??!!??!?!?!?!?!?!?!');
-      }
-      return mediadb.saveOne(m, question.id);
-    });
-
+    // start inserting media
+    const mediaInsertPromises = await saveMedia(filenames, updatedQuestion.id);
     // clean up files
     removeUploadedFiles(...filenames);
+
+    const question = await questiondb.getOneById(updatedQuestion.id);
+
     await Promise.all(mediaInsertPromises);
 
     res.status(200).json(question);
@@ -256,6 +264,7 @@ const updateQuestion = async (req: Request, res: Response, next: NextFunction): 
     next(err);
   }
 };
+
 
 const deleteQuestion = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const { id } = req.params;
