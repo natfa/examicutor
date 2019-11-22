@@ -31,6 +31,70 @@ interface QuestionRequestBody {
   incorrectAnswers: string[];
 }
 
+/**
+ * Saves media files to the database
+ * @param {string[]} filenames The filenames of the files to be read and saved as Buffers
+ * @param {string} questionId The id of the question
+ *
+ * @returns {Promise<void>[]} The promises of the requests to the database to save the media
+ */
+const saveMedia = async (
+  filenames: string[],
+  questionId: string,
+): Promise<Promise<void>[]> => {
+  // TODO: maybe change that to a full path and store it in the config file?
+  const uploadsDir = path.resolve('uploads');
+
+  const readFiles = filenames.map((filename) => fs.readFile(path.resolve(uploadsDir, filename)));
+
+  const buffers: Array<Buffer> = await Promise.all(readFiles);
+
+  // start the saving promises
+  return buffers.map((buffer) => mediadb.saveOne(buffer, questionId));
+};
+
+/**
+ * Ensures that the req.body object has a valid {Subject} object
+ * either by finding it in the database or creating one
+ */
+const ensureSubject = async (req: Request, _: Response, next: NextFunction): Promise<void> => {
+  const { subjectName } = req.body;
+
+  try {
+    let subject = await subjectdb.getOneByName(subjectName);
+
+    if (subject === null) {
+      subject = await subjectdb.saveOne({ name: subjectName });
+    }
+
+    req.body.subject = subject;
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * Ensures that the req.body object has a valid {Theme} object
+ * either by finding it in the database or by creating one
+ */
+const ensureTheme = async (req: Request, _: Response, next: NextFunction): Promise<void> => {
+  const { themeName, subject } = req.body;
+
+  try {
+    let theme = await themedb.getOneByName(themeName);
+
+    if (theme === null) {
+      theme = await themedb.saveOne({ name: themeName, subject });
+    }
+
+    req.body.theme = theme;
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
+
 const getQuestions = async (_: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const questions = await questiondb.getMany(200);
@@ -73,62 +137,14 @@ const getQuestionsByFilter = async (
 };
 
 const createQuestion = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  // TODO: maybe change that to a full path and store it in the config file?
-  const uploadsDir = path.resolve('uploads');
   const {
     text,
     points,
-    subjectName,
-    themeName,
+    subject,
+    theme,
     correctAnswers,
     incorrectAnswers,
   } = req.body;
-
-  // build media field
-  const filenames = (req.files as Express.Multer.File[])
-    .map((file: Express.Multer.File) => file.filename);
-
-  const readFilePromises = filenames
-    .map((filename: string) => fs.readFile(path.resolve(uploadsDir, filename)));
-
-  let media: Array<Buffer> = [];
-  let subjectFound: Subject|null;
-  let themeFound: Theme|null;
-
-  try {
-    // in this statement the media is being filled as an array
-    // from the Promise.all([...readFilePromises]) promise
-    // they still execute in paralel
-    [subjectFound, themeFound, media] = await Promise.all([
-      subjectdb.getOneByName(subjectName),
-      themedb.getOneByName(themeName),
-      Promise.all([...readFilePromises]),
-    ]);
-  } catch (err) {
-    next(err);
-    return;
-  }
-
-  // clean up files
-  removeUploadedFiles(...filenames);
-
-  // save subject and theme if nessessary
-  if (!subjectFound) {
-    try {
-      subjectFound = await subjectdb.saveOne({ name: subjectName });
-      themeFound = await themedb.saveOne({ name: themeName, subject: subjectFound });
-    } catch (err) {
-      next(err);
-      return;
-    }
-  } else if (!themeFound) {
-    try {
-      themeFound = await themedb.saveOne({ name: themeName, subject: subjectFound });
-    } catch (err) {
-      next(err);
-      return;
-    }
-  }
 
   // build answers
   const answers = [
@@ -140,13 +156,21 @@ const createQuestion = async (req: Request, res: Response, next: NextFunction): 
     text,
     answers,
     points: Number(points),
-    subject: subjectFound,
-    theme: themeFound,
+    subject,
+    theme,
   };
+
+  const filenames = (req.files as Express.Multer.File[])
+    .map((file: Express.Multer.File) => file.filename);
+
 
   try {
     const questionId = await questiondb.saveOne(question);
-    const mediaInsertPromises = media.map((m) => mediadb.saveOne(m, questionId));
+
+    const mediaInsertPromises = await saveMedia(filenames, questionId);
+
+    // clean up files
+    removeUploadedFiles(...filenames);
 
     await Promise.all(mediaInsertPromises);
 
@@ -155,55 +179,6 @@ const createQuestion = async (req: Request, res: Response, next: NextFunction): 
     next(err);
   }
 };
-
-const saveMedia = async (
-  filenames: string[],
-  questionId: string,
-): Promise<Promise<void>[]> => {
-  const uploadsDir = path.resolve('uploads');
-
-  const readFiles = filenames.map((filename) => fs.readFile(path.resolve(uploadsDir, filename)));
-
-  const buffers: Array<Buffer> = await Promise.all(readFiles);
-
-  // start the saving promises
-  return buffers.map((buffer) => mediadb.saveOne(buffer, questionId));
-};
-
-const ensureSubject = async (req: Request, _: Response, next: NextFunction): Promise<void> => {
-  const { subjectName } = req.body;
-
-  try {
-    let subject = await subjectdb.getOneByName(subjectName);
-
-    if (subject === null) {
-      subject = await subjectdb.saveOne({ name: subjectName });
-    }
-
-    req.body.subject = subject;
-    next();
-  } catch (err) {
-    next(err);
-  }
-};
-
-const ensureTheme = async (req: Request, _: Response, next: NextFunction): Promise<void> => {
-  const { themeName, subject } = req.body;
-
-  try {
-    let theme = await themedb.getOneByName(themeName);
-
-    if (theme === null) {
-      theme = await themedb.saveOne({ name: themeName, subject });
-    }
-
-    req.body.theme = theme;
-    next();
-  } catch (err) {
-    next(err);
-  }
-};
-
 
 const updateQuestion = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const {
@@ -247,8 +222,8 @@ const updateQuestion = async (req: Request, res: Response, next: NextFunction): 
       throw new Error('Question id is undefined, which can\'t be true...');
     }
 
-    const files = req.files as Express.Multer.File[];
-    const filenames = files.map((file) => file.filename);
+    const filenames = (req.files as Express.Multer.File[])
+      .map((file: Express.Multer.File) => file.filename);
 
     // start inserting media
     const mediaInsertPromises = await saveMedia(filenames, updatedQuestion.id);
@@ -287,10 +262,33 @@ const upload = multer({ dest: 'uploads/' });
 router.use(isAuthenticated);
 
 router.get('/', getQuestions);
+
 router.get('/:id', getQuestionById);
-router.get('/filter/:subjectId/:text?', validateFilters, getQuestionsByFilter);
-router.post('/', upload.array('media'), validateQuestionBody, createQuestion);
-router.put('/', upload.array('media'), validateQuestionBody, ensureSubject, ensureTheme, updateQuestion);
+
+router.get(
+  '/filter/:subjectId/:text?',
+  validateFilters,
+  getQuestionsByFilter,
+);
+
+router.post(
+  '/',
+  upload.array('media'),
+  validateQuestionBody,
+  ensureSubject,
+  ensureTheme,
+  createQuestion,
+);
+
+router.put(
+  '/',
+  upload.array('media'),
+  validateQuestionBody,
+  ensureSubject,
+  ensureTheme,
+  updateQuestion,
+);
+
 router.delete('/:id', deleteQuestion);
 
 export default router;
