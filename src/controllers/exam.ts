@@ -23,7 +23,7 @@ interface ExamRequestBody {
   filters: ExamCreationFilter[];
 }
 
-const createNewExam = async (req: Request, res: Response): Promise<void> => {
+const createNewExam = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const {
     name,
     startDate,
@@ -42,7 +42,14 @@ const createNewExam = async (req: Request, res: Response): Promise<void> => {
     });
   });
 
-  const allQuestions: Question[] = (await Promise.all(promises)).flat();
+  let allQuestions: Question[];
+
+  try {
+    allQuestions = (await Promise.all(promises)).flat();
+  } catch (err) {
+    next(err);
+    return;
+  }
 
   // compile questions for exam
   let questions: Question[] = [];
@@ -92,7 +99,14 @@ const createNewExam = async (req: Request, res: Response): Promise<void> => {
     creator: req.session.account.id,
   };
 
-  const examId = await examdb.saveOne(exam);
+  let examId: string;
+
+  try {
+    examId = await examdb.saveOne(exam);
+  } catch (err) {
+    next(err);
+    return;
+  }
 
   res.status(200).json({ examId });
 };
