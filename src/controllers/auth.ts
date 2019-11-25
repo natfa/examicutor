@@ -1,5 +1,5 @@
 import express, { Request, Response, NextFunction } from 'express';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 import { validateLoginCredentials } from '../validators/auth';
 import { validateAccountBody } from '../validators/account';
