@@ -10,7 +10,7 @@ module.exports = {
   entry: path.resolve(__dirname, 'src', 'index.ts'),
   output: {
     path: path.resolve(__dirname, 'bin'),
-    filename: 'bundle.js',
+    filename: 'index.js',
   },
   module: {
     rules: [
