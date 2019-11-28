@@ -1,9 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 
+import { allRoles } from '../constants';
+
 interface AccountValidationResult {
   email?: string;
   password?: string;
-  isAdmin?: string;
+  roles?: string;
 }
 
 function isEmail(email: string): boolean {
@@ -52,23 +54,25 @@ export function validatePassword(password: string): AccountValidationResult {
   return errors;
 }
 
-function validateIsAdmin(isAdmin: boolean): AccountValidationResult {
+function validateRoles(roles: string[]): AccountValidationResult {
+  if (!Array.isArray(roles)) return { roles: 'Must be an array' };
+
   let errors: AccountValidationResult = {};
 
-  if (typeof isAdmin !== 'boolean') {
-    errors = {
-      ...errors,
-      isAdmin: 'Must be a boolean',
-    };
-  }
+  roles.forEach((role) => {
+    if (typeof role !== 'string' || !allRoles.includes(role)) {
+      errors = {
+        roles: `A role should be one of the following: ${allRoles.join(',')} `,
+      };
+    }
+  });
 
   return errors;
 }
 
-
 export function validateAccountBody(req: Request, res: Response, next: NextFunction): void {
   let errors: AccountValidationResult = {};
-  const { email, password, isAdmin } = req.body;
+  const { email, password, roles } = req.body;
 
   if (email === undefined) {
     errors = {
@@ -96,11 +100,16 @@ export function validateAccountBody(req: Request, res: Response, next: NextFunct
     };
   }
 
-  if (isAdmin !== undefined) {
-    const isAdminErrors = validateIsAdmin(isAdmin);
+  if (roles === undefined) {
     errors = {
       ...errors,
-      ...isAdminErrors,
+      roles: 'Required',
+    };
+  } else {
+    const rolesErrors = validateRoles(roles);
+    errors = {
+      ...errors,
+      ...rolesErrors,
     };
   }
 

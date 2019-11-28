@@ -2,5 +2,5 @@ export interface Account {
   id?: string;
   email: string;
   passwordHash: string;
-  isAdmin: boolean;
+  roles: ('teacher'|'student'|'admin')[];
 }

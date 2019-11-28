@@ -9,19 +9,27 @@ import { isAdmin } from '../middleware/isAdmin';
 import accountdb from '../db/accounts';
 import { Account } from '../models/Account';
 
+interface AuthenticationRequestBody {
+  email: string;
+  password: string;
+}
+
+interface AccountRequestBody {
+  email: string;
+  password: string;
+  roles: ('admin'|'student'|'teacher')[];
+}
+
 const authenticate = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    if (!req.session) {
-      next(new Error('req.session is undefined'));
-      return;
-    }
+    if (!req.session) throw new Error('req.session is undefined');
 
     if (req.session.isAuthenticated) {
       res.status(400).send('Already authenticated');
       return;
     }
 
-    const { email, password } = req.body;
+    const { email, password } = req.body as AuthenticationRequestBody;
     const account = await accountdb.getOneByEmail(email);
 
     if (!account) {
@@ -29,7 +37,9 @@ const authenticate = async (req: Request, res: Response, next: NextFunction): Pr
       return;
     }
 
-    if (!(await bcrypt.compare(password, account.passwordHash))) {
+    const passwordMatches = await bcrypt.compare(password, account.passwordHash);
+
+    if (!passwordMatches) {
       res.status(401).end();
       return;
     }
@@ -49,7 +59,7 @@ const authenticate = async (req: Request, res: Response, next: NextFunction): Pr
 const createAccount = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const saltRounds = 10;
-    const { email, password, admin } = req.body;
+    const { email, password, roles } = req.body as AccountRequestBody;
 
     const exists = await accountdb.getOneByEmail(email);
     if (exists) {
@@ -60,18 +70,17 @@ const createAccount = async (req: Request, res: Response, next: NextFunction): P
     // hash
     const pHash = await bcrypt.hash(password, saltRounds);
 
-    let account: Account = {
+    const account: Account = {
       id: undefined,
       email,
       passwordHash: pHash,
-      isAdmin: admin,
+      roles,
     };
 
-    account = await accountdb.saveOne(account);
+    const accountId = await accountdb.saveOne(account);
     // don't send password hash... duh..
     delete account.passwordHash;
-    res.status(200).send(account);
-    return;
+    res.status(200).json({ accountId });
   } catch (err) {
     next(err);
   }
@@ -79,10 +88,7 @@ const createAccount = async (req: Request, res: Response, next: NextFunction): P
 
 const getActiveSession = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    if (!req.session) {
-      next(new Error('req.session is undefined'));
-      return;
-    }
+    if (!req.session) throw new Error('req.session is undefined');
 
     if (!req.session.isAuthenticated) {
       res.status(401).end();
@@ -91,7 +97,7 @@ const getActiveSession = async (req: Request, res: Response, next: NextFunction)
 
     res.status(200).send({
       email: req.session.account.email,
-      isAdmin: req.session.account.isAdmin,
+      roles: req.session.account.roles,
     });
   } catch (err) {
     next(err);
@@ -100,11 +106,8 @@ const getActiveSession = async (req: Request, res: Response, next: NextFunction)
 
 const router = express.Router();
 
-router.get('/', getActiveSession);
-// The validateLoginCredentials only checks for gramatical errors,
-// such as mistyped email or an empty password. The authenticate
-// method actually makes the authentication and checks the DB
+router.get('/', isAuthenticated, getActiveSession);
 router.post('/', validateLoginCredentials, authenticate);
-router.post('/create', validateAccountBody, isAuthenticated, isAdmin, createAccount);
+router.post('/create', isAuthenticated, isAdmin, validateAccountBody, createAccount);
 
 export default router;

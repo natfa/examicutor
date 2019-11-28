@@ -3,40 +3,43 @@ import { query } from './index';
 import { Account } from '../models/Account';
 import { OkPacket } from './OkPacket';
 
+// keep in sync with allRoles constant from constants/index.ts
 export interface AccountsRowDataPacket {
   id: number;
   email: string;
   passwordhash: string;
-  isadmin: number; // convertable to boolean
+  roles: ('admin'|'student'|'teacher');
 }
 
 export function buildAccount(dataPacket: AccountsRowDataPacket): Account {
+  // assume db returned correct values
+  const roles = dataPacket.roles.split(',') as ('admin'|'student'|'teacher')[];
+
   const account: Account = {
     id: String(dataPacket.id),
     email: dataPacket.email,
     passwordHash: dataPacket.passwordhash,
-    isAdmin: Boolean(dataPacket.isadmin),
+    roles,
   };
 
   return account;
 }
 
-function saveOne(account: Account): Promise<Account> {
-  return new Promise<Account>((resolve, reject) => {
+function saveOne(account: Account): Promise<string> {
+  return new Promise<string>((resolve, reject) => {
     query({
       sql: `insert into accounts
-      (email, passwordhash, isadmin) values
+      (email, passwordhash, roles) values
       (?, ?, ?)`,
-      values: [account.email, account.passwordHash, account.isAdmin],
+      values: [
+        account.email,
+        account.passwordHash,
+        account.roles.join(','),
+      ],
     }).then((result: OkPacket) => {
-      const accountId = result.insertId;
+      const accountId = String(result.insertId);
 
-      resolve({
-        id: String(accountId),
-        email: account.email,
-        passwordHash: account.passwordHash,
-        isAdmin: account.isAdmin,
-      });
+      resolve(accountId);
     }).catch((err) => {
       reject(err);
     });
@@ -46,8 +49,7 @@ function saveOne(account: Account): Promise<Account> {
 function getOneByEmail(email: string): Promise<Account|null> {
   return new Promise<Account|null>((resolve, reject) => {
     query({
-      sql: `select *
-      from accounts
+      sql: `select * from accounts
       where email = ?`,
       values: [email],
     }).then((results: AccountsRowDataPacket[]) => {
