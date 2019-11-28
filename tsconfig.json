@@ -2,17 +2,14 @@
   "compilerOptions": {
     "target": "es5",
     "module": "commonjs",
-    "outDir": "./bin",
     "strict": true,
     "esModuleInterop": true,
+    "noEmit": true,
     "lib": [
       "es2019"
     ]
   },
   "include": [
     "./src/"
-  ],
-  "exclude": [
-    "./src/db_mongoose"
   ]
 }
