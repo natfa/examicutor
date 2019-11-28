@@ -138,7 +138,7 @@ function getOneById(id: string): Promise<Exam|null> {
   });
 }
 
-function getAllExamsInfo(): Promise<Exam[]> {
+function getAllExamInfos(): Promise<Exam[]> {
   return new Promise<Exam[]>((resolve, reject) => {
     query({
       sql: `select exams.*, accounts.* from exams
@@ -157,8 +157,32 @@ function getAllExamsInfo(): Promise<Exam[]> {
   });
 }
 
+function getUpcomingExamInfos(): Promise<Exam[]> {
+  const now = dayjs();
+
+  return new Promise<Exam[]>((resolve, reject) => {
+    query({
+      sql: `select exams.*, accounts.* from exams
+      inner join accounts
+        on exams.creatorid = accounts.id
+      where date(exams.startdate) >= date(?)`,
+      values: [new Date(now.toString())],
+      nestTables: true,
+    })
+      .then((results: FullExamRowDataPacket[]) => {
+        const exams = results.map((result) => buildExam(result));
+
+        resolve(exams);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
 export default {
   saveOne,
   getOneById,
-  getAllExamsInfo,
+  getAllExamInfos,
+  getUpcomingExamInfos,
 };

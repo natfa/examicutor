@@ -2,7 +2,7 @@ import express, { Request, Response, NextFunction } from 'express';
 
 import mediadb from '../db/media';
 
-import { isAuthenticated } from '../middleware/isAuthenticated';
+import isAuthenticated from '../middleware/isAuthenticated';
 
 const getMediaByQuestionId = async (
   req: Request,

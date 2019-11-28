@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 
-function isAdmin(req: Request, res: Response, next: NextFunction): void {
+function isTeacher(req: Request, res: Response, next: NextFunction): void {
   if (!req.session) throw new Error('req.session is undefined');
 
   if (req.session.account === undefined) {
@@ -8,7 +8,7 @@ function isAdmin(req: Request, res: Response, next: NextFunction): void {
     return;
   }
 
-  if (!req.session.account.roles.includes('admin')) {
+  if (!req.session.account.roles.includes('teacher')) {
     res.status(403).end();
     return;
   }
@@ -16,4 +16,4 @@ function isAdmin(req: Request, res: Response, next: NextFunction): void {
   next();
 }
 
-export default isAdmin;
+export default isTeacher;

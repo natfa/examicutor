@@ -4,7 +4,7 @@ import path from 'path';
 import fsCallbacks from 'fs';
 
 import { validateQuestionBody, validateFilters } from '../validators/question';
-import { isAuthenticated } from '../middleware/isAuthenticated';
+import isTeacher from '../middleware/isTeacher';
 import removeUploadedFiles from '../utils/removeUploadedFiles';
 
 import mediadb from '../db/media';
@@ -259,7 +259,7 @@ const deleteQuestion = async (req: Request, res: Response, next: NextFunction): 
 const router = express.Router();
 const upload = multer({ dest: 'uploads/' });
 
-router.use(isAuthenticated);
+router.use(isTeacher);
 
 router.get('/', getQuestions);
 

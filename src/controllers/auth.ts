@@ -3,8 +3,8 @@ import bcrypt from 'bcryptjs';
 
 import { validateLoginCredentials } from '../validators/auth';
 import { validateAccountBody } from '../validators/account';
-import { isAuthenticated } from '../middleware/isAuthenticated';
-import { isAdmin } from '../middleware/isAdmin';
+import isAuthenticated from '../middleware/isAuthenticated';
+import isAdmin from '../middleware/isAdmin';
 
 import accountdb from '../db/accounts';
 import { Account } from '../models/Account';
@@ -24,7 +24,7 @@ const authenticate = async (req: Request, res: Response, next: NextFunction): Pr
   try {
     if (!req.session) throw new Error('req.session is undefined');
 
-    if (req.session.isAuthenticated) {
+    if (req.session.account) {
       res.status(400).send('Already authenticated');
       return;
     }
@@ -44,12 +44,10 @@ const authenticate = async (req: Request, res: Response, next: NextFunction): Pr
       return;
     }
 
-    req.session.isAuthenticated = true;
     req.session.account = account;
 
     // don't send pass hash
     delete account.passwordHash;
-
     res.status(200).send(account);
   } catch (err) {
     next(err);
@@ -78,6 +76,7 @@ const createAccount = async (req: Request, res: Response, next: NextFunction): P
     };
 
     const accountId = await accountdb.saveOne(account);
+
     // don't send password hash... duh..
     delete account.passwordHash;
     res.status(200).json({ accountId });
@@ -86,28 +85,19 @@ const createAccount = async (req: Request, res: Response, next: NextFunction): P
   }
 };
 
-const getActiveSession = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    if (!req.session) throw new Error('req.session is undefined');
+const getActiveSession = (req: Request, res: Response): void => {
+  if (!req.session) throw new Error('req.session is undefined');
 
-    if (!req.session.isAuthenticated) {
-      res.status(401).end();
-      return;
-    }
-
-    res.status(200).send({
-      email: req.session.account.email,
-      roles: req.session.account.roles,
-    });
-  } catch (err) {
-    next(err);
-  }
+  res.status(200).send({
+    email: req.session.account.email,
+    roles: req.session.account.roles,
+  });
 };
 
 const router = express.Router();
 
 router.get('/', isAuthenticated, getActiveSession);
 router.post('/', validateLoginCredentials, authenticate);
-router.post('/create', isAuthenticated, isAdmin, validateAccountBody, createAccount);
+router.post('/create', isAdmin, validateAccountBody, createAccount);
 
 export default router;

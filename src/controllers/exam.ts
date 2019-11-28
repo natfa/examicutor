@@ -1,7 +1,8 @@
 import express, { Request, Response, NextFunction } from 'express';
 import dayjs from 'dayjs';
 
-import { isAuthenticated } from '../middleware/isAuthenticated';
+import isAuthenticated from '../middleware/isAuthenticated';
+import isTeacher from '../middleware/isTeacher';
 import shuffle from '../utils/shuffle';
 import { validateExamRequestBody } from '../validators/exam';
 
@@ -122,15 +123,40 @@ const getExamById = async (req: Request, res: Response, next: NextFunction): Pro
       return;
     }
 
+    if (!req.session) throw new Error('req.session is undefined');
+
+    // get rid of creator and his passwordhash
+    delete exam.creator;
+
+    if (req.session.account.roles.includes('student')) {
+      const now = dayjs();
+      const startDate = dayjs(exam.startDate);
+
+      // if start date is in the future
+      if (startDate.isAfter(now)) {
+        delete exam.questions;
+      }
+    }
+
     res.status(200).send(exam);
   } catch (err) {
     next(err);
   }
 };
 
-const getAllExams = async (_: Request, res: Response, next: NextFunction): Promise<void> => {
+const getExamInfos = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  if (!req.session) throw new Error('req.session is undefined');
+
+  let exams: Exam[] = [];
+
   try {
-    const exams = await examdb.getAllExamsInfo();
+    if (req.session.account.roles.includes('teacher')) {
+      exams = await examdb.getAllExamInfos();
+    } else if (req.session.account.roles.includes('student')) {
+      exams = await examdb.getUpcomingExamInfos();
+    } else {
+      res.status(200).json([]);
+    }
 
     exams.forEach((exam) => {
       delete exam.creator; // eslint-disable-line no-param-reassign
@@ -147,8 +173,8 @@ const router = express.Router();
 
 router.use(isAuthenticated);
 
-router.get('/', getAllExams);
+router.get('/', getExamInfos);
 router.get('/:examId', getExamById);
-router.post('/', validateExamRequestBody, createNewExam);
+router.post('/', isTeacher, validateExamRequestBody, createNewExam);
 
 export default router;
