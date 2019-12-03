@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 
+/** Checks if the authenticated user is an admin or a student and calls the next middleware
+ */
 function isStudent(req: Request, res: Response, next: NextFunction): void {
   if (!req.session) throw new Error('req.session is undefined');
 
@@ -9,12 +11,15 @@ function isStudent(req: Request, res: Response, next: NextFunction): void {
     return;
   }
 
-  if (!req.session.account.roles.includes('student')) {
-    res.status(403).end();
+  if (
+    req.session.account.roles.includes('admin')
+    || req.session.account.roles.includes('student')
+  ) {
+    next();
     return;
   }
 
-  next();
+  res.status(403).end();
 }
 
 export default isStudent;

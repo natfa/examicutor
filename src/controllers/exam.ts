@@ -123,10 +123,21 @@ const getExamById = async (req: Request, res: Response, next: NextFunction): Pro
       return;
     }
 
+    // always delete the password hash
+    delete exam.creator.passwordHash;
+
     if (!req.session) throw new Error('req.session is undefined');
 
-    // get rid of creator and his passwordhash
-    delete exam.creator;
+    if (req.session.account.roles.includes('admin')) {
+      res.status(200).json(exam);
+      return;
+    }
+
+    if (req.session.account.roles.includes('teacher')) {
+      delete exam.creator;
+      res.status(200).json(exam);
+      return;
+    }
 
     if (req.session.account.roles.includes('student')) {
       const now = dayjs();
@@ -136,9 +147,12 @@ const getExamById = async (req: Request, res: Response, next: NextFunction): Pro
       if (startDate.isAfter(now)) {
         delete exam.questions;
       }
+
+      res.status(200).json(exam);
+      return;
     }
 
-    res.status(200).send(exam);
+    res.status(200).json({});
   } catch (err) {
     next(err);
   }
@@ -147,23 +161,38 @@ const getExamById = async (req: Request, res: Response, next: NextFunction): Pro
 const getExamInfos = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   if (!req.session) throw new Error('req.session is undefined');
 
-  let exams: Exam[] = [];
 
   try {
-    if (req.session.account.roles.includes('teacher')) {
-      exams = await examdb.getAllExamInfos();
-    } else if (req.session.account.roles.includes('student')) {
-      exams = await examdb.getUpcomingExamInfos();
-    } else {
-      res.status(200).json([]);
+    if (
+      req.session.account.roles.includes('admin')
+      || req.session.account.roles.includes('teacher')
+    ) {
+      const exams = (await examdb.getAllExamInfos()).map((exam) => {
+        const copy = { ...exam };
+        delete copy.creator;
+        delete copy.questions;
+
+        return copy;
+      });
+
+      res.status(200).json(exams);
+      return;
     }
 
-    exams.forEach((exam) => {
-      delete exam.creator; // eslint-disable-line no-param-reassign
-      delete exam.questions; // eslint-disable-line no-param-reassign
-    });
+    if (req.session.account.roles.includes('student')) {
+      const exams = (await examdb.getUpcomingExamInfos()).map((exam) => {
+        const copy = { ...exam };
+        delete copy.creator;
+        delete copy.questions;
 
-    res.status(200).json(exams);
+        return copy;
+      });
+
+      res.status(200).json(exams);
+      return;
+    }
+
+    res.status(200).json([]);
   } catch (err) {
     next(err);
   }
