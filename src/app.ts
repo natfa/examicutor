@@ -12,6 +12,8 @@ import themeController from './controllers/theme';
 import authController from './controllers/auth';
 import examController from './controllers/exam';
 
+import solveRouter from './routers/solve';
+
 // load config
 import config from './config/default';
 
@@ -51,6 +53,7 @@ app.use('/api/subject/', subjectController);
 app.use('/api/theme/', themeController);
 app.use('/api/auth/', authController);
 app.use('/api/exam/', examController);
+app.use('/api/solve/', solveRouter);
 
 // serve javascript bundles
 app.use('/', express.static(path.resolve(config.clientPath)));
