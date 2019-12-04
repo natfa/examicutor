@@ -1,7 +1,7 @@
 import express, { Request, Response, NextFunction } from 'express';
 import dayjs from 'dayjs';
 
-import examController from '../controllers/exam.controller';
+import examController from '../controllers/exam';
 
 import isStudent from '../middleware/isStudent';
 

@@ -10,8 +10,8 @@ import mediaController from './controllers/media';
 import subjectController from './controllers/subject';
 import themeController from './controllers/theme';
 import authController from './controllers/auth';
-import examController from './controllers/exam';
 
+import examRouter from './routers/exam';
 import solveRouter from './routers/solve';
 
 // load config
@@ -52,7 +52,8 @@ app.use('/api/media/', mediaController);
 app.use('/api/subject/', subjectController);
 app.use('/api/theme/', themeController);
 app.use('/api/auth/', authController);
-app.use('/api/exam/', examController);
+
+app.use('/api/exam/', examRouter);
 app.use('/api/solve/', solveRouter);
 
 // serve javascript bundles
