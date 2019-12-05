@@ -61,7 +61,7 @@ app.use('/api/course/', courseRouter);
 // serve javascript bundles
 app.use('/', express.static(path.resolve(config.clientPath)));
 
-// serve react apps with routers
+// serving react apps that have react-router enabled
 app.get('/teacher/*', (_, res) => res.sendFile(path.resolve(config.clientPath, 'teacher/index.html')));
 app.get('/student/*', (_, res) => res.sendFile(path.resolve(config.clientPath, 'student/index.html')));
 
