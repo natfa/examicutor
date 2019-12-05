@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 import isAuthenticated from '../middleware/isAuthenticated';
 import isTeacher from '../middleware/isTeacher';
 import shuffle from '../utils/shuffle';
-import { validateExamRequestBody } from '../validators/exam';
+import validateExamRequestBody from '../validators/exam';
 
 import courseController from '../controllers/course';
 

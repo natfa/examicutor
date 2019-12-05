@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 
-import { allRoles } from '../constants';
+import isEmail from '../utils/isEmail';
+
+import { roles as definedRoles } from '../constants';
 
 interface AccountValidationResult {
   email?: string;
@@ -8,50 +10,16 @@ interface AccountValidationResult {
   roles?: string;
 }
 
-function isEmail(email: string): boolean {
-  const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-  return re.test(String(email).toLowerCase());
-}
-
 export function validateEmail(email: string): AccountValidationResult {
-  let errors: AccountValidationResult = {};
+  if (typeof email !== 'string') return { email: 'Must be a string' };
+  if (!isEmail(email)) return { email: 'Must be a valid email' };
 
-  if (typeof email !== 'string') {
-    errors = {
-      ...errors,
-      email: 'Must be a string',
-    };
-  } else if (email.length === 0) {
-    errors = {
-      ...errors,
-      email: 'Can\'t be empty',
-    };
-  } else if (email.length >= 50 || !isEmail(email)) {
-    errors = {
-      ...errors,
-      email: 'Please provide a valid email',
-    };
-  }
-
-  return errors;
+  return {};
 }
 
 export function validatePassword(password: string): AccountValidationResult {
-  let errors: AccountValidationResult = {};
-
-  if (typeof password !== 'string') {
-    errors = {
-      ...errors,
-      password: 'Must be a string',
-    };
-  } else if (password.length === 0) {
-    errors = {
-      ...errors,
-      password: 'Can\'t be empty',
-    };
-  }
-
-  return errors;
+  if (typeof password !== 'string') return { password: 'Must be a string' };
+  return {};
 }
 
 function validateRoles(roles: string[]): AccountValidationResult {
@@ -59,58 +27,42 @@ function validateRoles(roles: string[]): AccountValidationResult {
 
   let errors: AccountValidationResult = {};
 
-  roles.forEach((role) => {
-    if (typeof role !== 'string' || !allRoles.includes(role)) {
+  roles.some((role) => {
+    if (typeof role !== 'string' || !definedRoles.includes(role)) {
       errors = {
-        roles: `A role should be one of the following: ${allRoles.join(',')} `,
+        roles: `A role should be one of the following: ${definedRoles.join(',')} `,
       };
+      return true;
     }
+    return false;
   });
 
   return errors;
 }
 
-export function validateAccountBody(req: Request, res: Response, next: NextFunction): void {
-  let errors: AccountValidationResult = {};
+function validateAccountBody(req: Request, res: Response, next: NextFunction): void {
   const { email, password, roles } = req.body;
+  let errors: AccountValidationResult = {};
 
   if (email === undefined) {
-    errors = {
-      ...errors,
-      email: 'Required',
-    };
+    errors = { ...errors, email: 'Required' };
   } else {
     const emailErrors = validateEmail(email);
-    errors = {
-      ...errors,
-      ...emailErrors,
-    };
+    errors = { ...errors, ...emailErrors };
   }
 
   if (password === undefined) {
-    errors = {
-      ...errors,
-      password: 'Required',
-    };
+    errors = { ...errors, password: 'Required' };
   } else {
     const passwordErrors = validatePassword(password);
-    errors = {
-      ...errors,
-      ...passwordErrors,
-    };
+    errors = { ...errors, ...passwordErrors };
   }
 
   if (roles === undefined) {
-    errors = {
-      ...errors,
-      roles: 'Required',
-    };
+    errors = { ...errors, roles: 'Required' };
   } else {
     const rolesErrors = validateRoles(roles);
-    errors = {
-      ...errors,
-      ...rolesErrors,
-    };
+    errors = { ...errors, ...rolesErrors };
   }
 
   if (Object.keys(errors).length !== 0) {

@@ -5,7 +5,7 @@ import examController from '../controllers/exam';
 
 import isStudent from '../middleware/isStudent';
 
-import { validateSaveAnswerBody } from '../validators/solve';
+import validateSaveAnswerBody from '../validators/solve';
 
 function getExamById(req: Request, res: Response, next: NextFunction): void {
   const { examId } = req.params;
@@ -59,17 +59,11 @@ function saveAnswer(req: Request, res: Response): void {
   res.status(204).end();
 }
 
-function submitExam(req: Request, res: Response, next: NextFunction): void {
-  next('Not implemented');
-}
-
-
 const router = express.Router();
 
 router.use(isStudent);
 
 router.get('/:examId', getExamById);
 router.post('/answer', validateSaveAnswerBody, saveAnswer);
-router.post('/submit', submitExam);
 
 export default router;

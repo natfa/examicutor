@@ -5,7 +5,7 @@ import { Time } from '../models/Time';
 import { ExamCreationFilter } from '../models/ExamCreationFilter';
 import { ExamGradeBoundary } from '../models/ExamGradeBoundary';
 
-import { possibleGrades } from '../constants';
+import { possibleGrades, pointValues } from '../constants';
 
 interface ExamValidationResult {
   name?: string;
@@ -17,27 +17,14 @@ interface ExamValidationResult {
 }
 
 function validateName(name: string): ExamValidationResult {
-  let errors: ExamValidationResult = {};
+  if (typeof name !== 'string') return { name: 'Must be a string' };
+  if (name.length <= 2) return { name: 'Must be at least 3 characters long' };
 
-  if (typeof name !== 'string') {
-    errors = {
-      ...errors,
-      name: 'Must be a string',
-    };
-  } else if (name.length <= 2) {
-    errors = {
-      ...errors,
-      name: 'Must be at least 3 characters long',
-    };
-  }
-
-  return errors;
+  return {};
 }
 
 function validateTimeToSolve(timeToSolve: Time): ExamValidationResult {
-  if (typeof timeToSolve !== 'object') {
-    return { timeToSolve: 'Must be an object' };
-  }
+  if (typeof timeToSolve !== 'object') return { timeToSolve: 'Must be an object' };
 
   if (
     !Object.prototype.hasOwnProperty.call(timeToSolve, 'hours')
@@ -45,6 +32,7 @@ function validateTimeToSolve(timeToSolve: Time): ExamValidationResult {
   ) {
     return { timeToSolve: 'Hours and minutes must be present as properties' };
   }
+
   if (
     typeof timeToSolve.hours !== 'number'
     || typeof timeToSolve.minutes !== 'number'
@@ -56,114 +44,92 @@ function validateTimeToSolve(timeToSolve: Time): ExamValidationResult {
 }
 
 function validateDates(start: string, end: string, timeToSolve: Time): ExamValidationResult {
+  let errors: ExamValidationResult = {};
   const timeToSolveErrors = validateTimeToSolve(timeToSolve);
 
-  if (Object.keys(timeToSolveErrors).length > 0) {
-    return timeToSolveErrors;
-  }
+  errors = { ...timeToSolveErrors };
 
-  const now = dayjs();
   const startDate = dayjs(start);
   const endDate = dayjs(end);
 
   if (typeof start !== 'string' || !startDate.isValid()) {
-    return { startDate: 'Must be a valid date string' };
+    errors = { ...errors, startDate: 'Must be a valid date string' };
   }
   if (typeof end !== 'string' || !endDate.isValid()) {
-    return { endDate: 'Must be a valid date string' };
+    errors = { ...errors, endDate: 'Must be a valid date string' };
   }
 
-  if (startDate.isBefore(now)) {
-    return { startDate: 'Must be after current date' };
-  }
-  if (endDate.isBefore(startDate)) {
-    return { endDate: 'Must be after startDate' };
-  }
-
-  const startDateAfterSolving = startDate
-    .add(timeToSolve.hours, 'hour')
-    .add(timeToSolve.minutes, 'minute');
-
-  if (startDateAfterSolving.isAfter(endDate)) {
-    return { endDate: 'You must give enough time to the students to solve the exam' };
-  }
-
-  return {};
+  return errors;
 }
 
 function validateFilters(filters: ExamCreationFilter[]): ExamValidationResult {
+  if (!Array.isArray(filters)) return { filters: 'Must be an array of filters' };
+  if (filters.length === 0) return { filters: 'Can\'t be empty' };
+
   let errors: ExamValidationResult = {};
 
-  if (!Array.isArray(filters)) {
-    errors = {
-      filters: 'Must be an array of filters',
-    };
-    return errors;
-  }
-
-  if (filters.length === 0) {
-    errors = {
-      filters: 'Can\'t be empty',
-    };
-    return errors;
-  }
-
-  filters.forEach((filter) => {
+  filters.some((filter) => {
     if (
       !Object.prototype.hasOwnProperty.call(filter, 'subject')
       || !Object.prototype.hasOwnProperty.call(filter, 'themeFilters')
     ) {
-      errors = {
-        filters: 'Each filter must have a subject and theme filters properties',
-      };
-      return;
+      errors = { filters: 'Each filter must have a subject and theme filters properties' };
+      return true;
     }
 
     if (
-      !(
-        Object.prototype.hasOwnProperty.call(filter.subject, 'id')
-        && typeof filter.subject.id === 'string'
-      )
-      || !(
-        Object.prototype.hasOwnProperty.call(filter.subject, 'name')
-        && typeof filter.subject.name === 'string'
-      )
+      !(Object.prototype.hasOwnProperty.call(filter.subject, 'id')
+        && typeof filter.subject.id === 'string')
+      || !(Object.prototype.hasOwnProperty.call(filter.subject, 'name')
+        && typeof filter.subject.name === 'string')
     ) {
-      errors = {
-        filters: 'Each filter subject must be a valid subject object',
-      };
-      return;
+      errors = { filters: 'Each filter subject must be a valid subject object' };
+      return true;
     }
 
     if (!Array.isArray(filter.themeFilters)) {
-      errors = {
-        filters: 'Theme filters must be an array',
-      };
-      return;
+      errors = { filters: 'Theme filters must be an array' };
+      return true;
     }
 
     if (filter.themeFilters.length === 0) {
-      errors = {
-        filters: 'Theme filters can\'t be empty',
-      };
-      return;
+      errors = { filters: 'Theme filters can\'t be empty' };
+      return true;
     }
 
-    // This validation could be improved...
-    filter.themeFilters.forEach((themeFilter) => {
-      if (
-        !Object.prototype.hasOwnProperty.call(themeFilter, 'theme')
-        || !Object.prototype.hasOwnProperty.call(themeFilter, 1)
-        || !Object.prototype.hasOwnProperty.call(themeFilter, 2)
-        || !Object.prototype.hasOwnProperty.call(themeFilter, 3)
-        || !Object.prototype.hasOwnProperty.call(themeFilter, 4)
-        || !Object.prototype.hasOwnProperty.call(themeFilter, 5)
-      ) {
-        errors = {
-          filters: 'Each theme filter must have a theme and `point value`: `question count` values',
-        };
+    const themeFilterErorrs = filter.themeFilters.some((themeFilter) => {
+      if (!Object.prototype.hasOwnProperty.call(themeFilter, 'theme')) {
+        errors = { filters: 'Each themeFilter must have a theme property' };
+        return true;
       }
+
+      if (
+        !(Object.prototype.hasOwnProperty.call(themeFilter.theme, 'id')
+          && typeof themeFilter.theme.id === 'string')
+        || !(Object.prototype.hasOwnProperty.call(themeFilter.theme, 'name')
+          && typeof themeFilter.theme.name === 'string')
+      ) {
+        errors = { filters: 'Each theme must be a valid theme object' };
+        return true;
+      }
+
+      const themeFilterPropErrors = pointValues.some((grade) => {
+        if (!Object.prototype.hasOwnProperty.call(themeFilter, grade)) {
+          errors = { filters: 'Each theme filter must have `point: question count` values' };
+          return true;
+        }
+
+        return false;
+      });
+
+      if (themeFilterPropErrors) return true;
+
+      return false;
     });
+
+    if (themeFilterErorrs) return true;
+
+    return false;
   });
 
   return errors;
@@ -209,9 +175,7 @@ function validateBoundaries(boundaries: ExamGradeBoundary[]): ExamValidationResu
   return errors;
 }
 
-export function validateExamRequestBody(req: Request, res: Response, next: NextFunction): void {
-  let errors: ExamValidationResult = {};
-
+function validateExamRequestBody(req: Request, res: Response, next: NextFunction): void {
   const {
     name,
     startDate,
@@ -221,66 +185,38 @@ export function validateExamRequestBody(req: Request, res: Response, next: NextF
     boundaries,
   } = req.body;
 
+  let errors: ExamValidationResult = {};
+
   if (name === undefined) {
-    errors = {
-      ...errors,
-      name: 'Required',
-    };
+    errors = { ...errors, name: 'Required' };
   } else {
     const nameErrors = validateName(name);
-    errors = {
-      ...errors,
-      ...nameErrors,
-    };
+    errors = { ...errors, ...nameErrors };
   }
 
   if (startDate === undefined) {
-    errors = {
-      ...errors,
-      startDate: 'Required',
-    };
+    errors = { ...errors, startDate: 'Required' };
   } else if (endDate === undefined) {
-    errors = {
-      ...errors,
-      endDate: 'Required',
-    };
+    errors = { ...errors, endDate: 'Required' };
   } else if (timeToSolve === undefined) {
-    errors = {
-      ...errors,
-      timeToSolve: 'Required',
-    };
+    errors = { ...errors, timeToSolve: 'Required' };
   } else {
     const datesErrors = validateDates(startDate, endDate, timeToSolve);
-    errors = {
-      ...errors,
-      ...datesErrors,
-    };
+    errors = { ...errors, ...datesErrors };
   }
 
   if (filters === undefined) {
-    errors = {
-      ...errors,
-      filters: 'Required',
-    };
+    errors = { ...errors, filters: 'Required' };
   } else {
     const filtersErorrs = validateFilters(filters);
-    errors = {
-      ...errors,
-      ...filtersErorrs,
-    };
+    errors = { ...errors, ...filtersErorrs };
   }
 
   if (boundaries === undefined) {
-    errors = {
-      ...errors,
-      boundaries: 'Required',
-    };
+    errors = { ...errors, boundaries: 'Required' };
   } else {
     const boundariesErrors = validateBoundaries(boundaries);
-    errors = {
-      ...errors,
-      ...boundariesErrors,
-    };
+    errors = { ...errors, ...boundariesErrors };
   }
 
   if (Object.keys(errors).length > 0) {
@@ -291,6 +227,4 @@ export function validateExamRequestBody(req: Request, res: Response, next: NextF
   next();
 }
 
-export default {
-  validateExamRequestBody,
-};
+export default validateExamRequestBody;

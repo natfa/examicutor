@@ -1,10 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 
-export function validateSaveAnswerBody(
-  req: Request,
-  res: Response,
-  next: NextFunction,
-): void {
+function validateSaveAnswerBody(req: Request, res: Response, next: NextFunction): void {
   const { questionId, answerId } = req.body;
 
   if (questionId === undefined || typeof questionId !== 'string') {
@@ -20,6 +16,4 @@ export function validateSaveAnswerBody(
   next();
 }
 
-export default {
-  validateSaveAnswerBody,
-};
+export default validateSaveAnswerBody;

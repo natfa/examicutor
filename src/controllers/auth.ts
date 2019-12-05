@@ -1,8 +1,8 @@
 import express, { Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcryptjs';
 
-import { validateLoginCredentials } from '../validators/auth';
-import { validateAccountBody } from '../validators/account';
+import validateLoginCredentials from '../validators/auth';
+import validateAccountBody from '../validators/account';
 import isAuthenticated from '../middleware/isAuthenticated';
 import isAdmin from '../middleware/isAdmin';
 

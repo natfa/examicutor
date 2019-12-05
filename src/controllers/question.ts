@@ -3,7 +3,7 @@ import multer from 'multer';
 import path from 'path';
 import fsCallbacks from 'fs';
 
-import { validateQuestionBody, validateFilters } from '../validators/question';
+import validateQuestionBody from '../validators/question';
 import isTeacher from '../middleware/isTeacher';
 import removeUploadedFiles from '../utils/removeUploadedFiles';
 
@@ -115,22 +115,6 @@ const getQuestionById = async (req: Request, res: Response, next: NextFunction):
       return;
     }
     res.status(200).json(question);
-  } catch (err) {
-    next(err);
-  }
-};
-
-const getQuestionsByFilter = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-): Promise<void> => {
-  const { subjectid } = req.params;
-
-  try {
-    const questions = await questiondb.getManyBySubjectid(subjectid);
-
-    res.status(200).json(questions);
   } catch (err) {
     next(err);
   }
@@ -264,12 +248,6 @@ router.use(isTeacher);
 router.get('/', getQuestions);
 
 router.get('/:id', getQuestionById);
-
-router.get(
-  '/filter/:subjectId/:text?',
-  validateFilters,
-  getQuestionsByFilter,
-);
 
 router.post(
   '/',

@@ -1,34 +1,22 @@
 import { Request, Response, NextFunction } from 'express';
 import { validateEmail, validatePassword } from './account';
 
-export function validateLoginCredentials(req: Request, res: Response, next: NextFunction): void {
+function validateLoginCredentials(req: Request, res: Response, next: NextFunction): void {
   const { email, password } = req.body;
   let errors = {};
 
   if (email === undefined) {
-    errors = {
-      ...errors,
-      email: 'Required',
-    };
+    errors = { ...errors, email: 'Required' };
   } else {
     const emailErrors = validateEmail(email);
-    errors = {
-      ...errors,
-      ...emailErrors,
-    };
+    errors = { ...errors, ...emailErrors };
   }
 
   if (password === undefined) {
-    errors = {
-      ...errors,
-      password: 'Required',
-    };
+    errors = { ...errors, password: 'Required' };
   } else {
     const passswordErrors = validatePassword(password);
-    errors = {
-      ...errors,
-      ...passswordErrors,
-    };
+    errors = { ...errors, ...passswordErrors };
   }
 
   if (Object.keys(errors).length !== 0) {

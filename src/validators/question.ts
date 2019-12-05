@@ -14,145 +14,52 @@ interface QuestionValidationResult {
 }
 
 function validateText(text: string): QuestionValidationResult {
-  let errors: QuestionValidationResult = {};
+  if (typeof text !== 'string') return { text: 'Must be a string' };
+  if (text.length > 500) return { text: 'Max length: 500' };
+  if (text.length <= 2) return { text: 'Min length: 2' };
 
-  if (typeof text !== 'string') {
-    errors = {
-      ...errors,
-      text: 'Must be a string',
-    };
-  } else if (text.length > 500) {
-    errors = {
-      ...errors,
-      text: 'Max length: 500',
-    };
-  } else if (text.length <= 2) {
-    errors = {
-      ...errors,
-      text: 'Can\'t be less than 3 characters',
-    };
-  }
-  return errors;
+  return {};
 }
 
 function validateAnswers(answers: Array<string>): QuestionValidationResult {
+  if (!Array.isArray(answers)) return { answers: 'Must be an array' };
+  if (answers.length === 0) return { answers: 'At least 1 correct and 1 incorrect answers are required' };
+
+
   let errors: QuestionValidationResult = {};
 
-  if (!Array.isArray(answers)) {
-    errors = {
-      ...errors,
-      answers: 'Must be an array',
-    };
-  } else if (answers.length === 0) {
-    errors = {
-      ...errors,
-      answers: 'At least 1 correct and 1 incorrect answers are required',
-    };
-  } else {
-    answers.forEach((answer) => {
-      if (typeof answer !== 'string') {
-        errors = {
-          ...errors,
-          answers: 'All answers must be strings',
-        };
-      }
-    });
-  }
+  answers.some((answer) => {
+    if (typeof answer !== 'string') {
+      errors = { answers: 'All answers must be strings' };
+      return true;
+    }
+
+    return false;
+  });
+
   return errors;
 }
 
 function validatePoints(points: number): QuestionValidationResult {
-  let errors: QuestionValidationResult = {};
+  if (typeof points !== 'number' && !Number.isNaN(points)) return { points: 'Must be a number' };
+  if (points < 0) return { points: 'Can\'t be negative' };
 
-  if (typeof points !== 'number' && !Number.isNaN(points)) {
-    errors = {
-      ...errors,
-      points: 'Must be a number',
-    };
-  } else if (points < 0) {
-    errors = {
-      ...errors,
-      points: 'Can\'t be negative',
-    };
-  }
-  return errors;
+  return {};
 }
 
 function validateSubjectName(subjectName: string): QuestionValidationResult {
-  let errors: QuestionValidationResult = {};
+  if (typeof subjectName !== 'string') return { subjectName: 'Must be a string' };
 
-  if (typeof subjectName !== 'string') {
-    errors = {
-      ...errors,
-      subjectName: 'Must be a string',
-    };
-  } else if (subjectName.length === 0) {
-    errors = {
-      ...errors,
-      subjectName: 'Can\'t be empty',
-    };
-  }
-  return errors;
+  return {};
 }
 
 function validateThemeName(themeName: string): QuestionValidationResult {
-  let errors: QuestionValidationResult = {};
+  if (typeof themeName !== 'string') return { themeName: 'Must be a string' };
 
-  if (typeof themeName !== 'string') {
-    errors = {
-      ...errors,
-      themeName: 'Must be a string',
-    };
-  } else if (themeName.length === 0) {
-    errors = {
-      ...errors,
-      themeName: 'Can\'t be empty',
-    };
-  }
-  return errors;
+  return {};
 }
 
-export function validateFilters(req: Request, res: Response, next: NextFunction): void {
-  let errors: QuestionValidationResult = {};
-  const { subjectid, text } = req.params;
-
-  if (subjectid === undefined) {
-    errors = {
-      ...errors,
-      subjectName: 'Required',
-    };
-  } else {
-    // Important: Since the subject id is a string (same as the name),
-    // the check here uses the validateSubjectName function
-    // which is meant to be used for the name.
-    // If the ID of the subject model changes, there should be a new method created
-    // that would handle this specific check
-    const subjectIdErrors = validateSubjectName(subjectid);
-    errors = {
-      ...errors,
-      ...subjectIdErrors,
-    };
-  }
-
-  if (text !== undefined) {
-    const textErrors = validateText(text);
-    errors = {
-      ...errors,
-      ...textErrors,
-    };
-  }
-
-  if (Object.keys(errors).length > 0) {
-    res.status(400).send(errors);
-    return;
-  }
-
-  next();
-}
-
-export function validateQuestionBody(req: Request, res: Response, next: NextFunction): void {
-  let errors: QuestionValidationResult = {};
-
+function validateQuestionBody(req: Request, res: Response, next: NextFunction): void {
   const {
     text,
     points,
@@ -162,92 +69,62 @@ export function validateQuestionBody(req: Request, res: Response, next: NextFunc
     incorrectAnswers,
   } = req.body;
 
+  let errors: QuestionValidationResult = {};
+
   if (text === undefined) {
-    errors = {
-      ...errors,
-      text: 'Required',
-    };
+    errors = { ...errors, text: 'Required' };
   } else {
     const textErrors = validateText(text);
-    errors = {
-      ...errors,
-      ...textErrors,
-    };
+    errors = { ...errors, ...textErrors };
   }
 
   if (points === undefined) {
-    errors = {
-      ...errors,
-      points: 'Required',
-    };
+    errors = { ...errors, points: 'Required' };
   } else {
     const pointsErrors = validatePoints(Number(points));
-    errors = {
-      ...errors,
-      ...pointsErrors,
-    };
+    errors = { ...errors, ...pointsErrors };
   }
 
   if (incorrectAnswers === undefined) {
-    errors = {
-      ...errors,
-      incorrectAnswers: 'Required',
-    };
+    errors = { ...errors, incorrectAnswers: 'Required' };
   } else {
     const incorrectAnswersErrors = validateAnswers(incorrectAnswers);
-    errors = {
-      ...errors,
-      ...incorrectAnswersErrors,
-    };
+    errors = { ...errors, ...incorrectAnswersErrors };
   }
 
   if (correctAnswers === undefined) {
-    errors = {
-      ...errors,
-      correctAnswers: 'Required',
-    };
+    errors = { ...errors, correctAnswers: 'Required' };
   } else {
     const correctAnswersErrors = validateAnswers(correctAnswers);
-    errors = {
-      ...errors,
-      ...correctAnswersErrors,
-    };
+    errors = { ...errors, ...correctAnswersErrors };
   }
 
   if (subjectName === undefined) {
-    errors = {
-      ...errors,
-      subjectName: 'Required',
-    };
+    errors = { ...errors, subjectName: 'Required' };
   } else {
     const subjectNameErrors = validateSubjectName(subjectName);
-    errors = {
-      ...errors,
-      ...subjectNameErrors,
-    };
+    errors = { ...errors, ...subjectNameErrors };
   }
 
   if (themeName === undefined) {
-    errors = {
-      ...errors,
-      themeName: 'Required',
-    };
+    errors = { ...errors, themeName: 'Required' };
   } else {
     const themeNameErrors = validateThemeName(themeName);
-    errors = {
-      ...errors,
-      ...themeNameErrors,
-    };
+    errors = { ...errors, ...themeNameErrors };
   }
 
   if (Object.keys(errors).length > 0) {
-    // cleanup
+    // cleanup unused files
     const filenames = (req.files as Express.Multer.File[])
       .map((file) => file.filename);
+
     removeUploadedFiles(...filenames);
 
     res.status(400).send(errors);
     return;
   }
+
   next();
 }
+
+export default validateQuestionBody;
