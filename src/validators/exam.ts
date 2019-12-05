@@ -3,6 +3,9 @@ import dayjs from 'dayjs';
 
 import { Time } from '../models/Time';
 import { ExamCreationFilter } from '../models/ExamCreationFilter';
+import { ExamGradeBoundary } from '../models/ExamGradeBoundary';
+
+import { possibleGrades } from '../constants';
 
 interface ExamValidationResult {
   name?: string;
@@ -10,6 +13,7 @@ interface ExamValidationResult {
   endDate?: string;
   timeToSolve?: string;
   filters?: string;
+  boundaries?: string;
 }
 
 function validateName(name: string): ExamValidationResult {
@@ -165,6 +169,46 @@ function validateFilters(filters: ExamCreationFilter[]): ExamValidationResult {
   return errors;
 }
 
+function validateBoundaries(boundaries: ExamGradeBoundary[]): ExamValidationResult {
+  if (!Array.isArray(boundaries)) return { boundaries: 'Must be an array' };
+  if (boundaries.length === 0) return { boundaries: 'There must be at least one element' };
+
+  let errors: ExamValidationResult = {};
+
+  // will return as soon as an error is found
+  boundaries.some((boundary) => {
+    if (!Object.prototype.hasOwnProperty.call(boundary, 'course')) {
+      errors = { boundaries: 'Each boundary must have a course property' };
+      return true;
+    }
+
+    if (
+      !Object.prototype.hasOwnProperty.call(boundary.course, 'id')
+      || !Object.prototype.hasOwnProperty.call(boundary.course, 'name')
+    ) {
+      errors = { boundaries: 'Each course must have `id` and `name` properties' };
+      return true;
+    }
+
+    const gradePropsError = possibleGrades.some((grade) => {
+      // skip this grade
+      if (grade === 2) return false;
+
+      if (!Object.prototype.hasOwnProperty.call(boundary, grade)) {
+        errors = { boundaries: 'Each course must have `grade: points required` values' };
+        return true;
+      }
+      return false;
+    });
+
+    if (gradePropsError) return true;
+
+    return false;
+  });
+
+  return errors;
+}
+
 export function validateExamRequestBody(req: Request, res: Response, next: NextFunction): void {
   let errors: ExamValidationResult = {};
 
@@ -174,6 +218,7 @@ export function validateExamRequestBody(req: Request, res: Response, next: NextF
     endDate,
     timeToSolve,
     filters,
+    boundaries,
   } = req.body;
 
   if (name === undefined) {
@@ -222,6 +267,19 @@ export function validateExamRequestBody(req: Request, res: Response, next: NextF
     errors = {
       ...errors,
       ...filtersErorrs,
+    };
+  }
+
+  if (boundaries === undefined) {
+    errors = {
+      ...errors,
+      boundaries: 'Required',
+    };
+  } else {
+    const boundariesErrors = validateBoundaries(boundaries);
+    errors = {
+      ...errors,
+      ...boundariesErrors,
     };
   }
 

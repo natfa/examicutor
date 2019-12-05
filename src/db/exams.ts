@@ -10,6 +10,7 @@ import { Question } from '../models/Question';
 import { Time } from '../models/Time';
 import { Exam } from '../models/Exam';
 import { Account } from '../models/Account';
+import { ExamGradeBoundary } from '../models/ExamGradeBoundary';
 
 interface ExamsRowDataPacket {
   id: number;
@@ -51,7 +52,9 @@ function buildExam(dataPacket: FullExamRowDataPacket): Exam {
   return exam;
 }
 
-function saveOne(exam: Exam): Promise<string> {
+function saveOne(exam: Exam, boundaries: ExamGradeBoundary[]): Promise<string> {
+  let examId: number;
+
   return new Promise<string>((resolve, reject) => {
     const timeToSolve = dayjs()
       .hour(exam.timeToSolve.hours)
@@ -71,24 +74,43 @@ function saveOne(exam: Exam): Promise<string> {
         new Date(timeToSolve.toString()),
         1,
       ],
-    }).then((result: OkPacket) => {
-      const examId = result.insertId;
+    })
+      .then((result: OkPacket) => {
+        examId = result.insertId;
 
-      const examQuestionsInserts = exam.questions.map((question: Question) => {
-        const promise = query({
-          sql: `insert into exam_questions
-          (examid, questionid) values
-          (?, ?)`,
-          values: [examId, question.id],
+        const examQuestionsInserts = exam.questions.map((question: Question) => {
+          const promise = query({
+            sql: `insert into exam_questions
+            (examid, questionid) value
+            (?, ?)`,
+            values: [examId, question.id],
+          });
+
+          return promise;
         });
 
-        return promise;
-      });
+        return Promise.all(examQuestionsInserts);
+      })
+      .then(() => { // receives: results: OkPacket[]
+        const boundaryInserts = boundaries.map((boundary) => query({
+          sql: `insert into exam_boundaries
+          (three, four, five, six, course_id, exam_id) value
+          (?, ?, ?, ?, ?, ?)`,
+          values: [
+            boundary[3],
+            boundary[4],
+            boundary[5],
+            boundary[6],
+            boundary.course.id,
+            examId,
+          ],
+        }));
 
-      Promise.all(examQuestionsInserts).then(() => resolve(String(examId)));
-    }).catch((err) => {
-      reject(err);
-    });
+        Promise.all(boundaryInserts).then(() => resolve(String(examId)));
+      })
+      .catch((err) => {
+        reject(err);
+      });
   });
 }
 

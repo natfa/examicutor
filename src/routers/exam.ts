@@ -6,13 +6,17 @@ import isTeacher from '../middleware/isTeacher';
 import shuffle from '../utils/shuffle';
 import { validateExamRequestBody } from '../validators/exam';
 
+import courseController from '../controllers/course';
+
 import questiondb from '../db/questions';
 import examdb from '../db/exams';
 
+import { ExamGradeBoundary } from '../models/ExamGradeBoundary';
 import { ExamCreationFilter } from '../models/ExamCreationFilter';
 import { Question } from '../models/Question';
 import { Time } from '../models/Time';
 import { Exam } from '../models/Exam';
+import { Course } from '../models/Course';
 
 import { pointValues } from '../constants';
 
@@ -22,6 +26,7 @@ interface ExamRequestBody {
   endDate: string;
   timeToSolve: Time;
   filters: ExamCreationFilter[];
+  boundaries: ExamGradeBoundary[];
 }
 
 const createNewExam = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -31,7 +36,33 @@ const createNewExam = async (req: Request, res: Response, next: NextFunction): P
     endDate,
     timeToSolve,
     filters,
+    boundaries,
   } = req.body as ExamRequestBody;
+
+  let existingCourses: Course[];
+  try {
+    existingCourses = await courseController.getAllCourses();
+  } catch (err) {
+    next(err);
+    return;
+  }
+
+  // check for boundaries errors
+  let error = false;
+  boundaries.forEach((boundary) => {
+    const found = existingCourses.find((course) => course.id === boundary.course.id);
+
+    // if course not found or found course name is different from the specified one
+    if (!found || found.name !== boundary.course.name) {
+      error = true;
+    }
+  });
+
+  if (error) {
+    res.status(400).json({ course: 'One of the specified courses does not exist' });
+    return;
+  }
+
 
   // get all questions for each theme filter
   let promises: Promise<Question[]>[] = [];
@@ -103,7 +134,7 @@ const createNewExam = async (req: Request, res: Response, next: NextFunction): P
   let examId: string;
 
   try {
-    examId = await examdb.saveOne(exam);
+    examId = await examdb.saveOne(exam, boundaries);
   } catch (err) {
     next(err);
     return;
