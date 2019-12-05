@@ -65,8 +65,8 @@ app.use('/', express.static(path.resolve(config.clientPath)));
 app.get('/teacher/*', (_, res) => res.sendFile(path.resolve(config.clientPath, 'teacher/index.html')));
 app.get('/student/*', (_, res) => res.sendFile(path.resolve(config.clientPath, 'student/index.html')));
 
-app.get('/', (_, res) => {
-  res.redirect('/landing');
-});
+app.get('/', (_, res) => res.redirect('/landing'));
+
+app.get('*', (_, res) => res.sendFile(path.resolve(config.clientPath, '404/index.html')));
 
 export default app;
