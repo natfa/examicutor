@@ -1,11 +1,18 @@
 import { StrippedAnswer } from '../models/StrippedAnswer';
 import { StrippedQuestion } from '../models/StrippedQuestion';
-
 import { Exam } from '../models/Exam';
 import { StrippedExam } from '../models/StrippedExam';
+import { ExamGradeBoundary } from '../models/ExamGradeBoundary';
 
 import examdb from '../db/exams';
 
+/**
+ * Tries to find an exam with an id.
+ *
+ * @param {string} id - The id to search with.
+ *
+ * @returns {Exam|null} - An exam object if found, otherwise null
+ */
 async function getExamById(id: string): Promise<Exam|null> {
   const exam = await examdb.getOneById(id);
 
@@ -62,7 +69,14 @@ function stripExam(exam: Exam|null): StrippedExam|null {
   };
 }
 
+async function getExamBoundaries(examId: string): Promise<ExamGradeBoundary[]> {
+  const examBoundaries = await examdb.getExamBoundaries(examId);
+
+  return examBoundaries;
+}
+
 export default {
   getExamById,
   stripExam,
+  getExamBoundaries,
 };

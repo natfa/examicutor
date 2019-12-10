@@ -1,10 +1,12 @@
+import { PoolConnection } from 'mysql';
 import dayjs from 'dayjs';
 
-import query from './index';
+import query, { pool } from './index';
 import { OkPacket } from './OkPacket';
 
 import { buildAccount, AccountsRowDataPacket } from './accounts';
 import { buildQuestions, FullQuestionsRowDataPacket } from './questions';
+import { buildSpecialty, SpecialtiesRowDataPacket } from './specialties';
 
 import { Question } from '../models/Question';
 import { Time } from '../models/Time';
@@ -19,6 +21,21 @@ interface ExamsRowDataPacket {
   enddate: Date;
   timetosolve: string;
   creatorid: number;
+}
+
+interface ExamGradeBoundariesRowDataPacket {
+  id: number;
+  exam_id: number;
+  specialty_id: number;
+  three: number;
+  four: number;
+  five: number;
+  six: number;
+}
+
+interface FullExamGradeBoundaryRowDataPacket {
+  specialties: SpecialtiesRowDataPacket;
+  exam_boundaries: ExamGradeBoundariesRowDataPacket;
 }
 
 interface FullExamRowDataPacket {
@@ -50,6 +67,20 @@ function buildExam(dataPacket: FullExamRowDataPacket): Exam {
   };
 
   return exam;
+}
+
+function buildExamBoundary(dataPacket: FullExamGradeBoundaryRowDataPacket): ExamGradeBoundary {
+  const specialty = buildSpecialty(dataPacket.specialties);
+
+  const gradeBoundary: ExamGradeBoundary = {
+    specialty,
+    3: dataPacket.exam_boundaries.three,
+    4: dataPacket.exam_boundaries.four,
+    5: dataPacket.exam_boundaries.five,
+    6: dataPacket.exam_boundaries.six,
+  };
+
+  return gradeBoundary;
 }
 
 function saveOne(exam: Exam, boundaries: ExamGradeBoundary[]): Promise<string> {
@@ -202,9 +233,41 @@ function getUpcomingExamInfos(): Promise<Exam[]> {
   });
 }
 
+function getExamBoundaries(examId: string): Promise<ExamGradeBoundary[]> {
+  return new Promise<ExamGradeBoundary[]>((resolve, reject) => {
+    pool.getConnection((connectionError: Error, connection: PoolConnection) => {
+      if (connectionError) {
+        reject(connectionError);
+        return;
+      }
+
+      connection.query({
+        sql: `select exam_boundaries.*, specialties.* from exam_boundaries
+        inner join specialties
+          on exam_boundaries.specialty_id = specialties.id
+        where exam_id = ?`,
+        values: [examId],
+        nestTables: true,
+      }, (queryError: Error|null, results: FullExamGradeBoundaryRowDataPacket[]) => {
+        if (queryError) {
+          reject(queryError);
+          return;
+        }
+
+        connection.release();
+
+        const examBoundaries = results.map((result) => buildExamBoundary(result));
+
+        resolve(examBoundaries);
+      });
+    });
+  });
+}
+
 export default {
   saveOne,
   getOneById,
   getAllExamInfos,
   getUpcomingExamInfos,
+  getExamBoundaries,
 };
