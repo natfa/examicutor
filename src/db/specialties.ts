@@ -1,14 +1,14 @@
-import { Connection } from 'mysql';
+import { PoolConnection } from 'mysql';
 import { pool } from './index';
 
 import { Specialty } from '../models/Specialty';
 
-interface SpecialtiesRowDataPacket {
+export interface SpecialtiesRowDataPacket {
   id: number;
   name: string;
 }
 
-function buildSpecialty(dataPacket: SpecialtiesRowDataPacket): Specialty {
+export function buildSpecialty(dataPacket: SpecialtiesRowDataPacket): Specialty {
   return {
     id: String(dataPacket.id),
     name: dataPacket.name,
@@ -17,7 +17,7 @@ function buildSpecialty(dataPacket: SpecialtiesRowDataPacket): Specialty {
 
 function getAllSpecialties(): Promise<Specialty[]> {
   return new Promise<Specialty[]>((resolve, reject) => {
-    pool.getConnection((connectionError: Error, connection: Connection) => {
+    pool.getConnection((connectionError: Error, connection: PoolConnection) => {
       if (connectionError) {
         reject(connectionError);
         return;
@@ -25,11 +25,13 @@ function getAllSpecialties(): Promise<Specialty[]> {
 
       const sql = 'select * from specialties';
 
-      connection.query(sql, (queryError: Error, results: SpecialtiesRowDataPacket[]) => {
+      connection.query(sql, (queryError: Error|null, results: SpecialtiesRowDataPacket[]) => {
         if (queryError) {
           reject(queryError);
           return;
         }
+
+        connection.release();
 
         const specialties = results.map((result) => buildSpecialty(result));
 
