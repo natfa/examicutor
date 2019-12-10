@@ -13,7 +13,7 @@ import authController from './controllers/auth';
 
 import examRouter from './routers/exam';
 import solveRouter from './routers/solve';
-import courseRouter from './routers/course';
+import specialtyRouter from './routers/specialty';
 
 // load config
 import config from './config/default';
@@ -56,7 +56,7 @@ app.use('/api/auth/', authController);
 
 app.use('/api/exam/', examRouter);
 app.use('/api/solve/', solveRouter);
-app.use('/api/course/', courseRouter);
+app.use('/api/specialty/', specialtyRouter);
 
 // serve javascript bundles
 app.use('/', express.static(path.resolve(config.clientPath)));

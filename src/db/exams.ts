@@ -94,14 +94,14 @@ function saveOne(exam: Exam, boundaries: ExamGradeBoundary[]): Promise<string> {
       .then(() => { // receives: results: OkPacket[]
         const boundaryInserts = boundaries.map((boundary) => query({
           sql: `insert into exam_boundaries
-          (three, four, five, six, course_id, exam_id) value
+          (three, four, five, six, specialty_id, exam_id) value
           (?, ?, ?, ?, ?, ?)`,
           values: [
             boundary[3],
             boundary[4],
             boundary[5],
             boundary[6],
-            boundary.course.id,
+            boundary.specialty.id,
             examId,
           ],
         }));

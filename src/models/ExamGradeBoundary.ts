@@ -1,7 +1,7 @@
-import { Course } from './Course';
+import { Specialty } from './Specialty';
 
 export interface ExamGradeBoundary {
-  course: Course;
+  specialty: Specialty;
   3: number;
   4: number;
   5: number;

@@ -6,7 +6,7 @@ import isTeacher from '../middleware/isTeacher';
 import shuffle from '../utils/shuffle';
 import validateExamRequestBody from '../validators/exam';
 
-import courseController from '../controllers/course';
+import specialtyController from '../controllers/specialty';
 
 import questiondb from '../db/questions';
 import examdb from '../db/exams';
@@ -16,7 +16,7 @@ import { ExamCreationFilter } from '../models/ExamCreationFilter';
 import { Question } from '../models/Question';
 import { Time } from '../models/Time';
 import { Exam } from '../models/Exam';
-import { Course } from '../models/Course';
+import { Specialty } from '../models/Specialty';
 
 import { pointValues } from '../constants';
 
@@ -39,9 +39,9 @@ const createNewExam = async (req: Request, res: Response, next: NextFunction): P
     boundaries,
   } = req.body as ExamRequestBody;
 
-  let existingCourses: Course[];
+  let existingSpecialties: Specialty[];
   try {
-    existingCourses = await courseController.getAllCourses();
+    existingSpecialties = await specialtyController.getAllSpecialties();
   } catch (err) {
     next(err);
     return;
@@ -50,10 +50,10 @@ const createNewExam = async (req: Request, res: Response, next: NextFunction): P
   // check for boundaries errors
   let error = false;
   boundaries.forEach((boundary) => {
-    const found = existingCourses.find((course) => course.id === boundary.course.id);
+    const found = existingSpecialties.find((specialty) => specialty.id === boundary.specialty.id);
 
     // if course not found or found course name is different from the specified one
-    if (!found || found.name !== boundary.course.name) {
+    if (!found || found.name !== boundary.specialty.name) {
       error = true;
     }
   });

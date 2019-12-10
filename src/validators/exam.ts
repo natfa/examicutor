@@ -143,16 +143,16 @@ function validateBoundaries(boundaries: ExamGradeBoundary[]): ExamValidationResu
 
   // will return as soon as an error is found
   boundaries.some((boundary) => {
-    if (!Object.prototype.hasOwnProperty.call(boundary, 'course')) {
-      errors = { boundaries: 'Each boundary must have a course property' };
+    if (!Object.prototype.hasOwnProperty.call(boundary, 'specialty')) {
+      errors = { boundaries: 'Each boundary must have a specialty property' };
       return true;
     }
 
     if (
-      !Object.prototype.hasOwnProperty.call(boundary.course, 'id')
-      || !Object.prototype.hasOwnProperty.call(boundary.course, 'name')
+      !Object.prototype.hasOwnProperty.call(boundary.specialty, 'id')
+      || !Object.prototype.hasOwnProperty.call(boundary.specialty, 'name')
     ) {
-      errors = { boundaries: 'Each course must have `id` and `name` properties' };
+      errors = { boundaries: 'Each specialty must have `id` and `name` properties' };
       return true;
     }
 
@@ -161,7 +161,7 @@ function validateBoundaries(boundaries: ExamGradeBoundary[]): ExamValidationResu
       if (grade === 2) return false;
 
       if (!Object.prototype.hasOwnProperty.call(boundary, grade)) {
-        errors = { boundaries: 'Each course must have `grade: points required` values' };
+        errors = { boundaries: 'Each specialty must have `grade: points required` values' };
         return true;
       }
       return false;
