@@ -6,6 +6,7 @@ import isTeacher from '../middleware/isTeacher';
 import shuffle from '../utils/shuffle';
 import validateExamRequestBody from '../validators/exam';
 
+import examController from '../controllers/exam';
 import specialtyController from '../controllers/specialty';
 
 import questiondb from '../db/questions';
@@ -229,9 +230,43 @@ const getExamInfos = async (req: Request, res: Response, next: NextFunction): Pr
   }
 };
 
+async function getAllExams(_: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const exams = await examController.getAllExams();
+
+    res.status(200).json(exams);
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function getUpcomingExams(_: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const exams = await examController.getUpcomingExams();
+
+    res.status(200).json(exams);
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function getPastExams(_: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const exams = await examController.getPastExams();
+
+    res.status(200).json(exams);
+  } catch (err) {
+    next(err);
+  }
+}
+
 const router = express.Router();
 
 router.use(isAuthenticated);
+
+router.get('/all', getAllExams);
+router.get('/upcoming', getUpcomingExams);
+router.get('/past', getPastExams);
 
 router.get('/', getExamInfos);
 router.get('/:examId', getExamById);

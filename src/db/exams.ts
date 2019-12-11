@@ -1,5 +1,5 @@
 import { PoolConnection } from 'mysql';
-import dayjs from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 
 import query, { pool } from './index';
 import { OkPacket } from './OkPacket';
@@ -13,6 +13,7 @@ import { Time } from '../models/Time';
 import { Exam } from '../models/Exam';
 import { Account } from '../models/Account';
 import { ExamGradeBoundary } from '../models/ExamGradeBoundary';
+import { ExamInfo } from '../models/ExamInfo';
 
 interface ExamsRowDataPacket {
   id: number;
@@ -41,6 +42,23 @@ interface FullExamGradeBoundaryRowDataPacket {
 interface FullExamRowDataPacket {
   exams: ExamsRowDataPacket;
   accounts: AccountsRowDataPacket;
+}
+
+function buildExamInfo(dataPacket: ExamsRowDataPacket): ExamInfo {
+  const [hours, minutes] = dataPacket.timetosolve.split(':');
+
+  const exam: ExamInfo = {
+    id: String(dataPacket.id),
+    name: dataPacket.name,
+    startDate: dayjs(dataPacket.startdate),
+    endDate: dayjs(dataPacket.enddate),
+    timeToSolve: {
+      hours: Number(hours),
+      minutes: Number(minutes),
+    },
+  };
+
+  return exam;
 }
 
 function buildExam(dataPacket: FullExamRowDataPacket): Exam {
@@ -264,7 +282,109 @@ function getExamBoundaries(examId: string): Promise<ExamGradeBoundary[]> {
   });
 }
 
+/**
+ * Fetches all exams saved in the database.
+ *
+ * @returns {ExamInfo[]} All exams saved on the database.
+ */
+function getAllExams(): Promise<ExamInfo[]> {
+  return new Promise<ExamInfo[]>((resolve, reject) => {
+    pool.getConnection((connectionError: Error|null, connection: PoolConnection) => {
+      if (connectionError) {
+        reject(connectionError);
+        return;
+      }
+
+      connection.query({
+        sql: 'select * from exams',
+      }, (queryError: Error|null, results: ExamsRowDataPacket[]) => {
+        if (queryError) {
+          reject(queryError);
+          return;
+        }
+
+        connection.release();
+
+        const exams = results.map((result) => buildExamInfo(result));
+        resolve(exams);
+      });
+    });
+  });
+}
+
+/**
+ * Fetches exams that have an end date that's after the specified date.
+ * @param {Dayjs} date - The specified date
+ *
+ * @returns {ExamInfo[]} The exams fetched.
+ */
+function getExamsAfter(date: Dayjs): Promise<ExamInfo[]> {
+  return new Promise<ExamInfo[]>((resolve, reject) => {
+    pool.getConnection((connectionError: Error, connection: PoolConnection) => {
+      if (connectionError) {
+        reject(connectionError);
+        return;
+      }
+
+      connection.query({
+        sql: `select * from exams
+        where exams.enddate >= ?`,
+        values: [
+          new Date(date.toString()),
+        ],
+      }, (queryError: Error|null, results: ExamsRowDataPacket[]) => {
+        if (queryError) {
+          reject(queryError);
+          return;
+        }
+        connection.release();
+
+        const exams = results.map((result) => buildExamInfo(result));
+        resolve(exams);
+      });
+    });
+  });
+}
+
+/**
+ * Fetches exams that have an end date that's before the specified date.
+ * @param {Dayjs} date - The specified date
+ *
+ * @returns {ExamInfo[]} The exams fetched.
+ */
+function getExamsBefore(date: Dayjs): Promise<ExamInfo[]> {
+  return new Promise<ExamInfo[]>((resolve, reject) => {
+    pool.getConnection((connectionError: Error, connection: PoolConnection) => {
+      if (connectionError) {
+        reject(connectionError);
+        return;
+      }
+
+      connection.query({
+        sql: `select * from exams
+        where exams.enddate <= ?`,
+        values: [
+          new Date(date.toString()),
+        ],
+      }, (queryError: Error|null, results: ExamsRowDataPacket[]) => {
+        if (queryError) {
+          reject(queryError);
+          return;
+        }
+        connection.release();
+
+        const exams = results.map((result) => buildExamInfo(result));
+        resolve(exams);
+      });
+    });
+  });
+}
+
 export default {
+  getAllExams,
+  getExamsBefore,
+  getExamsAfter,
+
   saveOne,
   getOneById,
   getAllExamInfos,

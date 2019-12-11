@@ -1,24 +1,27 @@
+import dayjs from 'dayjs';
+
 import { StrippedAnswer } from '../models/StrippedAnswer';
 import { StrippedQuestion } from '../models/StrippedQuestion';
 import { Exam } from '../models/Exam';
+import { ExamInfo } from '../models/ExamInfo';
 import { StrippedExam } from '../models/StrippedExam';
 import { ExamGradeBoundary } from '../models/ExamGradeBoundary';
 
 import examdb from '../db/exams';
 
 /**
- * Tries to find an exam with an id.
+ * Fetches and returns an exam by its ID.
  *
  * @param {string} id - The id to search with.
  *
- * @returns {Exam|null} - An exam object if found, otherwise null
+ * @returns {Exam|null} The exam info and the questions for that exam
  */
 async function getExamById(id: string): Promise<Exam|null> {
   const exam = await examdb.getOneById(id);
 
   if (exam === null) return null;
 
-  // get rid of the password hash
+  // never send out passwordhash
   delete exam.creator.passwordHash;
 
   return exam;
@@ -31,7 +34,7 @@ async function getExamById(id: string): Promise<Exam|null> {
  *  - removing points, theme and subjet properties from each question
  *  - removing the endDate and creator properties from the exam
  *
- *  @param {Exam} The exam to be stripped
+ *  @param {Exam} exam - The exam to be stripped
  *
  *  @returns {StrippedExam} The same exam with less properties
  */
@@ -75,8 +78,47 @@ async function getExamBoundaries(examId: string): Promise<ExamGradeBoundary[]> {
   return examBoundaries;
 }
 
+/**
+ * Fetches all exams saved in the database.
+ *
+ * @returns {ExamInfo[]} All exams saved on the database.
+ */
+async function getAllExams(): Promise<ExamInfo[]> {
+  const exams = await examdb.getAllExams();
+
+  return exams;
+}
+
+/**
+ * Fetches and returns exams that have an end date that is after current time.
+ *
+ * @returns {ExamInfo[]} All exams that have an end date after current time.
+ */
+async function getUpcomingExams(): Promise<ExamInfo[]> {
+  const now = dayjs();
+
+  const exams = await examdb.getExamsAfter(now);
+  return exams;
+}
+
+/**
+ * Fetches and returns exams that have an end date that is past current time.
+ *
+ * @returns {ExamInfo[]} All exams that have an end date past current time.
+ */
+async function getPastExams(): Promise<ExamInfo[]> {
+  const now = dayjs();
+
+  const exams = await examdb.getExamsBefore(now);
+  return exams;
+}
+
 export default {
+  getAllExams,
+  getUpcomingExams,
+  getPastExams,
   getExamById,
+
   stripExam,
   getExamBoundaries,
 };
