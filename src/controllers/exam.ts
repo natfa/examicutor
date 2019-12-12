@@ -81,36 +81,45 @@ async function getExamBoundaries(examId: string): Promise<ExamGradeBoundary[]> {
 /**
  * Fetches all exams saved in the database.
  *
+ * @param {string|undefined} studentId - if this parameter is passed, the exams are going
+ * to be filtered for the specified student
+ *
  * @returns {ExamInfo[]} All exams saved on the database.
  */
-async function getAllExams(): Promise<ExamInfo[]> {
-  const exams = await examdb.getAllExams();
+async function getAllExams(studentId?: string): Promise<ExamInfo[]> {
+  if (studentId !== undefined) return examdb.getAllStudentExams(studentId);
 
-  return exams;
+  return examdb.getAllExams();
 }
 
 /**
  * Fetches and returns exams that have an end date that is after current time.
  *
+ * @param {string|undefined} studentId - if this parameter is passed, the exams are going
+ * to be filtered for the specified student
+ *
  * @returns {ExamInfo[]} All exams that have an end date after current time.
  */
-async function getUpcomingExams(): Promise<ExamInfo[]> {
+async function getUpcomingExams(studentId?: string): Promise<ExamInfo[]> {
   const now = dayjs();
 
-  const exams = await examdb.getExamsAfter(now);
-  return exams;
+  if (studentId !== undefined) return examdb.getStudentExamsAfter(studentId, now);
+  return examdb.getExamsAfter(now);
 }
 
 /**
  * Fetches and returns exams that have an end date that is past current time.
  *
+ * @param {string|undefined} studentId - if this parameter is passed, the exams are going
+ * to be filtered for the specified student
+ *
  * @returns {ExamInfo[]} All exams that have an end date past current time.
  */
-async function getPastExams(): Promise<ExamInfo[]> {
+async function getPastExams(studentId?: string): Promise<ExamInfo[]> {
   const now = dayjs();
 
-  const exams = await examdb.getExamsBefore(now);
-  return exams;
+  if (studentId !== undefined) return examdb.getStudentExamsBefore(studentId, now);
+  return examdb.getExamsBefore(now);
 }
 
 export default {

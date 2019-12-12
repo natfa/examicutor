@@ -8,6 +8,7 @@ import validateExamRequestBody from '../validators/exam';
 
 import examController from '../controllers/exam';
 import specialtyController from '../controllers/specialty';
+import studentController from '../controllers/student';
 
 import questiondb from '../db/questions';
 import examdb from '../db/exams';
@@ -18,6 +19,7 @@ import { Question } from '../models/Question';
 import { Time } from '../models/Time';
 import { Exam } from '../models/Exam';
 import { Specialty } from '../models/Specialty';
+import { ExamInfo } from '../models/ExamInfo';
 
 import { pointValues } from '../constants';
 
@@ -230,9 +232,20 @@ const getExamInfos = async (req: Request, res: Response, next: NextFunction): Pr
   }
 };
 
-async function getAllExams(_: Request, res: Response, next: NextFunction): Promise<void> {
+async function getAllExams(req: Request, res: Response, next: NextFunction): Promise<void> {
+  if (req.session === undefined) throw new Error('req.session is undefined');
+
+  const { account } = req.session;
+
   try {
-    const exams = await examController.getAllExams();
+    let exams: ExamInfo[];
+    const studentId = await studentController.getStudentId(account.id);
+
+    if (studentId !== null) { // the account is a student
+      exams = await examController.getAllExams(studentId);
+    } else {
+      exams = await examController.getAllExams();
+    }
 
     res.status(200).json(exams);
   } catch (err) {
@@ -240,9 +253,20 @@ async function getAllExams(_: Request, res: Response, next: NextFunction): Promi
   }
 }
 
-async function getUpcomingExams(_: Request, res: Response, next: NextFunction): Promise<void> {
+async function getUpcomingExams(req: Request, res: Response, next: NextFunction): Promise<void> {
+  if (req.session === undefined) throw new Error('req.session is undefined');
+
+  const { account } = req.session;
+
   try {
-    const exams = await examController.getUpcomingExams();
+    let exams: ExamInfo[];
+    const studentId = await studentController.getStudentId(account.id);
+
+    if (studentId !== null) { // the account is a student
+      exams = await examController.getUpcomingExams(studentId);
+    } else {
+      exams = await examController.getUpcomingExams();
+    }
 
     res.status(200).json(exams);
   } catch (err) {
@@ -250,9 +274,20 @@ async function getUpcomingExams(_: Request, res: Response, next: NextFunction): 
   }
 }
 
-async function getPastExams(_: Request, res: Response, next: NextFunction): Promise<void> {
+async function getPastExams(req: Request, res: Response, next: NextFunction): Promise<void> {
+  if (req.session === undefined) throw new Error('req.session is undefined');
+
+  const { account } = req.session;
+
   try {
-    const exams = await examController.getPastExams();
+    let exams: ExamInfo[];
+    const studentId = await studentController.getStudentId(account.id);
+
+    if (studentId !== null) { // the account is a student
+      exams = await examController.getPastExams(studentId);
+    } else {
+      exams = await examController.getPastExams();
+    }
 
     res.status(200).json(exams);
   } catch (err) {

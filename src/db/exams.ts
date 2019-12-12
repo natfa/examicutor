@@ -380,10 +380,117 @@ function getExamsBefore(date: Dayjs): Promise<ExamInfo[]> {
   });
 }
 
+function getAllStudentExams(studentId: string): Promise<ExamInfo[]> {
+  return new Promise<ExamInfo[]>((resolve, reject) => {
+    pool.getConnection((connectionError: Error|null, connection: PoolConnection) => {
+      if (connectionError) {
+        reject(connectionError);
+        return;
+      }
+
+      connection.query({
+        sql: `select exams.* from exams
+        inner join exam_boundaries
+          on exam_boundaries.exam_id = exams.id
+        inner join specialties
+          on specialties.id = exam_boundaries.specialty_id
+        inner join students
+          on students.specialty_id = specialties.id
+        where students.id = ?`,
+        values: [studentId],
+      }, (queryError: Error|null, results: ExamsRowDataPacket[]) => {
+        if (queryError) {
+          reject(queryError);
+          return;
+        }
+
+        connection.release();
+
+        const exams = results.map((result) => buildExamInfo(result));
+        resolve(exams);
+      });
+    });
+  });
+}
+
+function getStudentExamsBefore(studentId: string, date: Dayjs): Promise<ExamInfo[]> {
+  return new Promise<ExamInfo[]>((resolve, reject) => {
+    pool.getConnection((connectionError: Error|null, connection: PoolConnection) => {
+      if (connectionError) {
+        reject(connectionError);
+        return;
+      }
+
+      connection.query({
+        sql: `select exams.* from exams
+        inner join exam_boundaries
+          on exam_boundaries.exam_id = exams.id
+        inner join specialties
+          on specialties.id = exam_boundaries.specialty_id
+        inner join students
+          on students.specialty_id = specialties.id
+        where students.id = ? and exams.enddate <= ?`,
+        values: [
+          studentId,
+          new Date(date.toString()),
+        ],
+      }, (queryError: Error|null, results: ExamsRowDataPacket[]) => {
+        if (queryError) {
+          reject(queryError);
+          return;
+        }
+
+        connection.release();
+        const exams = results.map((result) => buildExamInfo(result));
+        resolve(exams);
+      });
+    });
+  });
+}
+
+function getStudentExamsAfter(studentId: string, date: Dayjs): Promise<ExamInfo[]> {
+  return new Promise<ExamInfo[]>((resolve, reject) => {
+    pool.getConnection((connectionError: Error|null, connection: PoolConnection) => {
+      if (connectionError) {
+        reject(connectionError);
+        return;
+      }
+
+      connection.query({
+        sql: `select exams.* from exams
+        inner join exam_boundaries
+          on exam_boundaries.exam_id = exams.id
+        inner join specialties
+          on specialties.id = exam_boundaries.specialty_id
+        inner join students
+          on students.specialty_id = specialties.id
+        where students.id = ? and exams.enddate >= ?`,
+        values: [
+          studentId,
+          new Date(date.toString()),
+        ],
+      }, (queryError: Error|null, results: ExamsRowDataPacket[]) => {
+        if (queryError) {
+          reject(queryError);
+          return;
+        }
+
+        connection.release();
+        const exams = results.map((result) => buildExamInfo(result));
+        resolve(exams);
+      });
+    });
+  });
+}
+
 export default {
   getAllExams,
   getExamsBefore,
   getExamsAfter,
+
+  getAllStudentExams,
+  getStudentExamsBefore,
+  getStudentExamsAfter,
 
   saveOne,
   getOneById,
