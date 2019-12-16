@@ -146,19 +146,16 @@ const createNewExam = async (req: Request, res: Response, next: NextFunction): P
   res.status(200).json({ examId });
 };
 
-const getExamById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+async function getExamById(req: Request, res: Response, next: NextFunction): Promise<void> {
   const { examId } = req.params;
 
   try {
-    const exam = await examdb.getOneById(examId);
+    const exam = await examController.getExamById(examId);
 
     if (!exam) {
       res.status(404).end();
       return;
     }
-
-    // always delete the password hash
-    delete exam.creator.passwordHash;
 
     if (!req.session) throw new Error('req.session is undefined');
 
@@ -190,47 +187,7 @@ const getExamById = async (req: Request, res: Response, next: NextFunction): Pro
   } catch (err) {
     next(err);
   }
-};
-
-const getExamInfos = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  if (!req.session) throw new Error('req.session is undefined');
-
-
-  try {
-    if (
-      req.session.account.roles.includes('admin')
-      || req.session.account.roles.includes('teacher')
-    ) {
-      const exams = (await examdb.getAllExamInfos()).map((exam) => {
-        const copy = { ...exam };
-        delete copy.creator;
-        delete copy.questions;
-
-        return copy;
-      });
-
-      res.status(200).json(exams);
-      return;
-    }
-
-    if (req.session.account.roles.includes('student')) {
-      const exams = (await examdb.getUpcomingExamInfos()).map((exam) => {
-        const copy = { ...exam };
-        delete copy.creator;
-        delete copy.questions;
-
-        return copy;
-      });
-
-      res.status(200).json(exams);
-      return;
-    }
-
-    res.status(200).json([]);
-  } catch (err) {
-    next(err);
-  }
-};
+}
 
 async function getAllExams(req: Request, res: Response, next: NextFunction): Promise<void> {
   if (req.session === undefined) throw new Error('req.session is undefined');
@@ -299,12 +256,11 @@ const router = express.Router();
 
 router.use(isAuthenticated);
 
-router.get('/all', getAllExams);
+router.get('/', getAllExams);
 router.get('/upcoming', getUpcomingExams);
 router.get('/past', getPastExams);
-
-router.get('/', getExamInfos);
 router.get('/:examId', getExamById);
+
 router.post('/', isTeacher, validateExamRequestBody, createNewExam);
 
 export default router;
