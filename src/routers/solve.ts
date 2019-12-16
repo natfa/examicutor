@@ -3,6 +3,7 @@ import dayjs from 'dayjs';
 
 import examController from '../controllers/exam';
 import solveController from '../controllers/solve';
+import studentController from '../controllers/student';
 
 import isStudent from '../middleware/isStudent';
 
@@ -71,13 +72,22 @@ interface SolutionRequestBody {
 }
 
 async function submitExam(req: Request, res: Response, next: NextFunction): Promise<void> {
+  if (req.session === undefined) throw new Error('req.session is undefined');
+
   const {
     examId,
     solution: studentSolution,
   } = req.body as SolutionRequestBody;
 
   try {
-    const grade = await solveController.submitExam(examId, studentSolution);
+    const studentId = await studentController.getStudentId(req.session.account.id);
+
+    if (studentId === null) {
+      res.status(400).end();
+      return;
+    }
+
+    const grade = await solveController.submitExam(examId, studentId, studentSolution);
 
     // this might be unnessesary
     res.status(200).json({ grade });

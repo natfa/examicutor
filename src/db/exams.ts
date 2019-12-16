@@ -483,7 +483,43 @@ function getStudentExamsAfter(studentId: string, date: Dayjs): Promise<ExamInfo[
   });
 }
 
+function saveStudentGrade(examId: string, studentId: string, grade: number): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
+    pool.getConnection((connectionError: Error|null, connection: PoolConnection) => {
+      if (connectionError) {
+        reject(connectionError);
+        return;
+      }
+
+      connection.query({
+        sql: `insert into exam_grades
+          (exam_id, student_id, grade) value
+          (?, ?, ?)`,
+        values: [examId, studentId, grade],
+      }, (queryError: Error|null, results: OkPacket) => {
+        if (queryError) {
+          reject(queryError);
+          return;
+        }
+
+        if (results.insertId === undefined) {
+          reject(new Error('New grade not inserted correctly'));
+          return;
+        }
+
+        resolve();
+      });
+    });
+  });
+}
+
 export default {
+  saveOne,
+  saveStudentGrade,
+
+  getOneById,
+  getExamBoundaries,
+
   getAllExams,
   getExamsBefore,
   getExamsAfter,
@@ -492,9 +528,7 @@ export default {
   getStudentExamsBefore,
   getStudentExamsAfter,
 
-  saveOne,
-  getOneById,
+
   getAllExamInfos,
   getUpcomingExamInfos,
-  getExamBoundaries,
 };

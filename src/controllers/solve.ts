@@ -16,6 +16,7 @@ import { possibleGrades } from '../constants';
  */
 async function submitExam(
   examId: string,
+  studentId: string,
   studentSolution: QuestionSolution[],
 ): Promise<number|null> {
   const exam = await examController.getExamById(examId);
@@ -55,6 +56,9 @@ async function submitExam(
     assignedGrade = grade;
     return true;
   });
+
+  // save the grade
+  examController.saveStudentGrade(examId, studentId, assignedGrade);
 
   return assignedGrade;
 }
