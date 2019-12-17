@@ -14,6 +14,7 @@ import { Exam } from '../models/Exam';
 import { Account } from '../models/Account';
 import { ExamGradeBoundary } from '../models/ExamGradeBoundary';
 import { ExamInfo } from '../models/ExamInfo';
+import { StudentSolution } from '../models/StudentSolution';
 
 interface ExamsRowDataPacket {
   id: number;
@@ -513,9 +514,64 @@ function saveStudentGrade(examId: string, studentId: string, grade: number): Pro
   });
 }
 
+function saveStudentSolution(studentSolution: StudentSolution): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
+    if (studentSolution.solution.length === 0) {
+      resolve();
+      return;
+    }
+
+    pool.getConnection((connectionError: Error|null, connection: PoolConnection) => {
+      if (connectionError) {
+        reject(connectionError);
+        return;
+      }
+
+      let sqlQuery = `insert into student_exam_answers
+      (student_id, exam_id, question_id, answer_id) values `;
+      let values: string[] = [];
+
+      sqlQuery += studentSolution.solution.map((questionAnswer) => {
+        const str = '(?, ?, ?, ?)';
+        values = [
+          ...values,
+          studentSolution.studentId,
+          studentSolution.examId,
+          questionAnswer.questionId,
+          questionAnswer.answerId,
+        ];
+
+        return str;
+      }).join(', ');
+      sqlQuery += ';';
+
+      connection.query({
+        sql: sqlQuery,
+        values,
+      }, (queryError: Error|null, results: OkPacket) => {
+        if (queryError) {
+          reject(queryError);
+          return;
+        }
+
+        if (
+          results.insertId === undefined || studentSolution.solution.length !== results.affectedRows
+        ) {
+          reject(new Error('Answers not inserted correctly'));
+          return;
+        }
+
+        resolve();
+      });
+    });
+  });
+}
+
 export default {
   saveOne,
+
   saveStudentGrade,
+  saveStudentSolution,
 
   getOneById,
   getExamBoundaries,

@@ -122,13 +122,7 @@ async function getPastExams(studentId?: string): Promise<ExamInfo[]> {
   return examdb.getExamsBefore(now);
 }
 
-async function saveStudentGrade(examId: string, studentId: string, grade: number): Promise<void> {
-  examdb.saveStudentGrade(examId, studentId, grade);
-}
-
 export default {
-  saveStudentGrade,
-
   getExamById,
 
   getAllExams,

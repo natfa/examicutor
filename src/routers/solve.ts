@@ -9,6 +9,8 @@ import isStudent from '../middleware/isStudent';
 
 import validateSaveAnswerBody from '../validators/solve';
 
+import { StudentSolution } from '../models/StudentSolution';
+
 function getExamById(req: Request, res: Response, next: NextFunction): void {
   const { examId } = req.params;
 
@@ -76,7 +78,7 @@ async function submitExam(req: Request, res: Response, next: NextFunction): Prom
 
   const {
     examId,
-    solution: studentSolution,
+    solution,
   } = req.body as SolutionRequestBody;
 
   try {
@@ -87,10 +89,16 @@ async function submitExam(req: Request, res: Response, next: NextFunction): Prom
       return;
     }
 
-    const grade = await solveController.submitExam(examId, studentId, studentSolution);
+    const studentSolution: StudentSolution = {
+      studentId,
+      examId,
+      solution,
+    };
+
+    const grade = await solveController.submitExam(studentSolution);
 
     // this might be unnessesary
-    res.status(200).json({ grade });
+    res.status(204).json({ grade });
   } catch (err) {
     next(err);
   }
