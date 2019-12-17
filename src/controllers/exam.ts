@@ -6,6 +6,7 @@ import { Exam } from '../models/Exam';
 import { ExamInfo } from '../models/ExamInfo';
 import { StrippedExam } from '../models/StrippedExam';
 import { ExamGradeBoundary } from '../models/ExamGradeBoundary';
+import { ExamResult } from '../models/ExamResult';
 
 import examdb from '../db/exams';
 
@@ -122,6 +123,20 @@ async function getPastExams(studentId?: string): Promise<ExamInfo[]> {
   return examdb.getExamsBefore(now);
 }
 
+/**
+ * Fetches the exam results for the specified student.
+ *
+ * @param {string} examId - The exam ID
+ * @param {string} studentId - The student ID
+ *
+ * @returns {} - The grade and given answers for the exam.
+ */
+async function getStudentExamResults(examId: string, studentId: string): Promise<ExamResult> {
+  const examResult = await examdb.getStudentExamResults(examId, studentId);
+
+  return examResult;
+}
+
 export default {
   getExamById,
 
@@ -132,4 +147,6 @@ export default {
 
   stripExam,
   getExamBoundaries,
+
+  getStudentExamResults,
 };

@@ -15,6 +15,8 @@ import { Account } from '../models/Account';
 import { ExamGradeBoundary } from '../models/ExamGradeBoundary';
 import { ExamInfo } from '../models/ExamInfo';
 import { StudentSolution } from '../models/StudentSolution';
+import { QuestionSolution } from '../models/QuestionSolution';
+import { ExamResult } from '../models/ExamResult';
 
 interface ExamsRowDataPacket {
   id: number;
@@ -503,6 +505,8 @@ function saveStudentGrade(examId: string, studentId: string, grade: number): Pro
           return;
         }
 
+        connection.release();
+
         if (results.insertId === undefined) {
           reject(new Error('New grade not inserted correctly'));
           return;
@@ -526,6 +530,8 @@ function saveStudentSolution(studentSolution: StudentSolution): Promise<void> {
         reject(connectionError);
         return;
       }
+
+      connection.release();
 
       let sqlQuery = `insert into student_exam_answers
       (student_id, exam_id, question_id, answer_id) values `;
@@ -567,6 +573,94 @@ function saveStudentSolution(studentSolution: StudentSolution): Promise<void> {
   });
 }
 
+interface ExamResultRowDataPacket {
+  student_exam_answers: StudentExamAnswersRowDataPacket;
+  exam_grades: ExamGradesRowDataPacket;
+}
+
+interface StudentExamAnswersRowDataPacket {
+  id: number;
+  student_id: number;
+  exam_id: number;
+  question_id: number;
+  answer_id: number;
+}
+
+interface ExamGradesRowDataPacket {
+  id: number;
+  exam_id: number;
+  student_id: number;
+  grade: number;
+}
+
+function buildQuestionSolution(packet: StudentExamAnswersRowDataPacket): QuestionSolution {
+  return {
+    questionId: String(packet.question_id),
+    answerId: String(packet.answer_id),
+  };
+}
+
+function getStudentExamResults(examId: string, studentId: string): Promise<ExamResult|null> {
+  return new Promise<ExamResult|null>((resolve, reject) => {
+    getOneById(examId)
+      .then((pureExam) => {
+        if (pureExam === null) {
+          resolve(null);
+          return;
+        }
+
+        // get rid of creator
+        const exam = pureExam;
+        delete exam.creator;
+
+        pool.getConnection((connectionError: Error|null, connection: PoolConnection) => {
+          if (connectionError) {
+            reject(connectionError);
+            return;
+          }
+
+          connection.query({
+            sql: `select * from student_exam_answers
+            inner join exam_grades
+              on exam_grades.student_id = student_exam_answers.student_id
+            where
+              student_exam_answers.exam_id = ? and
+              student_exam_answers.student_id = ?`,
+            values: [examId, studentId],
+            nestTables: true,
+          }, (queryError: Error|null, results: ExamResultRowDataPacket[]) => {
+            if (queryError) {
+              reject(queryError);
+              return;
+            }
+
+            connection.release();
+
+            const questionSolutions: QuestionSolution[] = results
+              .map((result) => buildQuestionSolution(result.student_exam_answers));
+
+            if (exam === null) {
+              reject(new Error('Exam is null'));
+              return;
+            }
+
+            const examResult: ExamResult = {
+              studentId,
+              exam,
+              solution: questionSolutions,
+              grade: results[0].exam_grades.grade,
+            };
+
+            resolve(examResult);
+          });
+        });
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
 export default {
   saveOne,
 
@@ -584,7 +678,7 @@ export default {
   getStudentExamsBefore,
   getStudentExamsAfter,
 
-
   getAllExamInfos,
   getUpcomingExamInfos,
+  getStudentExamResults,
 };

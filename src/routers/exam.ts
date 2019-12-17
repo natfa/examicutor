@@ -252,6 +252,31 @@ async function getPastExams(req: Request, res: Response, next: NextFunction): Pr
   }
 }
 
+async function getStudentExamResults(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  if (req.session === undefined) throw new Error('req.session is undefined');
+
+  try {
+    const { examId, studentId } = req.params;
+
+    const actualStudentId = await studentController.getStudentId(req.session.account.id);
+
+    if (actualStudentId !== studentId && req.session.account.roles.includes('student')) {
+      res.status(403).end();
+      return;
+    }
+
+    const examResults = await examController.getStudentExamResults(examId, studentId);
+
+    res.status(200).json({ examResults });
+  } catch (err) {
+    next(err);
+  }
+}
+
 const router = express.Router();
 
 router.use(isAuthenticated);
@@ -260,6 +285,8 @@ router.get('/', getAllExams);
 router.get('/upcoming', getUpcomingExams);
 router.get('/past', getPastExams);
 router.get('/:examId', getExamById);
+
+router.get('/:examId/results/:studentId', getStudentExamResults);
 
 router.post('/', isTeacher, validateExamRequestBody, createNewExam);
 
