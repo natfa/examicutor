@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   env: {
     es6: true,
     node: true,
@@ -27,5 +27,6 @@ module.exports = {
     '@typescript-eslint',
   ],
   rules: {
+    'import/extensions': 0,
   },
 };
