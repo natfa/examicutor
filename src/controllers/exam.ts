@@ -131,7 +131,7 @@ async function getPastExams(studentId?: string): Promise<ExamInfo[]> {
  *
  * @returns {} - The grade and given answers for the exam.
  */
-async function getStudentExamResults(examId: string, studentId: string): Promise<ExamResult> {
+async function getStudentExamResults(examId: string, studentId: string): Promise<ExamResult|null> {
   const examResult = await examdb.getStudentExamResults(examId, studentId);
 
   return examResult;
