@@ -17,6 +17,7 @@ import { ExamInfo } from '../models/ExamInfo';
 import { StudentSolution } from '../models/StudentSolution';
 import { QuestionSolution } from '../models/QuestionSolution';
 import { ExamResult } from '../models/ExamResult';
+import { ExamGrade } from '../models/ExamGrade';
 
 interface ExamsRowDataPacket {
   id: number;
@@ -661,6 +662,40 @@ function getStudentExamResults(examId: string, studentId: string): Promise<ExamR
   });
 }
 
+function buildExamGrade(packet: ExamGradesRowDataPacket): ExamGrade {
+  return {
+    examId: String(packet.exam_id),
+    studentId: String(packet.student_id),
+    grade: packet.grade,
+  };
+}
+
+function getExamGrades(examId: string): Promise<ExamGrade[]> {
+  return new Promise<ExamGrade[]>((resolve, reject) => {
+    pool.getConnection((connectionError: Error|null, connection: PoolConnection) => {
+      if (connectionError) {
+        reject(connectionError);
+        return;
+      }
+
+      connection.query({
+        sql: 'select * from exam_grades where exam_id = ?',
+        values: [examId],
+      }, (queryError: Error|null, results: ExamGradesRowDataPacket[]) => {
+        if (queryError) {
+          reject(queryError);
+          return;
+        }
+
+        connection.release();
+
+        const grades = results.map((result) => buildExamGrade(result));
+        resolve(grades);
+      });
+    });
+  });
+}
+
 export default {
   saveOne,
 
@@ -680,5 +715,7 @@ export default {
 
   getAllExamInfos,
   getUpcomingExamInfos,
+
+  getExamGrades,
   getStudentExamResults,
 };
