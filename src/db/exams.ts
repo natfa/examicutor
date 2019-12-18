@@ -7,6 +7,7 @@ import { OkPacket } from './OkPacket';
 import { buildAccount, AccountsRowDataPacket } from './accounts';
 import { buildQuestions, FullQuestionsRowDataPacket } from './questions';
 import { buildSpecialty, SpecialtiesRowDataPacket } from './specialties';
+import studentdb, { buildStudent, StudentsRowDataPacket, FullStudentRowDataPacket } from './students';
 
 import { Question } from '../models/Question';
 import { Time } from '../models/Time';
@@ -18,6 +19,7 @@ import { StudentSolution } from '../models/StudentSolution';
 import { QuestionSolution } from '../models/QuestionSolution';
 import { ExamResult } from '../models/ExamResult';
 import { ExamGrade } from '../models/ExamGrade';
+import { Student } from '../models/Student';
 
 interface ExamsRowDataPacket {
   id: number;
@@ -542,7 +544,7 @@ function saveStudentSolution(studentSolution: StudentSolution): Promise<void> {
         const str = '(?, ?, ?, ?)';
         values = [
           ...values,
-          studentSolution.studentId,
+          studentSolution.student.id,
           studentSolution.examId,
           questionAnswer.questionId,
           questionAnswer.answerId,
@@ -637,6 +639,7 @@ function getStudentExamResults(examId: string, studentId: string): Promise<ExamR
 
             connection.release();
 
+            const grade = results[0].exam_grades.grade;
             const questionSolutions: QuestionSolution[] = results
               .map((result) => buildQuestionSolution(result.student_exam_answers));
 
@@ -645,14 +648,25 @@ function getStudentExamResults(examId: string, studentId: string): Promise<ExamR
               return;
             }
 
-            const examResult: ExamResult = {
-              studentId,
-              exam,
-              solution: questionSolutions,
-              grade: results[0].exam_grades.grade,
-            };
+            studentdb.getStudentById(studentId)
+              .then((student: Student|null) => {
+                if (student === null) {
+                  reject(new Error('Student is null but it should not be'));
+                  return;
+                }
 
-            resolve(examResult);
+                const examResult: ExamResult = {
+                  student,
+                  exam,
+                  solution: questionSolutions,
+                  grade,
+                };
+
+                resolve(examResult);
+              })
+              .catch((err) => {
+                reject(err);
+              });
           });
         });
       })
@@ -662,11 +676,26 @@ function getStudentExamResults(examId: string, studentId: string): Promise<ExamR
   });
 }
 
-function buildExamGrade(packet: ExamGradesRowDataPacket): ExamGrade {
+interface FullExamGradeRowDataPacket {
+  exam_grades: ExamGradesRowDataPacket;
+  students: StudentsRowDataPacket;
+  accounts: AccountsRowDataPacket;
+  specialties: SpecialtiesRowDataPacket;
+}
+
+function buildExamGrade(packet: FullExamGradeRowDataPacket): ExamGrade {
+  const fullStudentPacket: FullStudentRowDataPacket = {
+    accounts: packet.accounts,
+    students: packet.students,
+    specialties: packet.specialties,
+  };
+
+  const student = buildStudent(fullStudentPacket);
+
   return {
-    examId: String(packet.exam_id),
-    studentId: String(packet.student_id),
-    grade: packet.grade,
+    examId: String(packet.exam_grades.exam_id),
+    student,
+    grade: packet.exam_grades.grade,
   };
 }
 
@@ -679,9 +708,17 @@ function getExamGrades(examId: string): Promise<ExamGrade[]> {
       }
 
       connection.query({
-        sql: 'select * from exam_grades where exam_id = ?',
+        sql: `select * from exam_grades
+        inner join students
+          on students.id = exam_grades.student_id
+        inner join accounts
+          on accounts.id = students.account_id
+        inner join specialties
+          on specialties.id = students.specialty_id
+        where exam_id = ?`,
         values: [examId],
-      }, (queryError: Error|null, results: ExamGradesRowDataPacket[]) => {
+        nestTables: true,
+      }, (queryError: Error|null, results: FullExamGradeRowDataPacket[]) => {
         if (queryError) {
           reject(queryError);
           return;

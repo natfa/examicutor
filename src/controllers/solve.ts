@@ -74,7 +74,7 @@ async function submitExam(
 
   // persist solution and grade
   await Promise.all([
-    examdb.saveStudentGrade(studentSolution.examId, studentSolution.studentId, assignedGrade),
+    examdb.saveStudentGrade(studentSolution.examId, studentSolution.student.id, assignedGrade),
     examdb.saveStudentSolution(studentSolution),
   ]);
 

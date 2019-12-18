@@ -1,8 +1,9 @@
+import { Student } from './Student';
 import { QuestionSolution } from './QuestionSolution';
 
 export interface StudentSolution {
-  studentId: string;
   examId: string;
 
+  student: Student;
   solution: QuestionSolution[];
 }

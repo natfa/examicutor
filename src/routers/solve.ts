@@ -82,15 +82,15 @@ async function submitExam(req: Request, res: Response, next: NextFunction): Prom
   } = req.body as SolutionRequestBody;
 
   try {
-    const studentId = await studentController.getStudentId(req.session.account.id);
+    const student = await studentController.getStudentByAccountId(req.session.account.id);
 
-    if (studentId === null) {
+    if (student === null) {
       res.status(400).end();
       return;
     }
 
     const studentSolution: StudentSolution = {
-      studentId,
+      student,
       examId,
       solution,
     };

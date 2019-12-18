@@ -2,14 +2,35 @@ import { PoolConnection } from 'mysql';
 
 import { pool } from './index';
 
-interface StudentsRowDataPacket {
+import { SpecialtiesRowDataPacket, buildSpecialty } from './specialties';
+import { AccountsRowDataPacket } from './accounts';
+
+import { Student } from '../models/Student';
+
+export interface StudentsRowDataPacket {
   id: number;
   account_id: number;
   specialty_id: number;
 }
 
-function getStudentId(accountId: string): Promise<string|null> {
-  return new Promise<string|null>((resolve, reject) => {
+export interface FullStudentRowDataPacket {
+  specialties: SpecialtiesRowDataPacket;
+  students: StudentsRowDataPacket;
+  accounts: AccountsRowDataPacket;
+}
+
+export function buildStudent(packet: FullStudentRowDataPacket): Student {
+  const specialty = buildSpecialty(packet.specialties);
+
+  return {
+    id: String(packet.students.id),
+    email: packet.accounts.email,
+    specialty,
+  };
+}
+
+function getStudentByAccountId(accountId: string): Promise<Student|null> {
+  return new Promise<Student|null>((resolve, reject) => {
     pool.getConnection((connectionError: Error|null, connection: PoolConnection) => {
       if (connectionError) {
         reject(connectionError);
@@ -18,9 +39,14 @@ function getStudentId(accountId: string): Promise<string|null> {
 
       connection.query({
         sql: `select * from students
-          where students.account_id = ?`,
+        inner join accounts
+          on accounts.id = students.account_id
+        inner join specialties
+          on specialties.id = students.specialty_id
+        where students.account_id = ?`,
         values: [accountId],
-      }, (queryError: Error|null, results: StudentsRowDataPacket[]) => {
+        nestTables: true,
+      }, (queryError: Error|null, results: FullStudentRowDataPacket[]) => {
         if (queryError) {
           reject(queryError);
           return;
@@ -33,12 +59,51 @@ function getStudentId(accountId: string): Promise<string|null> {
           return;
         }
 
-        resolve(String(results[0].id));
+        const student = buildStudent(results[0]);
+        resolve(student);
+      });
+    });
+  });
+}
+
+function getStudentById(studentId: string): Promise<Student|null> {
+  return new Promise<Student|null>((resolve, reject) => {
+    pool.getConnection((connectionError: Error|null, connection: PoolConnection) => {
+      if (connectionError) {
+        reject(connectionError);
+        return;
+      }
+
+      connection.query({
+        sql: `select * from students
+        inner join accounts
+          on accounts.id = students.account_id
+        inner join specialties
+          on specialties.id = students.specialty_id
+        where students.id = ?`,
+        values: [studentId],
+        nestTables: true,
+      }, (queryError: Error|null, results: FullStudentRowDataPacket[]) => {
+        if (queryError) {
+          reject(queryError);
+          return;
+        }
+
+        connection.release();
+
+        if (results.length < 1) {
+          resolve(null);
+          return;
+        }
+
+        const student = buildStudent(results[0]);
+        resolve(student);
       });
     });
   });
 }
 
 export default {
-  getStudentId,
+  getStudentById,
+  getStudentByAccountId,
 };

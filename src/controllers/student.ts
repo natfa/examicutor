@@ -1,11 +1,20 @@
-import studentDB from '../db/students';
+import studentdb from '../db/students';
 
-async function getStudentId(accountId: string): Promise<string|null> {
-  const studentId = await studentDB.getStudentId(accountId);
+import { Student } from '../models/Student';
 
-  return studentId;
+async function getStudentById(id: string): Promise<Student|null> {
+  const student = await studentdb.getStudentById(id);
+
+  return student;
+}
+
+async function getStudentByAccountId(accountId: string): Promise<Student|null> {
+  const student = await studentdb.getStudentByAccountId(accountId);
+
+  return student;
 }
 
 export default {
-  getStudentId,
+  getStudentById,
+  getStudentByAccountId,
 };

@@ -20,6 +20,7 @@ import { Time } from '../models/Time';
 import { Exam } from '../models/Exam';
 import { Specialty } from '../models/Specialty';
 import { ExamInfo } from '../models/ExamInfo';
+import { Student } from '../models/Student';
 
 import { pointValues } from '../constants';
 
@@ -196,10 +197,10 @@ async function getAllExams(req: Request, res: Response, next: NextFunction): Pro
 
   try {
     let exams: ExamInfo[];
-    const studentId = await studentController.getStudentId(account.id);
+    const student = await studentController.getStudentByAccountId(account.id);
 
-    if (studentId !== null) { // the account is a student
-      exams = await examController.getAllExams(studentId);
+    if (student !== null) { // the account is a student
+      exams = await examController.getAllExams(student.id);
     } else {
       exams = await examController.getAllExams();
     }
@@ -217,10 +218,10 @@ async function getUpcomingExams(req: Request, res: Response, next: NextFunction)
 
   try {
     let exams: ExamInfo[];
-    const studentId = await studentController.getStudentId(account.id);
+    const student = await studentController.getStudentByAccountId(account.id);
 
-    if (studentId !== null) { // the account is a student
-      exams = await examController.getUpcomingExams(studentId);
+    if (student !== null) { // the account is a student
+      exams = await examController.getUpcomingExams(student.id);
     } else {
       exams = await examController.getUpcomingExams();
     }
@@ -238,10 +239,10 @@ async function getPastExams(req: Request, res: Response, next: NextFunction): Pr
 
   try {
     let exams: ExamInfo[];
-    const studentId = await studentController.getStudentId(account.id);
+    const student = await studentController.getStudentByAccountId(account.id);
 
-    if (studentId !== null) { // the account is a student
-      exams = await examController.getPastExams(studentId);
+    if (student !== null) { // the account is a student
+      exams = await examController.getPastExams(student.id);
     } else {
       exams = await examController.getPastExams();
     }
@@ -262,11 +263,28 @@ async function getStudentExamResults(
   try {
     const { examId, studentId } = req.params;
 
-    const actualStudentId = await studentController.getStudentId(req.session.account.id);
+    let student: Student|null;
 
-    if (actualStudentId !== studentId && req.session.account.roles.includes('student')) {
-      res.status(403).end();
-      return;
+    // permissions check
+    if (req.session.account.roles.includes('student')) {
+      student = await studentController.getStudentByAccountId(req.session.account.id);
+
+      if (student === null) {
+        res.status(404).end();
+        return;
+      }
+
+      if (student.id !== studentId) {
+        res.status(403).end();
+        return;
+      }
+    } else {
+      student = await studentController.getStudentById(studentId);
+
+      if (student === null) {
+        res.status(404).end();
+        return;
+      }
     }
 
     const examResults = await examController.getStudentExamResults(examId, studentId);
