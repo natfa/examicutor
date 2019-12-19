@@ -81,6 +81,11 @@ async function submitExam(
   return assignedGrade;
 }
 
+function hasSubmitted(examId: string, studentId: string): Promise<boolean> {
+  return examdb.hasSubmitted(examId, studentId);
+}
+
 export default {
   submitExam,
+  hasSubmitted,
 };

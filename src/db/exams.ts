@@ -733,6 +733,39 @@ function getExamGrades(examId: string): Promise<ExamGrade[]> {
   });
 }
 
+function hasSubmitted(examId: string, studentId: string): Promise<boolean> {
+  return new Promise<boolean>((resolve, reject) => {
+    pool.getConnection((connectionError: Error|null, connection: PoolConnection) => {
+      if (connectionError) {
+        reject(connectionError);
+        return;
+      }
+
+      connection.query({
+        sql: `select * from exam_grades
+        where
+          exam_grades.exam_id = ? and
+          exam_grades.student_id = ?`,
+        values: [examId, studentId],
+      }, (queryError: Error|null, results: ExamGradesRowDataPacket[]) => {
+        if (queryError) {
+          reject(queryError);
+          return;
+        }
+
+        connection.release();
+
+        if (results.length === 0) {
+          resolve(false);
+          return;
+        }
+
+        resolve(true);
+      });
+    });
+  });
+}
+
 export default {
   saveOne,
 
@@ -755,4 +788,6 @@ export default {
 
   getExamGrades,
   getStudentExamResults,
+
+  hasSubmitted,
 };

@@ -89,6 +89,13 @@ async function submitExam(req: Request, res: Response, next: NextFunction): Prom
       return;
     }
 
+    const studentHasSubmitted = await solveController.hasSubmitted(examId, student.id);
+
+    if (studentHasSubmitted) {
+      res.status(400).end();
+      return;
+    }
+
     const studentSolution: StudentSolution = {
       student,
       examId,
