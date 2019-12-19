@@ -1,5 +1,7 @@
 import dayjs from 'dayjs';
 
+import shuffle from '../utils/shuffle';
+
 import { StrippedAnswer } from '../models/StrippedAnswer';
 import { StrippedQuestion } from '../models/StrippedQuestion';
 import { Exam } from '../models/Exam';
@@ -71,6 +73,34 @@ function stripExam(exam: Exam|null): StrippedExam|null {
     startDate: exam.startDate,
     timeToSolve: exam.timeToSolve,
     questions,
+  };
+}
+
+/**
+ * Shuffles the questions and their answers in preparation for exam solving.
+ *
+ * @param {StrippedExam|null} exam - The exam to be shuffled. The function doesn't mutate
+ * the parameter. If null is passed as argument, null will be returned.
+ *
+ * @returns {StrippedExam|null} - A copy of the exam instance with shuffled questions
+ * and answers. If null was passed as an argument, null will be returned.
+ */
+async function shuffleStrippedExam(exam: StrippedExam|null): Promise<StrippedExam|null> {
+  if (exam === null) return null;
+
+  const questionsWithShuffledAnswers = exam.questions.map((question) => {
+    return {
+      id: question.id,
+      text: question.text,
+      answers: shuffle(question.answers),
+    };
+  });
+
+  const shuffledQuestions = shuffle(questionsWithShuffledAnswers);
+
+  return {
+    ...exam,
+    questions: shuffledQuestions,
   };
 }
 
@@ -151,6 +181,7 @@ async function getExamGrades(examId: string): Promise<ExamGrade[]> {
   return grades;
 }
 
+
 export default {
   getExamById,
 
@@ -160,6 +191,7 @@ export default {
   getPastExams,
 
   stripExam,
+  shuffleStrippedExam,
   getExamBoundaries,
 
   getExamGrades,

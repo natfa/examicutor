@@ -17,6 +17,7 @@ function getExamById(req: Request, res: Response, next: NextFunction): void {
   examController
     .getExamById(examId)
     .then(examController.stripExam)
+    .then(examController.shuffleStrippedExam)
     .then((strippedExam) => {
       if (strippedExam === null) {
         res.status(404).end();

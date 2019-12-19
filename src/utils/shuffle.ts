@@ -2,7 +2,8 @@
  * Shuffles an array of any elements. Uses the Fisher–Yates Shuffle
  * The function doesn't mutate the passed array, instead returns a new one.
  * source: https://bost.ocks.org/mike/shuffle/
- * @param array The array to be shuffled
+ *
+ * @param {Array} - The array to be shuffled. This array won't be mutated by the function
  */
 export const shuffle = (array: Array<any>): Array<any> => {
   const returnArray = [...array];
