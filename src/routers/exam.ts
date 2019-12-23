@@ -289,7 +289,7 @@ async function getStudentExamResults(
 
     const examResults = await examController.getStudentExamResults(examId, studentId);
 
-    res.status(200).json({ examResults });
+    res.status(200).json(examResults);
   } catch (err) {
     next(err);
   }
