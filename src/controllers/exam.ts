@@ -181,6 +181,16 @@ async function getExamGrades(examId: string): Promise<ExamGrade[]> {
   return grades;
 }
 
+async function hasStudentSubmitted(examId: string, studentId: string): Promise<boolean> {
+  const examResult = await getStudentExamResults(examId, studentId);
+
+  if (examResult === null) { // == student has not submitted, no exam results found
+    return false;
+  }
+
+  return true;
+}
+
 
 export default {
   getExamById,
@@ -196,4 +206,5 @@ export default {
 
   getExamGrades,
   getStudentExamResults,
+  hasStudentSubmitted,
 };

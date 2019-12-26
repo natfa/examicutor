@@ -626,6 +626,7 @@ function getStudentExamResults(examId: string, studentId: string): Promise<ExamR
             sql: `select * from student_exam_answers
             inner join exam_grades
               on exam_grades.student_id = student_exam_answers.student_id
+              and exam_grades.exam_id = student_exam_answers.exam_id
             where
               student_exam_answers.exam_id = ? and
               student_exam_answers.student_id = ?`,
@@ -634,6 +635,11 @@ function getStudentExamResults(examId: string, studentId: string): Promise<ExamR
           }, (queryError: Error|null, results: ExamResultRowDataPacket[]) => {
             if (queryError) {
               reject(queryError);
+              return;
+            }
+
+            if (results.length === 0) {
+              resolve(null);
               return;
             }
 

@@ -174,13 +174,29 @@ async function getExamById(req: Request, res: Response, next: NextFunction): Pro
     if (req.session.account.roles.includes('student')) {
       const now = dayjs();
       const startDate = dayjs(exam.startDate);
+      const student = await studentController.getStudentByAccountId(req.session.account.id);
+
+      // ensure studentId
+      if (student === null) {
+        throw new Error('A student with role student does not have a student entry in the DB');
+      }
 
       // if start date is in the future
       if (startDate.isAfter(now)) {
         delete exam.questions;
       }
 
-      res.status(200).json(exam);
+      // ensure exam.id
+      if (exam.id === undefined) throw new Error('exam.id is undefined after being fetched from DB');
+
+      const hasSubmitted = await examController.hasStudentSubmitted(exam.id, student.id);
+
+      if (hasSubmitted) {
+        res.status(200).json({ exam, hasSubmitted: true });
+      } else {
+        res.status(200).json({ exam, hasSubmitted: false });
+      }
+
       return;
     }
 
@@ -218,6 +234,7 @@ async function getUpcomingExams(req: Request, res: Response, next: NextFunction)
 
   try {
     let exams: ExamInfo[];
+    console.log('Before getStudentByAccountId');
     const student = await studentController.getStudentByAccountId(account.id);
 
     if (student !== null) { // the account is a student
