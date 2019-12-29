@@ -58,9 +58,13 @@ async function submitExam(
     return null;
   }
 
-  // TODO: This needs to be fixed in the future,
-  // when you can identify which student is in which specialty
-  const boundary = examBoundaries[0];
+  // get correct boundary for student
+  const boundary = examBoundaries
+    .find((boundary) => boundary.specialty.id === studentSolution.student.specialty.id);
+
+  if (boundary === undefined || boundary === null) {
+    return null;
+  }
 
   let assignedGrade = 0;
   const sortedPossibleGrades = possibleGrades.sort((a, b) => b - a);
