@@ -534,8 +534,6 @@ function saveStudentSolution(studentSolution: StudentSolution): Promise<void> {
         return;
       }
 
-      connection.release();
-
       let sqlQuery = `insert into student_exam_answers
       (student_id, exam_id, question_id, answer_id) values `;
       let values: string[] = [];
@@ -562,6 +560,8 @@ function saveStudentSolution(studentSolution: StudentSolution): Promise<void> {
           reject(queryError);
           return;
         }
+
+        connection.release();
 
         if (
           results.insertId === undefined || studentSolution.solution.length !== results.affectedRows
@@ -638,12 +638,12 @@ function getStudentExamResults(examId: string, studentId: string): Promise<ExamR
               return;
             }
 
+            connection.release();
+
             if (results.length === 0) {
               resolve(null);
               return;
             }
-
-            connection.release();
 
             const grade = results[0].exam_grades.grade;
             const questionSolutions: QuestionSolution[] = results
