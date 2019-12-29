@@ -234,7 +234,6 @@ async function getUpcomingExams(req: Request, res: Response, next: NextFunction)
 
   try {
     let exams: ExamInfo[];
-    console.log('Before getStudentByAccountId');
     const student = await studentController.getStudentByAccountId(account.id);
 
     if (student !== null) { // the account is a student
