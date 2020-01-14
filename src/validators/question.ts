@@ -29,8 +29,8 @@ function validateAnswers(answers: Array<string>): QuestionValidationResult {
   let errors: QuestionValidationResult = {};
 
   answers.some((answer) => {
-    if (typeof answer !== 'string') {
-      errors = { answers: 'All answers must be strings' };
+    if (answer.length === 0) {
+      errors = { answers: 'Can\'t have empty answers' };
       return true;
     }
 
@@ -41,20 +41,22 @@ function validateAnswers(answers: Array<string>): QuestionValidationResult {
 }
 
 function validatePoints(points: number): QuestionValidationResult {
-  if (typeof points !== 'number' && !Number.isNaN(points)) return { points: 'Must be a number' };
-  if (points < 0) return { points: 'Can\'t be negative' };
+  if (Number.isNaN(Number(points))) return { points: 'Must be a number' };
+
+  if (points <= 0) return { points: 'Can\'t be negative' };
+  if (points > 5) return { points: 'Can\'t be more than 5' };
 
   return {};
 }
 
 function validateSubjectName(subjectName: string): QuestionValidationResult {
-  if (typeof subjectName !== 'string') return { subjectName: 'Must be a string' };
+  if (subjectName.length < 1) return { subjectName: 'Can\'t be empty' };
 
   return {};
 }
 
 function validateThemeName(themeName: string): QuestionValidationResult {
-  if (typeof themeName !== 'string') return { themeName: 'Must be a string' };
+  if (themeName.length < 1) return { themeName: 'Can\'t be empty' };
 
   return {};
 }
