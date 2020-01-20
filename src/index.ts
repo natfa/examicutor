@@ -10,12 +10,15 @@ server.listen(config.port, () => {
 });
 
 // graceful shutdown
-process.on('SIGTERM', () => {
+function gracefulShutdown() {
   console.log('Stopping express app.')
   server.close(() => {
     process.exit();
   });
-});
+}
+
+process.on('SIGTERM', gracefulShutdown);
+process.on('SIGINT', gracefulShutdown)
 
 process.on('exit', () => {
   console.log('Stopping process.');
