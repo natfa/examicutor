@@ -1,6 +1,16 @@
-DROP DATABASE IF EXISTS `natfis`;
-CREATE DATABASE `natfis`;
-USE `natfis`;
+DROP TABLE IF EXISTS `student_exam_answers`;
+DROP TABLE IF EXISTS `exam_grades`;
+DROP TABLE IF EXISTS `exam_boundaries`;
+DROP TABLE IF EXISTS `exam_questions`;
+DROP TABLE IF EXISTS `exams`;
+DROP TABLE IF EXISTS `answers`;
+DROP TABLE IF EXISTS `media`;
+DROP TABLE IF EXISTS `questions`;
+DROP TABLE IF EXISTS `themes`;
+DROP TABLE IF EXISTS `subjects`;
+DROP TABLE IF EXISTS `students`;
+DROP TABLE IF EXISTS `specialties`;
+DROP TABLE IF EXISTS `accounts`;
 
 CREATE TABLE `accounts` (
   `id` INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
