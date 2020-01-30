@@ -1,10 +1,12 @@
-import { Question } from '../models/Question';
 import supertest from 'supertest';
+
+import { pool } from '../db';
+import { Question } from '../models/Question';
 import app from '../app';
 
 let cookie = '';
-const email = 'federlizer@gmail.com';
-const password = '@lokinSkywalker&5101';
+const email = 'test@mail.com';
+const password = '123456';
 
 const actualQuestion = {
   text: 'What testing library is being used for this project?',
@@ -28,99 +30,169 @@ beforeAll(async () => {
   cookie = res.header['set-cookie'][0].split(';')[0];
 });
 
+afterAll((done) => {
+  pool.end(() => done())
+});
+
 describe('POST /api/question', () => {
   it('shouldn\'t create a question when text.length <= 2', async () => {
-    const localQuestion = actualQuestion;
+    const question = {
+      text: 'What testing library is being used for this project?',
+      points: 3,
+      subjectName: 'Programming',
+      themeName: 'Testing',
+      correctAnswers: ['Jest', 'Supertest'],
+      incorrectAnswers: [
+        'Mocha',
+        'Chai',
+        'Jester',
+      ],
+    };
 
     const response = await supertest(app)
       .post('/api/question')
       .set('Cookie', cookie)
       .field('text', 'ab')
-      .field('points', localQuestion.points)
-      .field('subjectName', localQuestion.subjectName)
-      .field('themeName', localQuestion.themeName)
-      .field('correctAnswers', localQuestion.correctAnswers)
-      .field('incorrectAnswers', localQuestion.incorrectAnswers)
+      .field('points', question.points)
+      .field('subjectName', question.subjectName)
+      .field('themeName', question.themeName)
+      .field('correctAnswers', question.correctAnswers)
+      .field('incorrectAnswers', question.incorrectAnswers)
 
     expect(response.status).toBe(400);
   });
 
   it('shouldn\'t create a question when text.length > 500', async () => {
-    const localQuestion = actualQuestion;
+    const question = {
+      text: 'What testing library is being used for this project?',
+      points: 3,
+      subjectName: 'Programming',
+      themeName: 'Testing',
+      correctAnswers: ['Jest', 'Supertest'],
+      incorrectAnswers: [
+        'Mocha',
+        'Chai',
+        'Jester',
+      ],
+    };
 
     const response = await supertest(app)
       .post('/api/question')
       .set('Cookie', cookie)
       .field('text', 'a'.repeat(501))
-      .field('points', localQuestion.points)
-      .field('subjectName', localQuestion.subjectName)
-      .field('themeName', localQuestion.themeName)
-      .field('correctAnswers', localQuestion.correctAnswers)
-      .field('incorrectAnswers', localQuestion.incorrectAnswers)
+      .field('points', question.points)
+      .field('subjectName', question.subjectName)
+      .field('themeName', question.themeName)
+      .field('correctAnswers', question.correctAnswers)
+      .field('incorrectAnswers', question.incorrectAnswers)
 
     expect(response.status).toBe(400);
   });
 
   it('shouldn\'t create a question when points < 1', async () => {
-    const localQuestion = actualQuestion;
+    const question = {
+      text: 'What testing library is being used for this project?',
+      points: 3,
+      subjectName: 'Programming',
+      themeName: 'Testing',
+      correctAnswers: ['Jest', 'Supertest'],
+      incorrectAnswers: [
+        'Mocha',
+        'Chai',
+        'Jester',
+      ],
+    };
 
     const response = await supertest(app)
       .post('/api/question')
       .set('Cookie', cookie)
-      .field('text', localQuestion.text)
+      .field('text', question.text)
       .field('points', 0)
-      .field('subjectName', localQuestion.subjectName)
-      .field('themeName', localQuestion.themeName)
-      .field('correctAnswers', localQuestion.correctAnswers)
-      .field('incorrectAnswers', localQuestion.incorrectAnswers)
+      .field('subjectName', question.subjectName)
+      .field('themeName', question.themeName)
+      .field('correctAnswers', question.correctAnswers)
+      .field('incorrectAnswers', question.incorrectAnswers)
 
     expect(response.status).toBe(400);
   });
 
   it('shouldn\'t create a question when points > 5', async () => {
-    const localQuestion = actualQuestion;
+    const question = {
+      text: 'What testing library is being used for this project?',
+      points: 3,
+      subjectName: 'Programming',
+      themeName: 'Testing',
+      correctAnswers: ['Jest', 'Supertest'],
+      incorrectAnswers: [
+        'Mocha',
+        'Chai',
+        'Jester',
+      ],
+    };
 
     const response = await supertest(app)
       .post('/api/question')
       .set('Cookie', cookie)
-      .field('text', localQuestion.text)
+      .field('text', question.text)
       .field('points', 6)
-      .field('subjectName', localQuestion.subjectName)
-      .field('themeName', localQuestion.themeName)
-      .field('correctAnswers', localQuestion.correctAnswers)
-      .field('incorrectAnswers', localQuestion.incorrectAnswers)
+      .field('subjectName', question.subjectName)
+      .field('themeName', question.themeName)
+      .field('correctAnswers', question.correctAnswers)
+      .field('incorrectAnswers', question.incorrectAnswers)
 
     expect(response.status).toBe(400);
   });
 
   it('shouldn\'t create a question when points isn\'t a number', async () => {
-    const localQuestion = actualQuestion;
+    const question = {
+      text: 'What testing library is being used for this project?',
+      points: 3,
+      subjectName: 'Programming',
+      themeName: 'Testing',
+      correctAnswers: ['Jest', 'Supertest'],
+      incorrectAnswers: [
+        'Mocha',
+        'Chai',
+        'Jester',
+      ],
+    };
 
     const response = await supertest(app)
       .post('/api/question')
       .set('Cookie', cookie)
-      .field('text', localQuestion.text)
+      .field('text', question.text)
       .field('points', 'im not a number')
-      .field('subjectName', localQuestion.subjectName)
-      .field('themeName', localQuestion.themeName)
-      .field('correctAnswers', localQuestion.correctAnswers)
-      .field('incorrectAnswers', localQuestion.incorrectAnswers)
+      .field('subjectName', question.subjectName)
+      .field('themeName', question.themeName)
+      .field('correctAnswers', question.correctAnswers)
+      .field('incorrectAnswers', question.incorrectAnswers)
 
     expect(response.status).toBe(400);
   });
 
   it('shouldn\'t create a question when subjectName.length === 0', async () => {
-    const localQuestion = actualQuestion;
+    const question = {
+      text: 'What testing library is being used for this project?',
+      points: 3,
+      subjectName: 'Programming',
+      themeName: 'Testing',
+      correctAnswers: ['Jest', 'Supertest'],
+      incorrectAnswers: [
+        'Mocha',
+        'Chai',
+        'Jester',
+      ],
+    };
 
     const response = await supertest(app)
       .post('/api/question')
       .set('Cookie', cookie)
-      .field('text', localQuestion.text)
-      .field('points', localQuestion.points)
+      .field('text', question.text)
+      .field('points', question.points)
       .field('subjectName', '')
-      .field('themeName', localQuestion.themeName)
-      .field('correctAnswers', localQuestion.correctAnswers)
-      .field('incorrectAnswers', localQuestion.incorrectAnswers)
+      .field('themeName', question.themeName)
+      .field('correctAnswers', question.correctAnswers)
+      .field('incorrectAnswers', question.incorrectAnswers)
 
     expect(response.status).toBe(400);
   });
