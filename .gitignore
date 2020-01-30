@@ -11,5 +11,4 @@
 **/sessions/
 **/.vscode/
 
-# personal and client files
-questions.md
+*.sh
