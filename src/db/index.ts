@@ -1,14 +1,11 @@
 import mysql from 'mysql';
 
-import config from '../config/default';
+import cfgInit from '../config/default';
+const config = cfgInit();
 
-export const pool = mysql.createPool({
-  host: config.db.host,
-  user: config.db.user,
-  password: config.db.password,
-  database: config.db.database,
-  waitForConnections: true,
-});
+console.log(config);
+
+export const pool = createPool(config);
 
 export function query(opts: any): Promise<any> {
   return new Promise((resolve, reject) => {
@@ -27,6 +24,18 @@ export function query(opts: any): Promise<any> {
       });
     });
   });
+}
+
+function createPool(cfg: any) {
+  const pool = mysql.createPool({
+    host:               cfg.db.host,
+    user:               cfg.db.user,
+    password:           cfg.db.password,
+    database:           cfg.db.database,
+    waitForConnections: true,
+  });
+
+  return pool;
 }
 
 export default query;

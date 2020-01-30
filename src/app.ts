@@ -17,7 +17,8 @@ import specialtyRouter from './routers/specialty';
 import studentRouter from './routers/student';
 
 // load config
-import config from './config/default';
+import cfgInit from './config/default';
+const config = cfgInit();
 
 // global config
 const app = express();

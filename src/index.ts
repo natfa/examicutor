@@ -1,7 +1,11 @@
 import process from 'process';
 import http from 'http';
+
+import { pool } from './db/index';
 import app from './app';
-import config from './config/default';
+
+import cfgInit from './config/default';
+const config = cfgInit()
 
 const server = http.createServer(app);
 
@@ -13,7 +17,8 @@ server.listen(config.port, () => {
 function gracefulShutdown() {
   console.log('Stopping express app.')
   server.close(() => {
-    process.exit();
+    console.log('Stopping DB');
+    pool.end(() => process.exit(0))
   });
 }
 
