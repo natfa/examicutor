@@ -5,6 +5,7 @@
     "strict": true,
     "esModuleInterop": true,
     "noEmit": true,
+    "allowJs": true,
     "lib": [
       "es2019"
     ]
