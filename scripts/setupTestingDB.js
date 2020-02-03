@@ -12,7 +12,6 @@ const promisify = require('util').promisify;
 const cfgInit = require('../src/config/default.js');
 const config = cfgInit();
 
-console.log(config);
 
 const scriptPath = path.resolve(__dirname, '../sql-scripts/create-tables.sql');
 const connection = mysql.createConnection({

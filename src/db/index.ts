@@ -3,8 +3,6 @@ import mysql from 'mysql';
 import cfgInit from '../config/default';
 const config = cfgInit();
 
-console.log(config);
-
 export const pool = createPool(config);
 
 export function query(opts: any): Promise<any> {
