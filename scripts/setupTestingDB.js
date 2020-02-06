@@ -28,26 +28,26 @@ connection.connect();
 
 
 fs.readFile(scriptPath, 'utf8')
-
-.then((createTablesScript) => {
-  console.log('Sending queries...');
-  return query(createTablesScript)
-})
-
-.then(() => {
-  console.log('Inserting test account...');
-  return insertDummyAccount(query)
-})
-
-.then(() => {
-  connection.end();
-  console.log('Done');
-})
-
-.catch((err) => {
-  connection.end();
-  console.error(err);
-});
+  .then((createTablesScript) => {
+    console.log('Sending queries...');
+    return query(createTablesScript);
+  })
+  .then(() => {
+    console.log('Inserting test account...');
+    return insertDummyAccount(query);
+  })
+  .then(() => {
+    console.log('Inserting \'Computer Science\' specialty');
+    return insertDummySpecialty(query);
+  })
+  .then(() => {
+    connection.end();
+    console.log('Done');
+  })
+  .catch((err) => {
+    connection.end();
+    console.error(err);
+  });
 
 async function insertDummyAccount(query) {
   const saltRounds = 10;
@@ -60,4 +60,12 @@ async function insertDummyAccount(query) {
     (?, ?, 'teacher')`,
     [email, hash],
   );
+}
+
+async function insertDummySpecialty(query) {
+  const specialty = {
+    name: 'Computer Science',
+  };
+
+  await query('insert into specialties (name) value (?)', [specialty.name]);
 }
