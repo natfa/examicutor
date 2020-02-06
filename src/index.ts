@@ -16,9 +16,18 @@ server.listen(config.port, () => {
 // graceful shutdown
 function gracefulShutdown() {
   console.log('Stopping express app.')
-  server.close(() => {
+  server.close((err) => {
+    if (err) {
+      console.error(err);
+    }
+
     console.log('Stopping DB');
-    pool.end(() => process.exit(0))
+    pool.end((err) => {
+      if (err) {
+        console.error(err);
+      }
+      process.exit(0)
+    });
   });
 }
 
