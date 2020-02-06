@@ -58,7 +58,7 @@ app.use('/api/auth/', authController);
 
 app.use('/api/exam/', examRouter);
 app.use('/api/solve/', solveRouter);
-app.use('/api/specialty/', specialtyRouter);
+app.use('/api/specialties/', specialtyRouter);
 app.use('/api/student/', studentRouter);
 
 // serve javascript bundles
