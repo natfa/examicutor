@@ -4,7 +4,8 @@
   "scripts": {
     "start": "node ./bin/index.js",
     "watch": "webpack --watch",
-    "build": "webpack"
+    "build": "webpack",
+    "test": "node ./scripts/setupTestingDB.js && NODE_ENV=testing jest"
   },
   "author": "Federlizer",
   "license": "ISC",
