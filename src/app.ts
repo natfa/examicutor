@@ -3,18 +3,20 @@ import path from 'path';
 import session from 'express-session';
 import FileStore from 'session-file-store';
 
+import routes from './routes';
+
 import requestLogger from './utils/requestLogger';
 
-import questionController from './controllers/question';
+//import questionController from './controllers/question';
 import mediaController from './controllers/media';
 import subjectController from './controllers/subject';
 import themeController from './controllers/theme';
 import authController from './controllers/auth';
 
-import examRouter from './routers/exam';
-import solveRouter from './routers/solve';
-import specialtyRouter from './routers/specialty';
-import studentRouter from './routers/student';
+import examRouter from './routes/exam';
+import solveRouter from './routes/solve';
+import specialtyRouter from './routes/specialty';
+import studentRouter from './routes/student';
 
 // load config
 import cfgInit from './config/default';
@@ -49,8 +51,9 @@ app.use(express.json());
 app.use(session(sessionConfig));
 app.use(requestLogger);
 
+routes.init(app);
+
 // apply controllers
-app.use('/api/question/', questionController);
 app.use('/api/media/', mediaController);
 app.use('/api/subject/', subjectController);
 app.use('/api/theme/', themeController);

@@ -1,25 +1,18 @@
-import express, { Request, Response, NextFunction } from 'express';
-import multer from 'multer';
+import { Request, Response, NextFunction } from 'express';
 import path from 'path';
-import fsCallbacks from 'fs';
+import { promises as fs } from 'fs';
 
-import validateQuestionBody from '../validators/question';
-import isTeacher from '../middleware/isTeacher';
-import removeUploadedFiles from '../utils/removeUploadedFiles';
+import removeUploadedFiles from '../../utils/removeUploadedFiles';
 
-import mediadb from '../db/media';
-import questiondb from '../db/questions';
-import subjectdb from '../db/subjects';
-import themedb from '../db/themes';
+import questiondb from '../../db/questions';
+import subjectdb from '../../db/subjects';
+import themedb from '../../db/themes';
+import mediadb from '../../db/media';
 
-import { Answer } from '../models/Answer';
-import { Question } from '../models/Question';
-import { Theme } from '../models/Theme';
-import { Subject } from '../models/Subject';
-
-// es6 imports don't support equivalent syntax to
-// `const fs = require('fs').promises` yet
-const fs = fsCallbacks.promises;
+import { Answer } from '../../models/Answer';
+import { Question } from '../../models/Question';
+import { Theme } from '../../models/Theme';
+import { Subject } from '../../models/Subject';
 
 interface QuestionRequestBody {
   id?: string;
@@ -53,11 +46,33 @@ const saveMedia = async (
   return buffers.map((buffer) => mediadb.saveOne(buffer, questionId));
 };
 
-/**
- * Ensures that the req.body object has a valid {Subject} object
- * either by finding it in the database or creating one
- */
-const ensureSubject = async (req: Request, _: Response, next: NextFunction): Promise<void> => {
+async function getQuestions(_: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const questions = await questiondb.getMany(200);
+    res.status(200).json(questions);
+  } catch (err) {
+    next(err);
+  }
+}
+
+
+async function getQuestionById(req: Request, res: Response, next: NextFunction): Promise<void> {
+  const { id } = req.params;
+
+  try {
+    const question = await questiondb.getOneById(id);
+
+    if (question === null) {
+      res.status(404).end();
+      return;
+    }
+    res.status(200).json(question);
+  } catch (err) {
+    next(err);
+  }
+};
+
+async function ensureSubject(req: Request, _: Response, next: NextFunction): Promise<void> {
   const { subjectName } = req.body;
 
   try {
@@ -74,11 +89,7 @@ const ensureSubject = async (req: Request, _: Response, next: NextFunction): Pro
   }
 };
 
-/**
- * Ensures that the req.body object has a valid {Theme} object
- * either by finding it in the database or by creating one
- */
-const ensureTheme = async (req: Request, _: Response, next: NextFunction): Promise<void> => {
+async function ensureTheme(req: Request, _: Response, next: NextFunction): Promise<void> {
   const { themeName, subject } = req.body;
 
   try {
@@ -95,32 +106,7 @@ const ensureTheme = async (req: Request, _: Response, next: NextFunction): Promi
   }
 };
 
-const getQuestions = async (_: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    const questions = await questiondb.getMany(200);
-    res.status(200).json(questions);
-  } catch (err) {
-    next(err);
-  }
-};
-
-const getQuestionById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  const { id } = req.params;
-
-  try {
-    const question = await questiondb.getOneById(id);
-
-    if (question === null) {
-      res.status(404).end();
-      return;
-    }
-    res.status(200).json(question);
-  } catch (err) {
-    next(err);
-  }
-};
-
-const createQuestion = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+async function createQuestion(req: Request, res: Response, next: NextFunction): Promise<void> {
   const {
     text,
     points,
@@ -164,7 +150,7 @@ const createQuestion = async (req: Request, res: Response, next: NextFunction): 
   }
 };
 
-const updateQuestion = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+async function updateQuestion(req: Request, res: Response, next: NextFunction): Promise<void> {
   const {
     id,
     text,
@@ -223,9 +209,7 @@ const updateQuestion = async (req: Request, res: Response, next: NextFunction): 
     next(err);
   }
 };
-
-
-const deleteQuestion = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+async function deleteQuestion(req: Request, res: Response, next: NextFunction): Promise<void> {
   const { id } = req.params;
   try {
     const success = await questiondb.deleteOneById(id);
@@ -240,33 +224,15 @@ const deleteQuestion = async (req: Request, res: Response, next: NextFunction): 
   }
 };
 
-const router = express.Router();
-const upload = multer({ dest: 'uploads/' });
+export default {
+  getQuestions,
+  getQuestionById,
 
-router.use(isTeacher);
-
-router.get('/', getQuestions);
-
-router.get('/:id', getQuestionById);
-
-router.post(
-  '/',
-  upload.array('media'),
-  validateQuestionBody,
   ensureSubject,
   ensureTheme,
+
   createQuestion,
-);
-
-router.put(
-  '/',
-  upload.array('media'),
-  validateQuestionBody,
-  ensureSubject,
-  ensureTheme,
   updateQuestion,
-);
 
-router.delete('/:id', deleteQuestion);
-
-export default router;
+  deleteQuestion,
+};
