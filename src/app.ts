@@ -7,9 +7,7 @@ import routes from './routes';
 
 import requestLogger from './utils/requestLogger';
 
-//import questionController from './controllers/question';
 import mediaController from './controllers/media';
-import subjectController from './controllers/subject';
 import themeController from './controllers/theme';
 import authController from './controllers/auth';
 
@@ -55,7 +53,6 @@ routes.init(app);
 
 // apply controllers
 app.use('/api/media/', mediaController);
-app.use('/api/subject/', subjectController);
 app.use('/api/theme/', themeController);
 app.use('/api/auth/', authController);
 
