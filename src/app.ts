@@ -51,6 +51,8 @@ app.get('/student/*', (_, res) => res.sendFile(path.resolve(config.clientPath, '
 
 app.get('/', (_, res) => res.redirect('/landing'));
 
-app.get('*', (_, res) => res.sendFile(path.resolve(config.clientPath, '404/index.html')));
+app.get('*', (_, res) => {
+  res.status(404).sendFile(path.resolve(config.clientPath, '404/index.html'))
+});
 
 export default app;
