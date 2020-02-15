@@ -124,8 +124,9 @@ describe('POST /api/exam', () => {
 
     // specialties
     const specialtiesResponse = await request
-      .get('/api/specialties/')
+      .get('/api/specialty/')
       .send();
+
     expect(specialtiesResponse.status).toBe(200);
     const specialties = specialtiesResponse.body;
 
