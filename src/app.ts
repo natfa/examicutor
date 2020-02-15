@@ -7,13 +7,8 @@ import routes from './routes';
 
 import requestLogger from './utils/requestLogger';
 
-import mediaController from './controllers/media';
-import authController from './controllers/auth';
-
 import examRouter from './routes/exam';
 import solveRouter from './routes/solve';
-import specialtyRouter from './routes/specialty';
-import studentRouter from './routes/student';
 
 // load config
 import cfgInit from './config/default';
@@ -51,13 +46,9 @@ app.use(requestLogger);
 routes.init(app);
 
 // apply controllers
-app.use('/api/media/', mediaController);
-app.use('/api/auth/', authController);
 
 app.use('/api/exam/', examRouter);
 app.use('/api/solve/', solveRouter);
-app.use('/api/specialties/', specialtyRouter);
-app.use('/api/student/', studentRouter);
 
 // serve javascript bundles
 app.use('/', express.static(path.resolve(config.clientPath)));
