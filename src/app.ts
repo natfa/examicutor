@@ -7,8 +7,6 @@ import routes from './routes';
 
 import requestLogger from './utils/requestLogger';
 
-import solveRouter from './routes/solve';
-
 // load config
 import cfgInit from './config/default';
 const config = cfgInit();
@@ -43,10 +41,6 @@ app.use(session(sessionConfig));
 app.use(requestLogger);
 
 routes.init(app);
-
-// apply controllers
-
-app.use('/api/solve/', solveRouter);
 
 // serve javascript bundles
 app.use('/', express.static(path.resolve(config.clientPath)));

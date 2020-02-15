@@ -8,6 +8,7 @@ import mediaRoute from './media';
 import specialtyRoute from './specialty';
 import studentRoute from './student';
 import examRoute from './exam';
+import solveRoute from './solve';
 
 const router = express.Router();
 
@@ -19,5 +20,6 @@ router.use('/media', mediaRoute);
 router.use('/exam', examRoute);
 router.use('/specialty', specialtyRoute);
 router.use('/student', studentRoute);
+router.use('/solve', solveRoute);
 
 export default router;
