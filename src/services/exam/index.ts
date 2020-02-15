@@ -1,28 +1,22 @@
-import express, { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import dayjs from 'dayjs';
 
-import isAuthenticated from '../middleware/isAuthenticated';
-import isTeacher from '../middleware/isTeacher';
-import shuffle from '../utils/shuffle';
-import validateExamRequestBody from '../validators/exam';
+import { pointValues } from '../../constants';
+import shuffle from '../../utils/shuffle';
 
-import examController from '../controllers/exam';
-import specialtyController from '../controllers/specialty';
-import studentController from '../controllers/student';
+import studentdb from '../../db/students';
+import specialtydb from '../../db/specialties';
+import questiondb from '../../db/questions';
+import examdb from '../../db/exams';
 
-import questiondb from '../db/questions';
-import examdb from '../db/exams';
-
-import { ExamGradeBoundary } from '../models/ExamGradeBoundary';
-import { ExamCreationFilter } from '../models/ExamCreationFilter';
-import { Question } from '../models/Question';
-import { Time } from '../models/Time';
-import { Exam } from '../models/Exam';
-import { Specialty } from '../models/Specialty';
-import { ExamInfo } from '../models/ExamInfo';
-import { Student } from '../models/Student';
-
-import { pointValues } from '../constants';
+import { Student } from '../../models/Student';
+import { ExamInfo } from '../../models/ExamInfo';
+import { Exam } from '../../models/Exam';
+import { Time } from '../../models/Time';
+import { ExamCreationFilter } from '../../models/ExamCreationFilter';
+import { ExamGradeBoundary } from '../../models/ExamGradeBoundary';
+import { Specialty } from '../../models/Specialty';
+import { Question } from '../../models/Question';
 
 interface ExamRequestBody {
   name: string;
@@ -33,7 +27,7 @@ interface ExamRequestBody {
   boundaries: ExamGradeBoundary[];
 }
 
-const createNewExam = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+async function createNewExam(req: Request, res: Response, next: NextFunction): Promise<void> {
   const {
     name,
     startDate,
@@ -45,7 +39,7 @@ const createNewExam = async (req: Request, res: Response, next: NextFunction): P
 
   let existingSpecialties: Specialty[];
   try {
-    existingSpecialties = await specialtyController.getAllSpecialties();
+    existingSpecialties = await specialtydb.getAllSpecialties();
   } catch (err) {
     next(err);
     return;
@@ -151,12 +145,15 @@ async function getExamById(req: Request, res: Response, next: NextFunction): Pro
   const { examId } = req.params;
 
   try {
-    const exam = await examController.getExamById(examId);
+    const exam = await examdb.getOneById(examId);
 
     if (!exam) {
       res.status(404).end();
       return;
     }
+
+    // never send out passwordhash
+    delete exam.creator.passwordHash;
 
     if (!req.session) throw new Error('req.session is undefined');
 
@@ -174,7 +171,7 @@ async function getExamById(req: Request, res: Response, next: NextFunction): Pro
     if (req.session.account.roles.includes('student')) {
       const now = dayjs();
       const startDate = dayjs(exam.startDate);
-      const student = await studentController.getStudentByAccountId(req.session.account.id);
+      const student = await studentdb.getStudentByAccountId(req.session.account.id);
 
       // ensure studentId
       if (student === null) {
@@ -189,7 +186,9 @@ async function getExamById(req: Request, res: Response, next: NextFunction): Pro
       // ensure exam.id
       if (exam.id === undefined) throw new Error('exam.id is undefined after being fetched from DB');
 
-      const hasSubmitted = await examController.hasStudentSubmitted(exam.id, student.id);
+      const studentExamResults = await examdb.getStudentExamResults(exam.id, student.id);
+
+      const hasSubmitted = studentExamResults === null ? false : true;
 
       if (hasSubmitted) {
         res.status(200).json({ exam, hasSubmitted: true });
@@ -213,12 +212,12 @@ async function getAllExams(req: Request, res: Response, next: NextFunction): Pro
 
   try {
     let exams: ExamInfo[];
-    const student = await studentController.getStudentByAccountId(account.id);
+    const student = await studentdb.getStudentByAccountId(account.id);
 
     if (student !== null) { // the account is a student
-      exams = await examController.getAllExams(student.id);
+      exams = await examdb.getAllStudentExams(student.id);
     } else {
-      exams = await examController.getAllExams();
+      exams = await examdb.getAllExams();
     }
 
     res.status(200).json(exams);
@@ -234,12 +233,13 @@ async function getUpcomingExams(req: Request, res: Response, next: NextFunction)
 
   try {
     let exams: ExamInfo[];
-    const student = await studentController.getStudentByAccountId(account.id);
+    const student = await studentdb.getStudentByAccountId(account.id);
+    const now = dayjs();
 
     if (student !== null) { // the account is a student
-      exams = await examController.getUpcomingExams(student.id);
+      exams = await examdb.getStudentExamsAfter(student.id, now);
     } else {
-      exams = await examController.getUpcomingExams();
+      exams = await examdb.getExamsAfter(now);
     }
 
     res.status(200).json(exams);
@@ -255,12 +255,13 @@ async function getPastExams(req: Request, res: Response, next: NextFunction): Pr
 
   try {
     let exams: ExamInfo[];
-    const student = await studentController.getStudentByAccountId(account.id);
+    const student = await studentdb.getStudentByAccountId(account.id);
+    const now = dayjs();
 
     if (student !== null) { // the account is a student
-      exams = await examController.getPastExams(student.id);
+      exams = await examdb.getStudentExamsBefore(student.id, now);
     } else {
-      exams = await examController.getPastExams();
+      exams = await examdb.getExamsBefore(now);
     }
 
     res.status(200).json(exams);
@@ -283,7 +284,7 @@ async function getStudentExamResults(
 
     // permissions check
     if (req.session.account.roles.includes('student')) {
-      student = await studentController.getStudentByAccountId(req.session.account.id);
+      student = await studentdb.getStudentByAccountId(req.session.account.id);
 
       if (student === null) {
         res.status(404).end();
@@ -295,7 +296,7 @@ async function getStudentExamResults(
         return;
       }
     } else {
-      student = await studentController.getStudentById(studentId);
+      student = await studentdb.getStudentById(studentId);
 
       if (student === null) {
         res.status(404).end();
@@ -303,7 +304,7 @@ async function getStudentExamResults(
       }
     }
 
-    const examResults = await examController.getStudentExamResults(examId, studentId);
+    const examResults = await examdb.getStudentExamResults(examId, studentId);
 
     res.status(200).json(examResults);
   } catch (err) {
@@ -324,26 +325,19 @@ async function getExamResults(req: Request, res: Response, next: NextFunction): 
       return;
     }
 
-    const grades = await examController.getExamGrades(examId);
+    const grades = await examdb.getExamGrades(examId);
 
     res.status(200).json(grades);
   } catch (err) {
     next(err);
   }
 }
-
-const router = express.Router();
-
-router.use(isAuthenticated);
-
-router.get('/', getAllExams);
-router.get('/upcoming', getUpcomingExams);
-router.get('/past', getPastExams);
-router.get('/:examId', getExamById);
-
-router.get('/:examId/results', getExamResults);
-router.get('/:examId/results/:studentId', getStudentExamResults);
-
-router.post('/', isTeacher, validateExamRequestBody, createNewExam);
-
-export default router;
+export default {
+  getAllExams,
+  getUpcomingExams,
+  getPastExams,
+  getExamById,
+  getExamResults,
+  getStudentExamResults,
+  createNewExam,
+}

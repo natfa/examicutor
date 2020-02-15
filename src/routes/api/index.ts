@@ -7,6 +7,7 @@ import authRoute from './auth';
 import mediaRoute from './media';
 import specialtyRoute from './specialty';
 import studentRoute from './student';
+import examRoute from './exam';
 
 const router = express.Router();
 
@@ -15,6 +16,7 @@ router.use('/subject', subjectRoute);
 router.use('/theme', themeRoute);
 router.use('/auth', authRoute);
 router.use('/media', mediaRoute);
+router.use('/exam', examRoute);
 router.use('/specialty', specialtyRoute);
 router.use('/student', studentRoute);
 

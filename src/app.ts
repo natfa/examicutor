@@ -7,7 +7,6 @@ import routes from './routes';
 
 import requestLogger from './utils/requestLogger';
 
-import examRouter from './routes/exam';
 import solveRouter from './routes/solve';
 
 // load config
@@ -47,7 +46,6 @@ routes.init(app);
 
 // apply controllers
 
-app.use('/api/exam/', examRouter);
 app.use('/api/solve/', solveRouter);
 
 // serve javascript bundles
