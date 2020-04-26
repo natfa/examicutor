@@ -1,7 +1,6 @@
 import mysql from 'mysql';
 
-import cfgInit from '../config/default';
-const config = cfgInit();
+import config from '../config/default';
 
 export const pool = createPool(config);
 

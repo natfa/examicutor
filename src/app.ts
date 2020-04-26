@@ -1,6 +1,6 @@
 import express from 'express';
 import path from 'path';
-import session from 'express-session';
+import session, { SessionOptions } from 'express-session';
 import FileStore from 'session-file-store';
 
 import routes from './routes';
@@ -8,8 +8,7 @@ import routes from './routes';
 import requestLogger from './utils/requestLogger';
 
 // load config
-import cfgInit from './config/default';
-const config = cfgInit();
+import config from './config/default';
 
 // global config
 const app = express();
@@ -17,7 +16,7 @@ const secret = config.sessionSecret;
 const SessionStore = FileStore(session);
 
 // session config
-const sessionConfig = {
+const sessionConfig: SessionOptions = {
   cookie: {
     maxAge: 3600000,
     httpOnly: true,

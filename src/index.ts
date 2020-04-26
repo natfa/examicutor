@@ -1,11 +1,14 @@
 import process from 'process';
 import http from 'http';
+import bcrypt from 'bcryptjs';
 
 import { pool } from './db/index';
 import app from './app';
 
-import cfgInit from './config/default';
-const config = cfgInit()
+import config from './config/default';
+
+const hash = bcrypt.hashSync('@lokinSkywalker&5101', 10);
+console.log(hash);
 
 const server = http.createServer(app);
 
