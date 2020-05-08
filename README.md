@@ -1,4 +1,4 @@
-# NATFA
+# Examicutor
 
 * Updates
   * Server is updated through git, compiled on production server.
