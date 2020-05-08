@@ -8,9 +8,7 @@
   * Server has a separate configuration for production and development environments. When updated, configuration file persists.
   * Client has one configuration file sitting on development environments. Configuration is applied when building `dist` files.
 
-### Configuration
-
-Configuration template
+### Configuration (template)
 
 ```javascript
 {
