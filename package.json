@@ -2,10 +2,9 @@
   "name": "natfis",
   "version": "1.0.0",
   "scripts": {
-    "start": "node ./bin/index.js",
-    "watch": "webpack --watch",
-    "build": "webpack",
-    "test": "node ./scripts/setupTestingDB.js && NODE_ENV=testing jest"
+    "start": "node ./build/index.js",
+    "watch": "tsc --watch",
+    "build": "tsc"
   },
   "author": "Federlizer",
   "license": "ISC",
@@ -26,16 +25,11 @@
     "@types/mysql": "^2.15.10",
     "@types/session-file-store": "^1.2.1",
     "@types/bcryptjs": "^2.4.2",
-    "@types/jest": "^25.2.1",
-    "@types/supertest": "^2.0.8",
     "@typescript-eslint/eslint-plugin": "^2.29.0",
     "@typescript-eslint/parser": "^2.29.0",
     "eslint": "^6.8.0",
     "eslint-config-airbnb-base": "^14.1.0",
-    "eslint-plugin-import": "^2.20.2",
-    "jest": "^25.4.0",
-    "supertest": "^4.0.2",
-    "ts-jest": "^25.4.0"
+    "eslint-plugin-import": "^2.20.2"
   },
   "engines": {
     "node": ">= 10.0.0"
