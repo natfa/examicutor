@@ -20,5 +20,6 @@
   },
   port: 1234,
   sessionSecret: '...',
+  clientPath: '...',
 }
 ```
