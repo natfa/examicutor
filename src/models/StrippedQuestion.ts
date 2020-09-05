@@ -1,7 +1,7 @@
-import { StrippedAnswer } from './StrippedAnswer';
+import { StrippedAnswerOld } from './StrippedAnswer';
 
-export interface StrippedQuestion {
+export interface StrippedQuestionOld {
   id: string;
   text: string;
-  answers: Array<StrippedAnswer>;
+  answers: Array<StrippedAnswerOld>;
 }

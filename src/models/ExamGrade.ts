@@ -1,7 +1,7 @@
-import { Student } from './Student';
+import { StudentOld } from './Student';
 
-export interface ExamGrade {
+export interface ExamGradeOld {
   examId: string;
-  student: Student;
+  student: StudentOld;
   grade: number;
 }

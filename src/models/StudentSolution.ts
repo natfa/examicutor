@@ -1,9 +1,9 @@
-import { Student } from './Student';
-import { QuestionSolution } from './QuestionSolution';
+import { StudentOld } from './Student';
+import { QuestionSolutionOld } from './QuestionSolution';
 
-export interface StudentSolution {
+export interface StudentSolutionOld {
   examId: string;
 
-  student: Student;
-  solution: QuestionSolution[];
+  student: StudentOld;
+  solution: QuestionSolutionOld[];
 }

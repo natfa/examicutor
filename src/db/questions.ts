@@ -4,10 +4,10 @@ import { OkPacket } from './OkPacket';
 import { SubjectsRowDataPacket, buildSubject } from './subjects';
 import { ThemesRowDataPacket, buildTheme } from './themes';
 
-import { Question } from '../models/Question';
-import { Subject } from '../models/Subject';
-import { Theme } from '../models/Theme';
-import { Answer } from '../models/Answer';
+import { QuestionOld } from '../models/Question';
+import { SubjectOld } from '../models/Subject';
+import { ThemeOld } from '../models/Theme';
+import { AnswerOld } from '../models/Answer';
 
 interface QuestionsRowDataPacket {
   id: number;
@@ -31,8 +31,8 @@ export interface FullQuestionsRowDataPacket {
   answers: AnswersRowDataPacket;
 }
 
-function buildAnswer(dataPacket: AnswersRowDataPacket): Answer {
-  const answer: Answer = {
+function buildAnswer(dataPacket: AnswersRowDataPacket): AnswerOld {
+  const answer: AnswerOld = {
     id: String(dataPacket.id),
     text: dataPacket.text,
     correct: Boolean(dataPacket.correct),
@@ -44,14 +44,14 @@ function buildAnswer(dataPacket: AnswersRowDataPacket): Answer {
 
 // builds a question model, but leaves out the answers property
 // so that the results array can be iterated and correctly add the answers that way
-function buildQuestion(dataPacket: FullQuestionsRowDataPacket): Question {
-  const subject: Subject = buildSubject(dataPacket.subjects);
-  const theme: Theme = buildTheme({
+function buildQuestion(dataPacket: FullQuestionsRowDataPacket): QuestionOld {
+  const subject: SubjectOld = buildSubject(dataPacket.subjects);
+  const theme: ThemeOld = buildTheme({
     themes: dataPacket.themes,
     subjects: dataPacket.subjects,
   });
 
-  const question: Question = {
+  const question: QuestionOld = {
     id: String(dataPacket.questions.id),
     text: dataPacket.questions.text,
     points: dataPacket.questions.points,
@@ -65,10 +65,10 @@ function buildQuestion(dataPacket: FullQuestionsRowDataPacket): Question {
 
 function addAnswerToQuestion(
   dataPacket: AnswersRowDataPacket,
-  question: Question,
-): Question {
+  question: QuestionOld,
+): QuestionOld {
   const temp = question;
-  const answer: Answer = buildAnswer(dataPacket);
+  const answer: AnswerOld = buildAnswer(dataPacket);
 
   if (temp.answers === undefined) temp.answers = [];
   temp.answers = [...temp.answers, answer];
@@ -76,8 +76,8 @@ function addAnswerToQuestion(
   return temp;
 }
 
-export function buildQuestions(dataPackets: FullQuestionsRowDataPacket[]): Question[] {
-  let questions: Question[] = [];
+export function buildQuestions(dataPackets: FullQuestionsRowDataPacket[]): QuestionOld[] {
+  let questions: QuestionOld[] = [];
 
   // single out questions
   dataPackets.forEach((packet) => {
@@ -90,7 +90,7 @@ export function buildQuestions(dataPackets: FullQuestionsRowDataPacket[]): Quest
     const thisDataPackets = dataPackets
       .filter((packet) => String(packet.questions.id) === question.id);
 
-    let q: Question = question;
+    let q: QuestionOld = question;
 
     thisDataPackets.forEach((packet) => {
       q = addAnswerToQuestion(packet.answers, q);
@@ -102,10 +102,10 @@ export function buildQuestions(dataPackets: FullQuestionsRowDataPacket[]): Quest
   return questions;
 }
 
-function getMany(n?: number): Promise<Array<Question>> {
-  let questions: Question[];
+function getMany(n?: number): Promise<Array<QuestionOld>> {
+  let questions: QuestionOld[];
 
-  return new Promise<Array<Question>>((resolve, reject) => {
+  return new Promise<Array<QuestionOld>>((resolve, reject) => {
     query({
       sql: `select * from questions
       inner join subjects
@@ -126,8 +126,8 @@ function getMany(n?: number): Promise<Array<Question>> {
   });
 }
 
-function getOneById(id: string): Promise<Question|null> {
-  return new Promise<Question|null>((resolve, reject) => {
+function getOneById(id: string): Promise<QuestionOld|null> {
+  return new Promise<QuestionOld|null>((resolve, reject) => {
     query({
       sql: `select * from questions
       inner join subjects
@@ -153,7 +153,7 @@ function getOneById(id: string): Promise<Question|null> {
   });
 }
 
-function saveOne(question: Question): Promise<string> {
+function saveOne(question: QuestionOld): Promise<string> {
   let questionId: number;
   const answerCount = question.answers.length;
 
@@ -170,7 +170,7 @@ function saveOne(question: Question): Promise<string> {
       let sqlQuery = `insert into answers
       (text, correct, questionid) values `;
 
-      sqlQuery += question.answers.map((answer: Answer) => {
+      sqlQuery += question.answers.map((answer: AnswerOld) => {
         sqlValues = [...sqlValues, answer.text, answer.correct, questionId];
 
         return '(?, ?, ?)';
@@ -194,7 +194,7 @@ function saveOne(question: Question): Promise<string> {
   });
 }
 
-function updateOne(question: Question): Promise<boolean> {
+function updateOne(question: QuestionOld): Promise<boolean> {
   return new Promise<boolean>((resolve, reject) => {
     // delete answers
     query({ sql: 'delete from answers where answers.questionid = ?', values: [question.id] });
@@ -219,7 +219,7 @@ function updateOne(question: Question): Promise<boolean> {
         let sqlQuery = `insert into answers
         (text, correct, questionid) values `;
 
-        sqlQuery += question.answers.map((answer: Answer) => {
+        sqlQuery += question.answers.map((answer: AnswerOld) => {
           if (question.id === undefined) {
             throw new Error('Question id can\'t be undefined when updating');
           }
@@ -261,8 +261,8 @@ function deleteOneById(id: string): Promise<boolean> {
   });
 }
 
-function getManyBySubjectid(subjectId: string): Promise<Array<Question>> {
-  return new Promise<Array<Question>>((resolve, reject) => {
+function getManyBySubjectid(subjectId: string): Promise<Array<QuestionOld>> {
+  return new Promise<Array<QuestionOld>>((resolve, reject) => {
     query({
       sql: `select * from questions
       inner join subjects
@@ -275,7 +275,7 @@ function getManyBySubjectid(subjectId: string): Promise<Array<Question>> {
       values: [subjectId],
       nestTables: true,
     }).then((results: FullQuestionsRowDataPacket[]) => {
-      const questions: Question[] = buildQuestions(results);
+      const questions: QuestionOld[] = buildQuestions(results);
 
       resolve(questions);
     }).catch((err) => {
@@ -284,8 +284,8 @@ function getManyBySubjectid(subjectId: string): Promise<Array<Question>> {
   });
 }
 
-function getManyByThemeId(themeId: string): Promise<Array<Question>> {
-  return new Promise<Array<Question>>((resolve, reject) => {
+function getManyByThemeId(themeId: string): Promise<Array<QuestionOld>> {
+  return new Promise<Array<QuestionOld>>((resolve, reject) => {
     query({
       sql: `select * from questions
       inner join subjects
@@ -298,7 +298,7 @@ function getManyByThemeId(themeId: string): Promise<Array<Question>> {
       values: [themeId],
       nestTables: true,
     }).then((results: FullQuestionsRowDataPacket[]) => {
-      const questions: Question[] = buildQuestions(results);
+      const questions: QuestionOld[] = buildQuestions(results);
 
       resolve(questions);
     }).catch((err) => {

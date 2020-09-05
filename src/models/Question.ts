@@ -1,12 +1,12 @@
-import { Answer } from './Answer';
-import { Subject } from './Subject';
-import { Theme } from './Theme';
+import { AnswerOld } from './Answer';
+import { SubjectOld } from './Subject';
+import { ThemeOld } from './Theme';
 
-export interface Question {
+export interface QuestionOld {
   id?: string;
   text: string;
   points: number;
-  subject: Subject;
-  theme: Theme;
-  answers: Array<Answer>;
+  subject: SubjectOld;
+  theme: ThemeOld;
+  answers: Array<AnswerOld>;
 }

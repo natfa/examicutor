@@ -1,7 +1,7 @@
-import { Theme } from './Theme';
+import { ThemeOld } from './Theme';
 
-export interface ThemeFilter {
-  theme: Theme;
+export interface ThemeFilterOld {
+  theme: ThemeOld;
   1: number;
   2: number;
   3: number;

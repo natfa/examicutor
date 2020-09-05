@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcryptjs';
 
-import { Account } from '../../models/Account';
+import { AccountOld } from '../../models/Account';
 import accountdb from '../../db/accounts';
 
 interface AuthenticationRequestBody {
@@ -38,7 +38,7 @@ async function createAccount(req: Request, res: Response, next: NextFunction): P
     // hash
     const pHash = await bcrypt.hash(password, saltRounds);
 
-    const account: Account = {
+    const account: AccountOld = {
       id: undefined,
       email,
       passwordHash: pHash,

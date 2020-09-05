@@ -1,4 +1,4 @@
-export interface Subject {
+export interface SubjectOld {
   id?: string;
   name: string;
 }

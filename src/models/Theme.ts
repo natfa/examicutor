@@ -1,7 +1,7 @@
-import { Subject } from './Subject';
+import { SubjectOld } from './Subject';
 
-export interface Theme {
+export interface ThemeOld {
   id?: string;
   name: string;
-  subject: Subject;
+  subject: SubjectOld;
 }

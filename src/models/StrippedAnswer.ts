@@ -1,4 +1,4 @@
-export interface StrippedAnswer {
+export interface StrippedAnswerOld {
   id: string;
   text: string;
 }

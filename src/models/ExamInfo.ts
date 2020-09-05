@@ -1,10 +1,10 @@
 import { Dayjs } from 'dayjs';
-import { Time } from './Time';
+import { TimeOld } from './Time';
 
-export interface ExamInfo {
+export interface ExamInfoOld {
   id: string;
   name: string;
   startDate: Dayjs;
   endDate: Dayjs;
-  timeToSolve: Time;
+  timeToSolve: TimeOld;
 }

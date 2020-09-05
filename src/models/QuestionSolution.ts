@@ -1,4 +1,4 @@
-export interface QuestionSolution {
+export interface QuestionSolutionOld {
   questionId: string;
   answerId: string;
 }

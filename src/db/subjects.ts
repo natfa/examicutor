@@ -2,15 +2,15 @@ import { query } from './index';
 
 import { OkPacket } from './OkPacket';
 
-import { Subject } from '../models/Subject';
+import { SubjectOld } from '../models/Subject';
 
 export interface SubjectsRowDataPacket {
   id: number;
   name: string;
 }
 
-export function buildSubject(dataPacket: SubjectsRowDataPacket): Subject {
-  const subject: Subject = {
+export function buildSubject(dataPacket: SubjectsRowDataPacket): SubjectOld {
+  const subject: SubjectOld = {
     id: String(dataPacket.id),
     name: dataPacket.name,
   };
@@ -18,8 +18,8 @@ export function buildSubject(dataPacket: SubjectsRowDataPacket): Subject {
   return subject;
 }
 
-function saveOne(model: Subject): Promise<Subject> {
-  return new Promise<Subject>((resolve, reject) => {
+function saveOne(model: SubjectOld): Promise<SubjectOld> {
+  return new Promise<SubjectOld>((resolve, reject) => {
     query({
       sql: `insert into subjects
       (name) values (?)`,
@@ -35,8 +35,8 @@ function saveOne(model: Subject): Promise<Subject> {
   });
 }
 
-function getOneById(id: string): Promise<Subject|null> {
-  return new Promise<Subject|null>((resolve, reject) => {
+function getOneById(id: string): Promise<SubjectOld|null> {
+  return new Promise<SubjectOld|null>((resolve, reject) => {
     query({
       sql: 'select * from subjects where subjects.id = ?',
       values: [id],
@@ -54,8 +54,8 @@ function getOneById(id: string): Promise<Subject|null> {
   });
 }
 
-function getAll(): Promise<Array<Subject>> {
-  return new Promise<Array<Subject>>((resolve, reject) => {
+function getAll(): Promise<Array<SubjectOld>> {
+  return new Promise<Array<SubjectOld>>((resolve, reject) => {
     query({
       sql: 'select * from subjects',
     }).then((results: SubjectsRowDataPacket[]) => {
@@ -88,8 +88,8 @@ function deleteOneById(id: string): Promise<boolean> {
   });
 }
 
-function getOneByName(name: string): Promise<Subject|null> {
-  return new Promise<Subject|null>((resolve, reject) => {
+function getOneByName(name: string): Promise<SubjectOld|null> {
+  return new Promise<SubjectOld|null>((resolve, reject) => {
     query({
       sql: `select id, name
       from subjects

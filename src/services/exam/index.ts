@@ -9,22 +9,22 @@ import specialtydb from '../../db/specialties';
 import questiondb from '../../db/questions';
 import examdb from '../../db/exams';
 
-import { Student } from '../../models/Student';
-import { ExamInfo } from '../../models/ExamInfo';
-import { Exam } from '../../models/Exam';
-import { Time } from '../../models/Time';
-import { ExamCreationFilter } from '../../models/ExamCreationFilter';
-import { ExamGradeBoundary } from '../../models/ExamGradeBoundary';
-import { Specialty } from '../../models/Specialty';
-import { Question } from '../../models/Question';
+import { StudentOld } from '../../models/Student';
+import { ExamInfoOld } from '../../models/ExamInfo';
+import { ExamOld } from '../../models/Exam';
+import { TimeOld } from '../../models/Time';
+import { ExamCreationFilterOld } from '../../models/ExamCreationFilter';
+import { ExamGradeBoundaryOld } from '../../models/ExamGradeBoundary';
+import { SpecialtyOld } from '../../models/Specialty';
+import { QuestionOld } from '../../models/Question';
 
 interface ExamRequestBody {
   name: string;
   startDate: string;
   endDate: string;
-  timeToSolve: Time;
-  filters: ExamCreationFilter[];
-  boundaries: ExamGradeBoundary[];
+  timeToSolve: TimeOld;
+  filters: ExamCreationFilterOld[];
+  boundaries: ExamGradeBoundaryOld[];
 }
 
 async function createNewExam(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -37,7 +37,7 @@ async function createNewExam(req: Request, res: Response, next: NextFunction): P
     boundaries,
   } = req.body as ExamRequestBody;
 
-  let existingSpecialties: Specialty[];
+  let existingSpecialties: SpecialtyOld[];
   try {
     existingSpecialties = await specialtydb.getAllSpecialties();
   } catch (err) {
@@ -63,8 +63,8 @@ async function createNewExam(req: Request, res: Response, next: NextFunction): P
 
 
   // get all questions for each theme filter
-  let promises: Promise<Question[]>[] = [];
-  filters.forEach((filter: ExamCreationFilter) => {
+  let promises: Promise<QuestionOld[]>[] = [];
+  filters.forEach((filter: ExamCreationFilterOld) => {
     filter.themeFilters.forEach((themeFilter) => {
       if (themeFilter.theme.id === null || themeFilter.theme.id === undefined) return;
 
@@ -72,7 +72,7 @@ async function createNewExam(req: Request, res: Response, next: NextFunction): P
     });
   });
 
-  let allQuestions: Question[];
+  let allQuestions: QuestionOld[];
 
   try {
     allQuestions = (await Promise.all(promises)).flat();
@@ -82,7 +82,7 @@ async function createNewExam(req: Request, res: Response, next: NextFunction): P
   }
 
   // compile questions for exam
-  let questions: Question[] = [];
+  let questions: QuestionOld[] = [];
   for (let i = 0; i < filters.length; i += 1) {
     const filter = filters[i];
     for (let j = 0; j < filter.themeFilters.length; j += 1) {
@@ -90,7 +90,7 @@ async function createNewExam(req: Request, res: Response, next: NextFunction): P
       const themeQuestions = allQuestions
         .filter((q) => q.theme.id === themeFilter.theme.id);
 
-      let questionsToGoIn: Question[] = [];
+      let questionsToGoIn: QuestionOld[] = [];
 
       for (let k = 0; k < pointValues.length; k += 1) {
         const pointValue = pointValues[k];
@@ -120,7 +120,7 @@ async function createNewExam(req: Request, res: Response, next: NextFunction): P
     return;
   }
 
-  const exam: Exam = {
+  const exam: ExamOld = {
     name,
     startDate: dayjs(startDate),
     endDate: dayjs(endDate),
@@ -211,7 +211,7 @@ async function getAllExams(req: Request, res: Response, next: NextFunction): Pro
   const { account } = req.session;
 
   try {
-    let exams: ExamInfo[];
+    let exams: ExamInfoOld[];
     const student = await studentdb.getStudentByAccountId(account.id);
 
     if (student !== null) { // the account is a student
@@ -232,7 +232,7 @@ async function getUpcomingExams(req: Request, res: Response, next: NextFunction)
   const { account } = req.session;
 
   try {
-    let exams: ExamInfo[];
+    let exams: ExamInfoOld[];
     const student = await studentdb.getStudentByAccountId(account.id);
     const now = dayjs();
 
@@ -254,7 +254,7 @@ async function getPastExams(req: Request, res: Response, next: NextFunction): Pr
   const { account } = req.session;
 
   try {
-    let exams: ExamInfo[];
+    let exams: ExamInfoOld[];
     const student = await studentdb.getStudentByAccountId(account.id);
     const now = dayjs();
 
@@ -280,7 +280,7 @@ async function getStudentExamResults(
   try {
     const { examId, studentId } = req.params;
 
-    let student: Student|null;
+    let student: StudentOld|null;
 
     // permissions check
     if (req.session.account.roles.includes('student')) {

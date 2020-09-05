@@ -3,7 +3,7 @@ import { OkPacket } from './OkPacket';
 
 import { SubjectsRowDataPacket, buildSubject } from './subjects';
 
-import { Theme } from '../models/Theme';
+import { ThemeOld } from '../models/Theme';
 
 export interface ThemesRowDataPacket {
   id: number;
@@ -16,10 +16,10 @@ interface FullThemesRowDataPacket {
   subjects: SubjectsRowDataPacket;
 }
 
-export function buildTheme(dataPacket: FullThemesRowDataPacket): Theme {
+export function buildTheme(dataPacket: FullThemesRowDataPacket): ThemeOld {
   const subject = buildSubject(dataPacket.subjects);
 
-  const theme: Theme = {
+  const theme: ThemeOld = {
     id: String(dataPacket.themes.id),
     name: dataPacket.themes.name,
     subject,
@@ -28,8 +28,8 @@ export function buildTheme(dataPacket: FullThemesRowDataPacket): Theme {
   return theme;
 }
 
-function saveOne(theme: Theme): Promise<Theme> {
-  return new Promise<Theme>((resolve, reject) => {
+function saveOne(theme: ThemeOld): Promise<ThemeOld> {
+  return new Promise<ThemeOld>((resolve, reject) => {
     query({
       sql: `insert into themes
       (name, subjectid) values
@@ -47,8 +47,8 @@ function saveOne(theme: Theme): Promise<Theme> {
   });
 }
 
-function getOneById(id: string): Promise<Theme|null> {
-  return new Promise<Theme|null>((resolve, reject) => {
+function getOneById(id: string): Promise<ThemeOld|null> {
+  return new Promise<ThemeOld|null>((resolve, reject) => {
     query({
       sql: `select * from themes
       inner join subjects
@@ -62,7 +62,7 @@ function getOneById(id: string): Promise<Theme|null> {
         return;
       }
 
-      const theme: Theme = buildTheme(results[0]);
+      const theme: ThemeOld = buildTheme(results[0]);
       resolve(theme);
     }).catch((err) => {
       reject(err);
@@ -70,15 +70,15 @@ function getOneById(id: string): Promise<Theme|null> {
   });
 }
 
-function getAll(): Promise<Array<Theme>> {
-  return new Promise<Array<Theme>>((resolve, reject) => {
+function getAll(): Promise<Array<ThemeOld>> {
+  return new Promise<Array<ThemeOld>>((resolve, reject) => {
     query({
       sql: `select * from themes
       inner join subjects
         on themes.subjectid = subjects.id`,
       nestTables: true,
     }).then((results: FullThemesRowDataPacket[]) => {
-      const themes: Theme[] = results.map((result) => buildTheme(result));
+      const themes: ThemeOld[] = results.map((result) => buildTheme(result));
       resolve(themes);
     }).catch((err) => {
       reject(err);
@@ -106,8 +106,8 @@ function deleteOneById(id: string): Promise<boolean> {
   });
 }
 
-function getManyBySubjectid(id: string): Promise<Array<Theme>> {
-  return new Promise<Array<Theme>>((resolve, reject) => {
+function getManyBySubjectid(id: string): Promise<Array<ThemeOld>> {
+  return new Promise<Array<ThemeOld>>((resolve, reject) => {
     query({
       sql: `select * from themes
       inner join subjects
@@ -124,8 +124,8 @@ function getManyBySubjectid(id: string): Promise<Array<Theme>> {
   });
 }
 
-function getOneByName(name: string): Promise<Theme|null> {
-  return new Promise<Theme|null>((resolve, reject) => {
+function getOneByName(name: string): Promise<ThemeOld|null> {
+  return new Promise<ThemeOld|null>((resolve, reject) => {
     query({
       sql: `select * from themes
       inner join subjects
@@ -139,7 +139,7 @@ function getOneByName(name: string): Promise<Theme|null> {
         return;
       }
 
-      const theme: Theme = buildTheme(results[0]);
+      const theme: ThemeOld = buildTheme(results[0]);
       resolve(theme);
     }).catch((err) => {
       reject(err);

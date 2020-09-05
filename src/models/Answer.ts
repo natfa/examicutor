@@ -1,4 +1,4 @@
-export interface Answer {
+export interface AnswerOld {
   id?: string;
   text: string;
   correct: boolean;

@@ -1,10 +1,10 @@
-import { Exam } from './Exam';
-import { Student } from './Student';
-import { QuestionSolution } from './QuestionSolution';
+import { ExamOld } from './Exam';
+import { StudentOld } from './Student';
+import { QuestionSolutionOld } from './QuestionSolution';
 
-export interface ExamResult {
-  student: Student;
-  exam: Exam;
-  solution: QuestionSolution[];
+export interface ExamResultOld {
+  student: StudentOld;
+  exam: ExamOld;
+  solution: QuestionSolutionOld[];
   grade: number;
 }

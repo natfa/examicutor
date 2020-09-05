@@ -1,7 +1,7 @@
-import { Subject } from './Subject';
-import { ThemeFilter } from './ThemeFilter';
+import { SubjectOld } from './Subject';
+import { ThemeFilterOld } from './ThemeFilter';
 
-export interface ExamCreationFilter {
-  subject: Subject;
-  themeFilters: ThemeFilter[];
+export interface ExamCreationFilterOld {
+  subject: SubjectOld;
+  themeFilters: ThemeFilterOld[];
 }

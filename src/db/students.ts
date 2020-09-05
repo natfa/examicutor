@@ -5,7 +5,7 @@ import { pool } from './index';
 import { SpecialtiesRowDataPacket, buildSpecialty } from './specialties';
 import { AccountsRowDataPacket } from './accounts';
 
-import { Student } from '../models/Student';
+import { StudentOld } from '../models/Student';
 
 export interface StudentsRowDataPacket {
   id: number;
@@ -19,7 +19,7 @@ export interface FullStudentRowDataPacket {
   accounts: AccountsRowDataPacket;
 }
 
-export function buildStudent(packet: FullStudentRowDataPacket): Student {
+export function buildStudent(packet: FullStudentRowDataPacket): StudentOld {
   const specialty = buildSpecialty(packet.specialties);
 
   return {
@@ -29,8 +29,8 @@ export function buildStudent(packet: FullStudentRowDataPacket): Student {
   };
 }
 
-function getStudentByAccountId(accountId: string): Promise<Student|null> {
-  return new Promise<Student|null>((resolve, reject) => {
+function getStudentByAccountId(accountId: string): Promise<StudentOld|null> {
+  return new Promise<StudentOld|null>((resolve, reject) => {
     pool.getConnection((connectionError: Error|null, connection: PoolConnection) => {
       if (connectionError) {
         reject(connectionError);
@@ -66,8 +66,8 @@ function getStudentByAccountId(accountId: string): Promise<Student|null> {
   });
 }
 
-function getStudentById(studentId: string): Promise<Student|null> {
-  return new Promise<Student|null>((resolve, reject) => {
+function getStudentById(studentId: string): Promise<StudentOld|null> {
+  return new Promise<StudentOld|null>((resolve, reject) => {
     pool.getConnection((connectionError: Error|null, connection: PoolConnection) => {
       if (connectionError) {
         reject(connectionError);

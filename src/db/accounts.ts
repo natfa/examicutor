@@ -1,6 +1,6 @@
 import { query } from './index';
 
-import { Account } from '../models/Account';
+import { AccountOld } from '../models/Account';
 import { OkPacket } from './OkPacket';
 
 // keep in sync with allRoles constant from constants/index.ts
@@ -11,11 +11,11 @@ export interface AccountsRowDataPacket {
   roles: ('admin'|'student'|'teacher');
 }
 
-export function buildAccount(dataPacket: AccountsRowDataPacket): Account {
+export function buildAccount(dataPacket: AccountsRowDataPacket): AccountOld {
   // assume db returned correct values
   const roles = dataPacket.roles.split(',') as ('admin'|'student'|'teacher')[];
 
-  const account: Account = {
+  const account: AccountOld = {
     id: String(dataPacket.id),
     email: dataPacket.email,
     passwordHash: dataPacket.passwordhash,
@@ -25,7 +25,7 @@ export function buildAccount(dataPacket: AccountsRowDataPacket): Account {
   return account;
 }
 
-function saveOne(account: Account): Promise<string> {
+function saveOne(account: AccountOld): Promise<string> {
   return new Promise<string>((resolve, reject) => {
     query({
       sql: `insert into accounts
@@ -46,8 +46,8 @@ function saveOne(account: Account): Promise<string> {
   });
 }
 
-function getOneByEmail(email: string): Promise<Account|null> {
-  return new Promise<Account|null>((resolve, reject) => {
+function getOneByEmail(email: string): Promise<AccountOld|null> {
+  return new Promise<AccountOld|null>((resolve, reject) => {
     query({
       sql: `select * from accounts
       where email = ?`,

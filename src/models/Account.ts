@@ -1,4 +1,4 @@
-export interface Account {
+export interface AccountOld {
   id?: string;
   email: string;
   passwordHash: string;

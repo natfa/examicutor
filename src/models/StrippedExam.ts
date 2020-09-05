@@ -1,11 +1,11 @@
 import { Dayjs } from 'dayjs';
-import { Time } from './Time';
-import { StrippedQuestion } from './StrippedQuestion';
+import { TimeOld } from './Time';
+import { StrippedQuestionOld } from './StrippedQuestion';
 
-export interface StrippedExam {
+export interface StrippedExamOld {
   id: string;
   name: string;
   startDate: Dayjs;
-  timeToSolve: Time;
-  questions: StrippedQuestion[];
+  timeToSolve: TimeOld;
+  questions: StrippedQuestionOld[];
 }

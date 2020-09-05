@@ -9,17 +9,17 @@ import subjectdb from '../../db/subjects';
 import themedb from '../../db/themes';
 import mediadb from '../../db/media';
 
-import { Answer } from '../../models/Answer';
-import { Question } from '../../models/Question';
-import { Theme } from '../../models/Theme';
-import { Subject } from '../../models/Subject';
+import { AnswerOld } from '../../models/Answer';
+import { QuestionOld } from '../../models/Question';
+import { ThemeOld } from '../../models/Theme';
+import { SubjectOld } from '../../models/Subject';
 
 interface QuestionRequestBody {
   id?: string;
   text: string;
   points: string;
-  subject: Subject;
-  theme: Theme;
+  subject: SubjectOld;
+  theme: ThemeOld;
   correctAnswers: string[];
   incorrectAnswers: string[];
 }
@@ -122,7 +122,7 @@ async function createQuestion(req: Request, res: Response, next: NextFunction): 
     ...incorrectAnswers.map((answer: string) => ({ text: answer, correct: false })),
   ];
 
-  const question: Question = {
+  const question: QuestionOld = {
     text,
     answers,
     points: Number(points),
@@ -167,12 +167,12 @@ async function updateQuestion(req: Request, res: Response, next: NextFunction): 
     return;
   }
 
-  const answers: Answer[] = [
+  const answers: AnswerOld[] = [
     ...correctAnswers.map((answer: string) => ({ text: answer, correct: true })),
     ...incorrectAnswers.map((answer: string) => ({ text: answer, correct: false })),
   ];
 
-  const updatedQuestion: Question = {
+  const updatedQuestion: QuestionOld = {
     id,
     text,
     points: Number(points),

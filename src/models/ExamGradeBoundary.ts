@@ -1,7 +1,7 @@
-import { Specialty } from './Specialty';
+import { SpecialtyOld } from './Specialty';
 
-export interface ExamGradeBoundary {
-  specialty: Specialty;
+export interface ExamGradeBoundaryOld {
+  specialty: SpecialtyOld;
   3: number;
   4: number;
   5: number;

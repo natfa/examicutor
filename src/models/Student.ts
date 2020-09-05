@@ -1,7 +1,7 @@
-import { Specialty } from './Specialty';
+import { SpecialtyOld } from './Specialty';
 
-export interface Student {
+export interface StudentOld {
   id: string;
   email: string;
-  specialty: Specialty;
+  specialty: SpecialtyOld;
 }

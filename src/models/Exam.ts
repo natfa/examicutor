@@ -1,14 +1,14 @@
 import { Dayjs } from 'dayjs';
-import { Time } from './Time';
-import { Question } from './Question';
-import { Account } from './Account';
+import { TimeOld } from './Time';
+import { QuestionOld } from './Question';
+import { AccountOld } from './Account';
 
-export interface Exam {
+export interface ExamOld {
   id?: string;
   name: string;
   startDate: Dayjs;
   endDate: Dayjs;
-  timeToSolve: Time;
-  questions: Question[];
-  creator: Account;
+  timeToSolve: TimeOld;
+  questions: QuestionOld[];
+  creator: AccountOld;
 }

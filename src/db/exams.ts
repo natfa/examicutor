@@ -9,17 +9,17 @@ import { buildQuestions, FullQuestionsRowDataPacket } from './questions';
 import { buildSpecialty, SpecialtiesRowDataPacket } from './specialties';
 import studentdb, { buildStudent, StudentsRowDataPacket, FullStudentRowDataPacket } from './students';
 
-import { Question } from '../models/Question';
-import { Time } from '../models/Time';
-import { Exam } from '../models/Exam';
-import { Account } from '../models/Account';
-import { ExamGradeBoundary } from '../models/ExamGradeBoundary';
-import { ExamInfo } from '../models/ExamInfo';
-import { StudentSolution } from '../models/StudentSolution';
-import { QuestionSolution } from '../models/QuestionSolution';
-import { ExamResult } from '../models/ExamResult';
-import { ExamGrade } from '../models/ExamGrade';
-import { Student } from '../models/Student';
+import { QuestionOld } from '../models/Question';
+import { TimeOld } from '../models/Time';
+import { ExamOld } from '../models/Exam';
+import { AccountOld } from '../models/Account';
+import { ExamGradeBoundaryOld } from '../models/ExamGradeBoundary';
+import { ExamInfoOld } from '../models/ExamInfo';
+import { StudentSolutionOld } from '../models/StudentSolution';
+import { QuestionSolutionOld } from '../models/QuestionSolution';
+import { ExamResultOld } from '../models/ExamResult';
+import { ExamGradeOld } from '../models/ExamGrade';
+import { StudentOld } from '../models/Student';
 
 interface ExamsRowDataPacket {
   id: number;
@@ -50,10 +50,10 @@ interface FullExamRowDataPacket {
   accounts: AccountsRowDataPacket;
 }
 
-function buildExamInfo(dataPacket: ExamsRowDataPacket): ExamInfo {
+function buildExamInfo(dataPacket: ExamsRowDataPacket): ExamInfoOld {
   const [hours, minutes] = dataPacket.timetosolve.split(':');
 
-  const exam: ExamInfo = {
+  const exam: ExamInfoOld = {
     id: String(dataPacket.id),
     name: dataPacket.name,
     startDate: dayjs(dataPacket.startdate),
@@ -67,20 +67,20 @@ function buildExamInfo(dataPacket: ExamsRowDataPacket): ExamInfo {
   return exam;
 }
 
-function buildExam(dataPacket: FullExamRowDataPacket): Exam {
-  const account: Account = buildAccount(dataPacket.accounts);
+function buildExam(dataPacket: FullExamRowDataPacket): ExamOld {
+  const account: AccountOld = buildAccount(dataPacket.accounts);
 
   const [
     hours,
     minutes,
   ] = dataPacket.exams.timetosolve.split(':');
 
-  const timeToSolve: Time = {
+  const timeToSolve: TimeOld = {
     hours: Number(hours),
     minutes: Number(minutes),
   };
 
-  const exam: Exam = {
+  const exam: ExamOld = {
     id: String(dataPacket.exams.id),
     name: dataPacket.exams.name,
     startDate: dayjs(dataPacket.exams.startdate),
@@ -93,10 +93,10 @@ function buildExam(dataPacket: FullExamRowDataPacket): Exam {
   return exam;
 }
 
-function buildExamBoundary(dataPacket: FullExamGradeBoundaryRowDataPacket): ExamGradeBoundary {
+function buildExamBoundary(dataPacket: FullExamGradeBoundaryRowDataPacket): ExamGradeBoundaryOld {
   const specialty = buildSpecialty(dataPacket.specialties);
 
-  const gradeBoundary: ExamGradeBoundary = {
+  const gradeBoundary: ExamGradeBoundaryOld = {
     specialty,
     3: dataPacket.exam_boundaries.three,
     4: dataPacket.exam_boundaries.four,
@@ -107,7 +107,7 @@ function buildExamBoundary(dataPacket: FullExamGradeBoundaryRowDataPacket): Exam
   return gradeBoundary;
 }
 
-function saveOne(exam: Exam, boundaries: ExamGradeBoundary[]): Promise<string> {
+function saveOne(exam: ExamOld, boundaries: ExamGradeBoundaryOld[]): Promise<string> {
   let examId: number;
 
   return new Promise<string>((resolve, reject) => {
@@ -133,7 +133,7 @@ function saveOne(exam: Exam, boundaries: ExamGradeBoundary[]): Promise<string> {
       .then((result: OkPacket) => {
         examId = result.insertId;
 
-        const examQuestionsInserts = exam.questions.map((question: Question) => {
+        const examQuestionsInserts = exam.questions.map((question: QuestionOld) => {
           const promise = query({
             sql: `insert into exam_questions
             (examid, questionid) value
@@ -169,10 +169,10 @@ function saveOne(exam: Exam, boundaries: ExamGradeBoundary[]): Promise<string> {
   });
 }
 
-function getOneById(id: string): Promise<Exam|null> {
-  let exam: Exam;
+function getOneById(id: string): Promise<ExamOld|null> {
+  let exam: ExamOld;
 
-  return new Promise<Exam|null>((resolve, reject) => {
+  return new Promise<ExamOld|null>((resolve, reject) => {
     query({
       sql: `select exams.*, accounts.* from exams
       inner join accounts
@@ -215,8 +215,8 @@ function getOneById(id: string): Promise<Exam|null> {
   });
 }
 
-function getAllExamInfos(): Promise<Exam[]> {
-  return new Promise<Exam[]>((resolve, reject) => {
+function getAllExamInfos(): Promise<ExamOld[]> {
+  return new Promise<ExamOld[]>((resolve, reject) => {
     query({
       sql: `select exams.*, accounts.* from exams
       inner join accounts
@@ -234,10 +234,10 @@ function getAllExamInfos(): Promise<Exam[]> {
   });
 }
 
-function getUpcomingExamInfos(): Promise<Exam[]> {
+function getUpcomingExamInfos(): Promise<ExamOld[]> {
   const now = dayjs();
 
-  return new Promise<Exam[]>((resolve, reject) => {
+  return new Promise<ExamOld[]>((resolve, reject) => {
     query({
       sql: `select exams.*, accounts.* from exams
       inner join accounts
@@ -257,8 +257,8 @@ function getUpcomingExamInfos(): Promise<Exam[]> {
   });
 }
 
-function getExamBoundaries(examId: string): Promise<ExamGradeBoundary[]> {
-  return new Promise<ExamGradeBoundary[]>((resolve, reject) => {
+function getExamBoundaries(examId: string): Promise<ExamGradeBoundaryOld[]> {
+  return new Promise<ExamGradeBoundaryOld[]>((resolve, reject) => {
     pool.getConnection((connectionError: Error, connection: PoolConnection) => {
       if (connectionError) {
         reject(connectionError);
@@ -293,8 +293,8 @@ function getExamBoundaries(examId: string): Promise<ExamGradeBoundary[]> {
  *
  * @returns {ExamInfo[]} All exams saved on the database.
  */
-function getAllExams(): Promise<ExamInfo[]> {
-  return new Promise<ExamInfo[]>((resolve, reject) => {
+function getAllExams(): Promise<ExamInfoOld[]> {
+  return new Promise<ExamInfoOld[]>((resolve, reject) => {
     pool.getConnection((connectionError: Error|null, connection: PoolConnection) => {
       if (connectionError) {
         reject(connectionError);
@@ -324,8 +324,8 @@ function getAllExams(): Promise<ExamInfo[]> {
  *
  * @returns {ExamInfo[]} The exams fetched.
  */
-function getExamsAfter(date: Dayjs): Promise<ExamInfo[]> {
-  return new Promise<ExamInfo[]>((resolve, reject) => {
+function getExamsAfter(date: Dayjs): Promise<ExamInfoOld[]> {
+  return new Promise<ExamInfoOld[]>((resolve, reject) => {
     pool.getConnection((connectionError: Error, connection: PoolConnection) => {
       if (connectionError) {
         reject(connectionError);
@@ -358,8 +358,8 @@ function getExamsAfter(date: Dayjs): Promise<ExamInfo[]> {
  *
  * @returns {ExamInfo[]} The exams fetched.
  */
-function getExamsBefore(date: Dayjs): Promise<ExamInfo[]> {
-  return new Promise<ExamInfo[]>((resolve, reject) => {
+function getExamsBefore(date: Dayjs): Promise<ExamInfoOld[]> {
+  return new Promise<ExamInfoOld[]>((resolve, reject) => {
     pool.getConnection((connectionError: Error, connection: PoolConnection) => {
       if (connectionError) {
         reject(connectionError);
@@ -386,8 +386,8 @@ function getExamsBefore(date: Dayjs): Promise<ExamInfo[]> {
   });
 }
 
-function getAllStudentExams(studentId: string): Promise<ExamInfo[]> {
-  return new Promise<ExamInfo[]>((resolve, reject) => {
+function getAllStudentExams(studentId: string): Promise<ExamInfoOld[]> {
+  return new Promise<ExamInfoOld[]>((resolve, reject) => {
     pool.getConnection((connectionError: Error|null, connection: PoolConnection) => {
       if (connectionError) {
         reject(connectionError);
@@ -419,8 +419,8 @@ function getAllStudentExams(studentId: string): Promise<ExamInfo[]> {
   });
 }
 
-function getStudentExamsBefore(studentId: string, date: Dayjs): Promise<ExamInfo[]> {
-  return new Promise<ExamInfo[]>((resolve, reject) => {
+function getStudentExamsBefore(studentId: string, date: Dayjs): Promise<ExamInfoOld[]> {
+  return new Promise<ExamInfoOld[]>((resolve, reject) => {
     pool.getConnection((connectionError: Error|null, connection: PoolConnection) => {
       if (connectionError) {
         reject(connectionError);
@@ -454,8 +454,8 @@ function getStudentExamsBefore(studentId: string, date: Dayjs): Promise<ExamInfo
   });
 }
 
-function getStudentExamsAfter(studentId: string, date: Dayjs): Promise<ExamInfo[]> {
-  return new Promise<ExamInfo[]>((resolve, reject) => {
+function getStudentExamsAfter(studentId: string, date: Dayjs): Promise<ExamInfoOld[]> {
+  return new Promise<ExamInfoOld[]>((resolve, reject) => {
     pool.getConnection((connectionError: Error|null, connection: PoolConnection) => {
       if (connectionError) {
         reject(connectionError);
@@ -521,7 +521,7 @@ function saveStudentGrade(examId: string, studentId: string, grade: number): Pro
   });
 }
 
-function saveStudentSolution(studentSolution: StudentSolution): Promise<void> {
+function saveStudentSolution(studentSolution: StudentSolutionOld): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     if (studentSolution.solution.length === 0) {
       resolve();
@@ -538,7 +538,7 @@ function saveStudentSolution(studentSolution: StudentSolution): Promise<void> {
       (student_id, exam_id, question_id, answer_id) values `;
       let values: string[] = [];
 
-      sqlQuery += studentSolution.solution.map((questionAnswer) => {
+      sqlQuery += studentSolution.solution.map((questionAnswer: QuestionSolutionOld) => {
         const str = '(?, ?, ?, ?)';
         values = [
           ...values,
@@ -596,15 +596,15 @@ interface ExamGradesRowDataPacket {
   grade: number;
 }
 
-function buildQuestionSolution(packet: StudentExamAnswersRowDataPacket): QuestionSolution {
+function buildQuestionSolution(packet: StudentExamAnswersRowDataPacket): QuestionSolutionOld {
   return {
     questionId: String(packet.question_id),
     answerId: String(packet.answer_id),
   };
 }
 
-function getStudentExamResults(examId: string, studentId: string): Promise<ExamResult|null> {
-  return new Promise<ExamResult|null>((resolve, reject) => {
+function getStudentExamResults(examId: string, studentId: string): Promise<ExamResultOld|null> {
+  return new Promise<ExamResultOld|null>((resolve, reject) => {
     getOneById(examId)
       .then((pureExam) => {
         if (pureExam === null) {
@@ -646,7 +646,7 @@ function getStudentExamResults(examId: string, studentId: string): Promise<ExamR
             }
 
             const grade = results[0].exam_grades.grade;
-            const questionSolutions: QuestionSolution[] = results
+            const questionSolutions: QuestionSolutionOld[] = results
               .map((result) => buildQuestionSolution(result.student_exam_answers));
 
             if (exam === null) {
@@ -655,13 +655,13 @@ function getStudentExamResults(examId: string, studentId: string): Promise<ExamR
             }
 
             studentdb.getStudentById(studentId)
-              .then((student: Student|null) => {
+              .then((student: StudentOld|null) => {
                 if (student === null) {
                   reject(new Error('Student is null but it should not be'));
                   return;
                 }
 
-                const examResult: ExamResult = {
+                const examResult: ExamResultOld = {
                   student,
                   exam,
                   solution: questionSolutions,
@@ -689,7 +689,7 @@ interface FullExamGradeRowDataPacket {
   specialties: SpecialtiesRowDataPacket;
 }
 
-function buildExamGrade(packet: FullExamGradeRowDataPacket): ExamGrade {
+function buildExamGrade(packet: FullExamGradeRowDataPacket): ExamGradeOld {
   const fullStudentPacket: FullStudentRowDataPacket = {
     accounts: packet.accounts,
     students: packet.students,
@@ -705,8 +705,8 @@ function buildExamGrade(packet: FullExamGradeRowDataPacket): ExamGrade {
   };
 }
 
-function getExamGrades(examId: string): Promise<ExamGrade[]> {
-  return new Promise<ExamGrade[]>((resolve, reject) => {
+function getExamGrades(examId: string): Promise<ExamGradeOld[]> {
+  return new Promise<ExamGradeOld[]>((resolve, reject) => {
     pool.getConnection((connectionError: Error|null, connection: PoolConnection) => {
       if (connectionError) {
         reject(connectionError);

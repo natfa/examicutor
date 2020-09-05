@@ -1,22 +1,22 @@
 import { PoolConnection } from 'mysql';
 import { pool } from './index';
 
-import { Specialty } from '../models/Specialty';
+import { SpecialtyOld } from '../models/Specialty';
 
 export interface SpecialtiesRowDataPacket {
   id: number;
   name: string;
 }
 
-export function buildSpecialty(dataPacket: SpecialtiesRowDataPacket): Specialty {
+export function buildSpecialty(dataPacket: SpecialtiesRowDataPacket): SpecialtyOld {
   return {
     id: String(dataPacket.id),
     name: dataPacket.name,
   };
 }
 
-function getAllSpecialties(): Promise<Specialty[]> {
-  return new Promise<Specialty[]>((resolve, reject) => {
+function getAllSpecialties(): Promise<SpecialtyOld[]> {
+  return new Promise<SpecialtyOld[]>((resolve, reject) => {
     pool.getConnection((connectionError: Error, connection: PoolConnection) => {
       if (connectionError) {
         reject(connectionError);

@@ -4,13 +4,14 @@ import dayjs from 'dayjs';
 import examdb from '../../db/exams';
 import studentdb from '../../db/students';
 
-import { Exam } from '../../models/Exam';
-import { StrippedExam } from '../../models/StrippedExam';
-import { StrippedQuestion } from '../../models/StrippedQuestion';
-import { StrippedAnswer } from '../../models/StrippedAnswer';
-import { StudentSolution } from '../../models/StudentSolution';
-import { Question } from '../../models/Question';
-import { QuestionSolution } from '../../models/QuestionSolution';
+import { ExamOld } from '../../models/Exam';
+import { AnswerOld } from '../../models/Answer';
+import { StrippedExamOld } from '../../models/StrippedExam';
+import { StrippedQuestionOld } from '../../models/StrippedQuestion';
+import { StrippedAnswerOld } from '../../models/StrippedAnswer';
+import { StudentSolutionOld } from '../../models/StudentSolution';
+import { QuestionOld } from '../../models/Question';
+import { QuestionSolutionOld } from '../../models/QuestionSolution';
 
 import { possibleGrades } from '../../constants';
 import shuffle from '../../utils/shuffle';
@@ -26,13 +27,13 @@ import shuffle from '../../utils/shuffle';
  *
  *  @returns {StrippedExam} The same exam with less properties
  */
-function stripExam(exam: Exam|null): StrippedExam|null {
+function stripExam(exam: ExamOld|null): StrippedExamOld|null {
   if (exam === null) return null;
 
-  const questions: StrippedQuestion[] = exam.questions.map((question) => {
-    const answers: StrippedAnswer[] = question.answers.map((answer) => {
+  const questions: StrippedQuestionOld[] = exam.questions.map((question) => {
+    const answers: StrippedAnswerOld[] = question.answers.map((answer: AnswerOld) => {
       if (answer.id === undefined) throw new Error('Answer.id is undefined');
-      const strippedAnswer: StrippedAnswer = {
+      const strippedAnswer: StrippedAnswerOld = {
         id: answer.id,
         text: answer.text,
       };
@@ -69,7 +70,7 @@ function stripExam(exam: Exam|null): StrippedExam|null {
  * @returns {StrippedExam|null} - A copy of the exam instance with shuffled questions
  * and answers. If null was passed as an argument, null will be returned.
  */
-async function shuffleStrippedExam(exam: StrippedExam|null): Promise<StrippedExam|null> {
+async function shuffleStrippedExam(exam: StrippedExamOld|null): Promise<StrippedExamOld|null> {
   if (exam === null) return null;
 
   const questionsWithShuffledAnswers = exam.questions.map((question) => {
@@ -143,7 +144,7 @@ function saveAnswer(req: Request, res: Response): void {
 
 interface SolutionRequestBody {
   examId: string;
-  solution: QuestionSolution[];
+  solution: QuestionSolutionOld[];
 }
 
 /**
@@ -155,7 +156,7 @@ interface SolutionRequestBody {
  *
  * @returns {number} - The amount of points aquired for the student.
  */
-function calculatePoints(examQuestions: Question[], studentAnswers: QuestionSolution[]): number {
+function calculatePoints(examQuestions: QuestionOld[], studentAnswers: QuestionSolutionOld[]): number {
   const points = examQuestions.reduce((acc, question) => {
     const studentAnswer = studentAnswers.find((sa) => sa.questionId === question.id);
     const correctAnswer = question.answers.find((a) => a.correct);
@@ -184,7 +185,7 @@ function calculatePoints(examQuestions: Question[], studentAnswers: QuestionSolu
  * If the exam or its boundaries aren't found, null is returned instead
  */
 async function _submitExam(
-  studentSolution: StudentSolution,
+  studentSolution: StudentSolutionOld,
 ): Promise<number|null> {
   const exam = await examdb.getOneById(studentSolution.examId);
 
@@ -248,7 +249,7 @@ async function submitExam(req: Request, res: Response, next: NextFunction): Prom
       return;
     }
 
-    const studentSolution: StudentSolution = {
+    const studentSolution: StudentSolutionOld = {
       student,
       examId,
       solution,

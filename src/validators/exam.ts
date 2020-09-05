@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import dayjs from 'dayjs';
 
-import { Time } from '../models/Time';
-import { ExamCreationFilter } from '../models/ExamCreationFilter';
-import { ExamGradeBoundary } from '../models/ExamGradeBoundary';
+import { TimeOld } from '../models/Time';
+import { ExamCreationFilterOld } from '../models/ExamCreationFilter';
+import { ExamGradeBoundaryOld } from '../models/ExamGradeBoundary';
 
 import { possibleGrades, pointValues } from '../constants';
 
@@ -23,7 +23,7 @@ function validateName(name: string): ExamValidationResult {
   return {};
 }
 
-function validateTimeToSolve(timeToSolve: Time): ExamValidationResult {
+function validateTimeToSolve(timeToSolve: TimeOld): ExamValidationResult {
   if (typeof timeToSolve !== 'object') return { timeToSolve: 'Must be an object' };
 
   if (
@@ -43,7 +43,7 @@ function validateTimeToSolve(timeToSolve: Time): ExamValidationResult {
   return {};
 }
 
-function validateDates(start: string, end: string, timeToSolve: Time): ExamValidationResult {
+function validateDates(start: string, end: string, timeToSolve: TimeOld): ExamValidationResult {
   let errors: ExamValidationResult = {};
   const timeToSolveErrors = validateTimeToSolve(timeToSolve);
 
@@ -62,7 +62,7 @@ function validateDates(start: string, end: string, timeToSolve: Time): ExamValid
   return errors;
 }
 
-function validateFilters(filters: ExamCreationFilter[]): ExamValidationResult {
+function validateFilters(filters: ExamCreationFilterOld[]): ExamValidationResult {
   if (!Array.isArray(filters)) return { filters: 'Must be an array of filters' };
   if (filters.length === 0) return { filters: 'Can\'t be empty' };
 
@@ -135,7 +135,7 @@ function validateFilters(filters: ExamCreationFilter[]): ExamValidationResult {
   return errors;
 }
 
-function validateBoundaries(boundaries: ExamGradeBoundary[]): ExamValidationResult {
+function validateBoundaries(boundaries: ExamGradeBoundaryOld[]): ExamValidationResult {
   if (!Array.isArray(boundaries)) return { boundaries: 'Must be an array' };
   if (boundaries.length === 0) return { boundaries: 'There must be at least one element' };
 
