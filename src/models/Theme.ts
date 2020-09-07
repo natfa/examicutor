@@ -11,12 +11,18 @@ import {
   Model,
   Optional,
   DataTypes,
+
   HasOneGetAssociationMixin,
   HasOneSetAssociationMixin,
   HasOneCreateAssociationMixin,
+  HasManyGetAssociationsMixin,
+  HasManyCountAssociationsMixin,
+  HasManyCreateAssociationMixin,
+  Association,
 } from 'sequelize';
 
 import { Subject } from './Subject';
+import { Question } from './Question';
 
 interface ThemeAttributes {
   id: number;
@@ -37,6 +43,16 @@ export class Theme extends Model<ThemeAttributes, ThemeCreationAttributes> imple
   public getSubject!: HasOneGetAssociationMixin<Subject>;
   public setSubject!: HasOneSetAssociationMixin<Subject, number>;
   public createSubject!: HasOneCreateAssociationMixin<Subject>;
+
+  public getQuestions!: HasManyGetAssociationsMixin<Question>;
+  public countQuestions!: HasManyCountAssociationsMixin;
+  public createQuestion!: HasManyCreateAssociationMixin<Question>;
+
+  public readonly questions?: Question[];
+
+  public static associations: {
+    questions: Association<Theme, Question>;
+  };
 }
 
 export const initTheme = (sequelize: Sequelize) => {
