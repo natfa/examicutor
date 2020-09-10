@@ -4,6 +4,7 @@ import { Subject, initSubject } from './Subject';
 import { Theme, initTheme } from './Theme';
 import { Question, initQuestion } from './Question';
 import { Answer, initAnswer } from './Answer';
+import { Exam, initExam } from './Exam';
 
 import config from '../config/default';
 
@@ -16,6 +17,7 @@ initSubject(sequelize);
 initTheme(sequelize);
 initQuestion(sequelize);
 initAnswer(sequelize);
+initExam(sequelize);
 
 // create associations
 Subject.hasMany(Theme, {
@@ -36,10 +38,14 @@ Theme.hasMany(Question, {
 })
 Question.belongsTo(Theme, { foreignKey: 'themeId' });
 
+Exam.belongsToMany(Question, { through: 'exam_questions', as: 'questions' });
+Question.belongsToMany(Exam, { through: 'exam_questions' });
+
 export {
     sequelize,
     Subject,
     Theme,
     Question,
     Answer,
+    Exam,
 }
