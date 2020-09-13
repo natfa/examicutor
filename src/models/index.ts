@@ -10,7 +10,8 @@ import config from '../config/default';
 
 const { db } = config;
 
-const sequelize = new Sequelize(`mysql://${db.user}:${db.password}@${db.host}/${db.database}`);
+//const sequelize = new Sequelize(`mysql://${db.user}:${db.password}@${db.host}/${db.database}`);
+const sequelize = new Sequelize('sqlite::memory:');
 
 // init models
 initSubject(sequelize);
