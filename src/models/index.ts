@@ -8,6 +8,7 @@ import { Exam, initExam } from './Exam';
 import { User, initUser } from './User';
 import { Specialty, initSpecialty } from './Specialty';
 import { Student, initStudent } from './Student';
+import { Teacher, initTeacher } from './Teacher';
 
 import config from '../config/default';
 
@@ -25,6 +26,7 @@ initExam(sequelize);
 initUser(sequelize);
 initSpecialty(sequelize);
 initStudent(sequelize);
+initTeacher(sequelize);
 
 // create associations
 Subject.hasMany(Theme, { foreignKey: 'subjectId', as: 'themes' });
@@ -45,6 +47,9 @@ Student.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 Specialty.hasMany(Student, { foreignKey: 'studiesIn', as: 'students' });
 Student.belongsTo(Specialty, { foreignKey: 'studiesIn', as: 'specialty' });
 
+User.hasOne(Teacher, { foreignKey: 'userId' });
+Teacher.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
 export {
     sequelize,
     Subject,
@@ -54,4 +59,6 @@ export {
     Exam,
     User,
     Specialty,
+    Student,
+    Teacher,
 }
