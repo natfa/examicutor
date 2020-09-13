@@ -7,6 +7,7 @@ import { Answer, initAnswer } from './Answer';
 import { Exam, initExam } from './Exam';
 import { User, initUser } from './User';
 import { Specialty, initSpecialty } from './Specialty';
+import { Student, initStudent } from './Student';
 
 import config from '../config/default';
 
@@ -23,28 +24,26 @@ initAnswer(sequelize);
 initExam(sequelize);
 initUser(sequelize);
 initSpecialty(sequelize);
+initStudent(sequelize);
 
 // create associations
-Subject.hasMany(Theme, {
-    foreignKey: 'subjectId',
-    as: 'themes',
-});
+Subject.hasMany(Theme, { foreignKey: 'subjectId', as: 'themes' });
 Theme.belongsTo(Subject, { foreignKey: 'subjectId' });
 
-Question.hasMany(Answer, {
-    foreignKey: 'questionId',
-    as: 'answers',
-});
+Question.hasMany(Answer, { foreignKey: 'questionId', as: 'answers' });
 Answer.belongsTo(Question, { foreignKey: 'questionId' });
 
-Theme.hasMany(Question, {
-    foreignKey: 'themeId',
-    as: 'questions',
-})
+Theme.hasMany(Question, { foreignKey: 'themeId', as: 'questions' })
 Question.belongsTo(Theme, { foreignKey: 'themeId' });
 
 Exam.belongsToMany(Question, { through: 'exam_questions', as: 'questions' });
 Question.belongsToMany(Exam, { through: 'exam_questions' });
+
+User.hasOne(Student, { foreignKey: 'userId' });
+Student.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
+Specialty.hasMany(Student, { foreignKey: 'studiesIn', as: 'students' });
+Student.belongsTo(Specialty, { foreignKey: 'studiesIn', as: 'specialty' });
 
 export {
     sequelize,

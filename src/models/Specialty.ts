@@ -7,7 +7,21 @@ import {
   Sequelize,
   DataTypes,
   Model,
+
+  HasManyGetAssociationsMixin,
+  HasManyCountAssociationsMixin,
+  HasManyHasAssociationMixin,
+  HasManyHasAssociationsMixin,
+  HasManySetAssociationsMixin,
+  HasManyAddAssociationMixin,
+  HasManyAddAssociationsMixin,
+  HasManyRemoveAssociationMixin,
+  HasManyRemoveAssociationsMixin,
+  HasManyCreateAssociationMixin,
+  Association,
 } from 'sequelize';
+
+import { Student } from './Student';
 
 export interface SpecialtyAttributes {
   id?: number;
@@ -20,6 +34,23 @@ export class Specialty extends Model<SpecialtyAttributes> implements SpecialtyAt
 
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
+
+  public getStudents!: HasManyGetAssociationsMixin<Student>;
+  public countStudents!: HasManyCountAssociationsMixin;
+  public hasStudent!: HasManyHasAssociationMixin<Student, number>;
+  public hasStudents!: HasManyHasAssociationsMixin<Student, number>;
+  public setStudents!: HasManySetAssociationsMixin<Student, number>;
+  public addStudent!: HasManyAddAssociationMixin<Student, number>;
+  public addStudents!: HasManyAddAssociationsMixin<Student, number>;
+  public removeStudent!: HasManyRemoveAssociationMixin<Student, number>;
+  public removeStudents!: HasManyRemoveAssociationsMixin<Student, number>;
+  public createStudent!: HasManyCreateAssociationMixin<Student>;
+
+  public readonly students?: Student[];
+
+  public static associations: {
+    students: Association<Specialty, Student>;
+  };
 }
 
 export const initSpecialty = (sequelize: Sequelize) => {
