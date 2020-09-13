@@ -6,6 +6,7 @@ import { Question, initQuestion } from './Question';
 import { Answer, initAnswer } from './Answer';
 import { Exam, initExam } from './Exam';
 import { User, initUser } from './User';
+import { Specialty, initSpecialty } from './Specialty';
 
 import config from '../config/default';
 
@@ -21,6 +22,7 @@ initQuestion(sequelize);
 initAnswer(sequelize);
 initExam(sequelize);
 initUser(sequelize);
+initSpecialty(sequelize);
 
 // create associations
 Subject.hasMany(Theme, {
@@ -52,4 +54,5 @@ export {
     Answer,
     Exam,
     User,
+    Specialty,
 }
