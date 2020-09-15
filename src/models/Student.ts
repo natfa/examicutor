@@ -49,6 +49,18 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
     user: Association<Student, User>;
     specialty: Association<Student, Specialty>;
   }
+
+  public static associate = () => {
+    Student.belongsTo(User, {
+      foreignKey: 'userId',
+      as: 'user',
+    });
+
+    Student.belongsTo(Specialty, {
+      foreignKey: 'studiesIn',
+      as: 'specialty',
+    });
+  }
 }
 
 export const initStudent = (sequelize: Sequelize) => {

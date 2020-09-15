@@ -10,6 +10,8 @@ import {
   DataTypes,
 } from 'sequelize';
 
+import { Question } from './Question';
+
 export interface AnswerAttributes {
   id?: number;
   questionId?: number;
@@ -25,6 +27,12 @@ export class Answer extends Model<AnswerAttributes> implements AnswerAttributes 
 
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
+
+  public static assocate = () => {
+    Answer.belongsTo(Question, {
+      foreignKey: 'questionId',
+    });
+  }
 }
 
 export const initAnswer = (sequelize: Sequelize) => {

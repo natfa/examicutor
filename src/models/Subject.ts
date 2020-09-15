@@ -46,6 +46,13 @@ export class Subject extends Model<SubjectAttributes> implements SubjectAttribut
   public static associations: {
     themes: Association<Subject, Theme>;
   };
+
+  public static associate = () => {
+    Subject.hasMany(Theme, {
+      foreignKey: 'subjectId',
+      as: 'themes',
+    });
+  };
 };
 
 export const initSubject = (sequelize: Sequelize) => {

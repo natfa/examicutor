@@ -32,6 +32,13 @@ export class Teacher extends Model<TeacherAttributes> implements TeacherAttribut
   public static associations: {
     user: Association<Teacher, User>;
   };
+
+  public static associate = () => {
+    Teacher.belongsTo(User, {
+      foreignKey: 'userId',
+      as: 'user',
+    });
+  }
 }
 
 export const initTeacher = (sequelize: Sequelize) => {

@@ -10,6 +10,9 @@ export interface UserAttributes {
     passwordHash: string;
 };
 
+import { Student } from './Student';
+import { Teacher } from './Teacher';
+
 export class User extends Model<UserAttributes> implements UserAttributes {
     public id!: number;
     public email!: string;
@@ -17,6 +20,16 @@ export class User extends Model<UserAttributes> implements UserAttributes {
 
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
+
+    public static associate = () => {
+        User.hasOne(Student, {
+            foreignKey: 'userId',
+        });
+
+        User.hasOne(Teacher, {
+            foreignKey: 'userId',
+        });
+    }
 }
 
 export const initUser = (sequelize: Sequelize) => {

@@ -69,6 +69,13 @@ export class Exam extends Model<ExamAttributes, ExamCreationAttributes> implemen
   public static associations: {
     questions: Association<Exam, Question>;
   };
+
+  public static associate = () => {
+    Exam.belongsToMany(Question, {
+      through: 'exam_questions',
+      as: 'questions',
+    });
+  }
 }
 
 export const initExam = (sequelize: Sequelize) => {

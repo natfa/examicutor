@@ -51,6 +51,13 @@ export class Specialty extends Model<SpecialtyAttributes> implements SpecialtyAt
   public static associations: {
     students: Association<Specialty, Student>;
   };
+
+  public static associate = () => {
+    Specialty.hasMany(Student, {
+      foreignKey: 'studiesIn',
+      as: 'students',
+    });
+  }
 }
 
 export const initSpecialty = (sequelize: Sequelize) => {

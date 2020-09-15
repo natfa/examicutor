@@ -46,11 +46,25 @@ export class Theme extends Model<ThemeAttributes> implements ThemeAttributes {
   public countQuestions!: HasManyCountAssociationsMixin;
   public createQuestion!: HasManyCreateAssociationMixin<Question>;
 
+  public readonly subject?: Subject;
   public readonly questions?: Question[];
 
   public static associations: {
+    subject: Association<Theme, Subject>;
     questions: Association<Theme, Question>;
   };
+
+  public static associate = () => {
+    Theme.belongsTo(Subject, {
+      foreignKey: 'subjectId',
+      as: 'subject',
+    });
+
+    Theme.hasMany(Question, {
+      foreignKey: 'themeId',
+      as: 'questions',
+    });
+  }
 }
 
 export const initTheme = (sequelize: Sequelize) => {

@@ -22,9 +22,14 @@ import {
   HasManyAddAssociationMixin,
   HasManyCreateAssociationMixin,
   Association,
+  BelongsToGetAssociationMixin,
+  BelongsToSetAssociationMixin,
+  BelongsToCreateAssociationMixin,
 } from 'sequelize';
 
 import { Answer, AnswerAttributes } from './Answer';
+import { Theme } from './Theme';
+import { Exam } from './Exam';
 
 export interface QuestionAttributes {
   id?: number;
@@ -47,11 +52,33 @@ export class Question extends Model<QuestionAttributes> implements QuestionAttri
   public addAnswer!: HasManyAddAssociationMixin<Answer, number>;
   public createAnswer!: HasManyCreateAssociationMixin<Answer>;
 
+  public getTheme!: BelongsToGetAssociationMixin<Theme>;
+  public setTheme!: BelongsToSetAssociationMixin<Theme, number>;
+  public createTheme!: BelongsToCreateAssociationMixin<Theme>;
+
+  public readonly theme?: Theme;
   public readonly answers?: Answer[];
 
   public static associations: {
+    theme: Association<Question, Theme>;
     answers: Association<Question, Answer>;
   };
+
+  public static associate = () => {
+    Question.hasMany(Answer, {
+      foreignKey: 'questionId',
+      as: 'answers',
+    });
+
+    Question.belongsTo(Theme, {
+      foreignKey: 'themeId',
+      as: 'theme',
+    });
+
+    Question.belongsToMany(Exam, {
+      through: 'exam_questions',
+    });
+  }
 };
 
 export const initQuestion = (sequelize: Sequelize) => {
