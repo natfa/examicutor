@@ -9,7 +9,6 @@ export interface ThemeOld {
 import {
   Sequelize,
   Model,
-  Optional,
   DataTypes,
 
   HasOneGetAssociationMixin,
@@ -22,17 +21,16 @@ import {
 } from 'sequelize';
 
 import { Subject } from './Subject';
-import { Question } from './Question';
+import { Question, QuestionAttributes } from './Question';
 
-interface ThemeAttributes {
-  id: number;
-  subjectId: number;
+export interface ThemeAttributes {
+  id?: number;
+  subjectId?: number;
   name: string;
+  questions?: QuestionAttributes[];
 };
 
-interface ThemeCreationAttributes extends Optional<ThemeAttributes, 'id'> {};
-
-export class Theme extends Model<ThemeAttributes, ThemeCreationAttributes> implements ThemeAttributes {
+export class Theme extends Model<ThemeAttributes> implements ThemeAttributes {
   public id!: number;
   public subjectId!: number;
   public name!: string;

@@ -6,7 +6,6 @@ export interface SubjectOld {
 import {
   Sequelize,
   Model,
-  Optional,
   DataTypes,
 
   HasManyGetAssociationsMixin,
@@ -19,16 +18,15 @@ import {
   Association,
 } from 'sequelize';
 
-import { Theme } from './Theme';
+import { Theme, ThemeAttributes } from './Theme';
 
-interface SubjectAttributes {
-  id: number;
+export interface SubjectAttributes {
+  id?: number;
   name: string;
+  themes?: ThemeAttributes[];
 };
 
-interface SubjectCreationAttributes extends Optional<SubjectAttributes, 'id'> {};
-
-export class Subject extends Model<SubjectAttributes, SubjectCreationAttributes> implements SubjectAttributes {
+export class Subject extends Model<SubjectAttributes> implements SubjectAttributes {
   public id!: number;
   public name!: string;
 

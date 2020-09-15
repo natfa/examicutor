@@ -7,20 +7,17 @@ export interface AnswerOld {
 import {
   Sequelize,
   Model,
-  Optional,
   DataTypes,
 } from 'sequelize';
 
-interface AnswerAttributes {
-  id: number;
-  questionId: number;
+export interface AnswerAttributes {
+  id?: number;
+  questionId?: number;
   text: string;
   correct: boolean;
 }
 
-interface AnswerCreationAttributes extends Optional<AnswerAttributes, 'id'> {};
-
-export class Answer extends Model<AnswerAttributes, AnswerCreationAttributes> implements AnswerAttributes {
+export class Answer extends Model<AnswerAttributes> implements AnswerAttributes {
   public id!: number;
   public questionId!: number;
   public text!: string;

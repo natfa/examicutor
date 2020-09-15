@@ -14,7 +14,6 @@ export interface QuestionOld {
 import {
   Sequelize,
   Model,
-  Optional,
   DataTypes,
 
   HasManyGetAssociationsMixin,
@@ -25,17 +24,16 @@ import {
   Association,
 } from 'sequelize';
 
-import { Answer } from './Answer';
+import { Answer, AnswerAttributes } from './Answer';
 
-interface QuestionAttributes {
-  id: number;
+export interface QuestionAttributes {
+  id?: number;
   text: string;
   points: number;
+  answers?: AnswerAttributes[];
 };
 
-interface QuestionCreationAttributes extends Optional<QuestionAttributes, 'id'> {};
-
-export class Question extends Model<QuestionAttributes, QuestionCreationAttributes> implements QuestionAttributes {
+export class Question extends Model<QuestionAttributes> implements QuestionAttributes {
   public id!: number;
   public text!: string;
   public points!: number;
