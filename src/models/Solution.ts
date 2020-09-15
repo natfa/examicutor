@@ -6,16 +6,28 @@ import {
     BelongsToSetAssociationMixin,
     BelongsToCreateAssociationMixin,
     Association,
+    HasManyGetAssociationsMixin,
+    HasManyCountAssociationsMixin,
+    HasManyHasAssociationMixin,
+    HasManyHasAssociationsMixin,
+    HasManySetAssociationsMixin,
+    HasManyAddAssociationMixin,
+    HasManyAddAssociationsMixin,
+    HasManyRemoveAssociationMixin,
+    HasManyRemoveAssociationsMixin,
+    HasManyCreateAssociationMixin,
 } from 'sequelize';
 
 import { Exam } from './Exam';
 import { Student } from './Student';
+import { SolutionAnswer, SolutionAnswerAttributes } from './SolutionAnswer';
 
 export interface SolutionAttributes {
     id?: number;
     examId: number;
     studentId: number;
     grade?: number;
+    solutionAnswers?: SolutionAnswerAttributes[];
 }
 
 export class Solution extends Model<SolutionAttributes> implements SolutionAttributes {
@@ -35,12 +47,25 @@ export class Solution extends Model<SolutionAttributes> implements SolutionAttri
     public setStudent!: BelongsToSetAssociationMixin<Student, number>;
     public createStudent!: BelongsToCreateAssociationMixin<Student>;
 
+    public getSolutionAnswers!: HasManyGetAssociationsMixin<SolutionAnswer>;
+    public countSolutions!: HasManyCountAssociationsMixin;
+    public hasSolutionAnswer!: HasManyHasAssociationMixin<SolutionAnswer, number>;
+    public hasSolutionAnswers!: HasManyHasAssociationsMixin<SolutionAnswer, number>;
+    public setSolutionAnswers!: HasManySetAssociationsMixin<SolutionAnswer, number>;
+    public addSolutionAnswer!: HasManyAddAssociationMixin<SolutionAnswer, number>;
+    public addSolutionAnswers!: HasManyAddAssociationsMixin<SolutionAnswer, number>;
+    public removeSolutionAnswer!: HasManyRemoveAssociationMixin<SolutionAnswer, number>;
+    public removeSolutionAnswers!: HasManyRemoveAssociationsMixin<SolutionAnswer, number>;
+    public createSolutionAnswer!: HasManyCreateAssociationMixin<SolutionAnswer>;
+
     public readonly exam?: Exam;
     public readonly student?: Student;
+    public readonly solutionAnswers?: SolutionAnswer[];
 
     public static associations: {
         exam: Association<Solution, Exam>;
         student: Association<Solution, Student>;
+        solutionAnswers: Association<Solution, SolutionAnswer>;
     };
 
     public static associate = () => {
@@ -52,6 +77,11 @@ export class Solution extends Model<SolutionAttributes> implements SolutionAttri
         Solution.belongsTo(Student, {
             foreignKey: 'studentId',
             as: 'student',
+        });
+
+        Solution.hasMany(SolutionAnswer, {
+            foreignKey: 'solutionId',
+            as: 'solutionAnswers',
         });
     };
 }
