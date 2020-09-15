@@ -15,10 +15,21 @@ import {
   BelongsToSetAssociationMixin,
   BelongsToCreateAssociationMixin,
   Association,
+  HasManyGetAssociationsMixin,
+  HasManyCountAssociationsMixin,
+  HasManyHasAssociationMixin,
+  HasManyHasAssociationsMixin,
+  HasManySetAssociationsMixin,
+  HasManyAddAssociationMixin,
+  HasManyAddAssociationsMixin,
+  HasManyRemoveAssociationMixin,
+  HasManyRemoveAssociationsMixin,
+  HasManyCreateAssociationMixin,
 } from 'sequelize';
 
 import { User } from './User';
 import { Specialty } from './Specialty';
+import { Solution } from './Solution';
 
 export interface StudentAttributes {
   id?: number;
@@ -42,12 +53,25 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
   public setSpecialty!: BelongsToSetAssociationMixin<Specialty, number>;
   public createSpecialty!: BelongsToCreateAssociationMixin<Specialty>;
 
+  public getSolutions!: HasManyGetAssociationsMixin<Solution>;
+  public countSolutions!: HasManyCountAssociationsMixin;
+  public hasSolution!: HasManyHasAssociationMixin<Solution, number>;
+  public hasSolutions!: HasManyHasAssociationsMixin<Solution, number>;
+  public setSolutions!: HasManySetAssociationsMixin<Solution, number>;
+  public addSolution!: HasManyAddAssociationMixin<Solution, number>;
+  public addSolutions!: HasManyAddAssociationsMixin<Solution, number>;
+  public removeSolution!: HasManyRemoveAssociationMixin<Solution, number>;
+  public removeSolutions!: HasManyRemoveAssociationsMixin<Solution, number>;
+  public createSolution!: HasManyCreateAssociationMixin<Solution>;
+
   public readonly user?: User;
   public readonly specialty?: Specialty;
+  public readonly solutions?: Solution[];
 
   public static associations: {
     user: Association<Student, User>;
     specialty: Association<Student, Specialty>;
+    solutions: Association<Student, Solution>;
   }
 
   public static associate = () => {
@@ -60,6 +84,11 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
       foreignKey: 'studiesIn',
       as: 'specialty',
     });
+
+    Student.hasMany(Solution, {
+      foreignKey: 'studentId',
+      as: 'solutions',
+    })
   }
 }
 

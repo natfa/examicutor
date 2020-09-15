@@ -30,9 +30,20 @@ import {
   BelongsToManyRemoveAssociationsMixin,
   BelongsToManyCreateAssociationMixin,
   Association,
+  HasManyGetAssociationsMixin,
+  HasManyCountAssociationsMixin,
+  HasManyHasAssociationMixin,
+  HasManyHasAssociationsMixin,
+  HasManySetAssociationsMixin,
+  HasManyAddAssociationMixin,
+  HasManyAddAssociationsMixin,
+  HasManyRemoveAssociationMixin,
+  HasManyRemoveAssociationsMixin,
+  HasManyCreateAssociationMixin,
 } from 'sequelize';
 
 import { Question } from './Question';
+import { Solution } from './Solution';
 
 interface ExamAttributes {
   id: number;
@@ -64,16 +75,34 @@ export class Exam extends Model<ExamAttributes, ExamCreationAttributes> implemen
   public removeQuestions!: BelongsToManyRemoveAssociationsMixin<Question, number>;
   public createQuestion!: BelongsToManyCreateAssociationMixin<Question>;
 
+  public getSolutions!: HasManyGetAssociationsMixin<Solution>;
+  public countSolutions!: HasManyCountAssociationsMixin;
+  public hasSolution!: HasManyHasAssociationMixin<Solution, number>;
+  public hasSolutions!: HasManyHasAssociationsMixin<Solution, number>;
+  public setSolutions!: HasManySetAssociationsMixin<Solution, number>;
+  public addSolution!: HasManyAddAssociationMixin<Solution, number>;
+  public addSolutions!: HasManyAddAssociationsMixin<Solution, number>;
+  public removeSolution!: HasManyRemoveAssociationMixin<Solution, number>;
+  public removeSolutions!: HasManyRemoveAssociationsMixin<Solution, number>;
+  public createSolution!: HasManyCreateAssociationMixin<Solution>;
+
   public readonly questions?: Question[];
+  public readonly solutions?: Solution[];
 
   public static associations: {
     questions: Association<Exam, Question>;
+    solutions: Association<Exam, Solution>;
   };
 
   public static associate = () => {
     Exam.belongsToMany(Question, {
       through: 'exam_questions',
       as: 'questions',
+    });
+
+    Exam.hasMany(Solution, {
+      foreignKey: 'examId',
+      as: 'solutions',
     });
   }
 }

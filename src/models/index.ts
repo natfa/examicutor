@@ -9,6 +9,7 @@ import { User, initUser } from './User';
 import { Specialty, initSpecialty } from './Specialty';
 import { Student, initStudent } from './Student';
 import { Teacher, initTeacher } from './Teacher';
+import { Solution, initSolution } from './Solution';
 
 import config from '../config/default';
 
@@ -27,6 +28,7 @@ initUser(sequelize);
 initSpecialty(sequelize);
 initStudent(sequelize);
 initTeacher(sequelize);
+initSolution(sequelize);
 
 // create associations
 Subject.associate();
@@ -37,6 +39,7 @@ Exam.associate();
 User.associate();
 Student.associate();
 Specialty.associate();
+Solution.associate();
 
 export {
     sequelize,
@@ -49,4 +52,5 @@ export {
     Specialty,
     Student,
     Teacher,
+    Solution,
 }
