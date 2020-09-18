@@ -8,6 +8,7 @@ export interface UserAttributes {
     id?: number;
     email: string;
     passwordHash: string;
+    admin?: boolean;
 };
 
 import { Student } from './Student';
@@ -17,6 +18,7 @@ export class User extends Model<UserAttributes> implements UserAttributes {
     public id!: number;
     public email!: string;
     public passwordHash!: string;
+    public admin!: boolean;
 
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
@@ -52,6 +54,10 @@ export const initUser = (sequelize: Sequelize) => {
                 type: DataTypes.STRING(500),
                 allowNull: false,
             },
+            admin: {
+                type: DataTypes.BOOLEAN,
+                defaultValue: false,
+            }
         },
         {
             sequelize,
