@@ -1,10 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 
-function isAuthenticated(req: Request, res: Response, next: NextFunction): void {
+export function isAuthenticated(req: Request, res: Response, next: NextFunction): void {
   if (!req.session) throw new Error('req.session is undefined');
 
-  if (req.session.account === undefined) {
-    res.status(401).send('Unauthorized');
+  if (req.session.user === undefined) {
+    res.status(401).send('Unauthenticated');
     return;
   }
 

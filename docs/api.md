@@ -22,6 +22,7 @@ User model is the basic model for a registered user.
 {
     id:    int;
     email: string;
+    role:  string;
 }
 ```
 
@@ -78,7 +79,7 @@ Response Code | Meaning
 
 
 
-### `HEAD /api/auth/logout`
+### `HEAD /api/auth/logout` ***NOT IMPLEMENTED***
 Log a user out (invalidate the current session).
 
 #### Responses:
@@ -93,7 +94,7 @@ Response Code | Meaning
 
 
 
-### `POST /api/auth/create`
+### `POST /api/auth/create` ***NOT IMPLEMENTED***
 Creates a new user account. This action can only be performed by admins.
 
 #### Request body:
@@ -102,7 +103,7 @@ Field | Value
 email | Email string value. Must be a valid email.
 password | String.
 psswordRepeat | String.
-role | Optional. String. One of: `admin`, `teacher` or `student`. If this value is not provided, the system won't assign any role to the new user.
+role | String. One of: `admin`, `teacher` or `student`.
 
 ##### Example:
 ```json
@@ -118,7 +119,7 @@ role | Optional. String. One of: `admin`, `teacher` or `student`. If this value 
 Response Code | Meaning
 --------------|--------
 200 | User successfully created. User model sent back with response.
-400 | Provided email is already in use.
+400 | Provided email is already in use, email is invalid, passwords don't match or role doesn't exist. Response body provides details.
 401 | User not authenticated.
 403 | User not admin.
 
