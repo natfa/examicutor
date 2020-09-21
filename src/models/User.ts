@@ -2,34 +2,37 @@ import {
     Sequelize,
     DataTypes,
     Model,
+    Association,
 } from 'sequelize';
+
+import { Role } from './Role';
 
 export interface UserAttributes {
     id?: number;
     email: string;
     passwordHash: string;
-    admin?: boolean;
+    roleId: number;
 };
-
-import { Student } from './Student';
-import { Teacher } from './Teacher';
 
 export class User extends Model<UserAttributes> implements UserAttributes {
     public id!: number;
     public email!: string;
     public passwordHash!: string;
-    public admin!: boolean;
+    public roleId!: number;
 
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
 
-    public static associate = () => {
-        User.hasOne(Student, {
-            foreignKey: 'userId',
-        });
+    public readonly role?: Role;
 
-        User.hasOne(Teacher, {
-            foreignKey: 'userId',
+    public static associations: {
+        role: Association<User, Role>;
+    }
+
+    public static associate = () => {
+        User.belongsTo(Role, {
+            foreignKey: 'roleId',
+            as: 'role',
         });
     }
 }
@@ -54,9 +57,9 @@ export const initUser = (sequelize: Sequelize) => {
                 type: DataTypes.STRING(500),
                 allowNull: false,
             },
-            admin: {
-                type: DataTypes.BOOLEAN,
-                defaultValue: false,
+            roleId: {
+                type: DataTypes.INTEGER.UNSIGNED,
+                allowNull: false,
             }
         },
         {
