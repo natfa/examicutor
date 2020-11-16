@@ -4,6 +4,8 @@ import { promises as fs } from 'fs';
 
 import removeUploadedFiles from '../../utils/removeUploadedFiles';
 
+import { Question } from '../../models/Question';
+
 import questiondb from '../../db/questions';
 import subjectdb from '../../db/subjects';
 import themedb from '../../db/themes';
@@ -48,7 +50,7 @@ const saveMedia = async (
 
 async function getQuestions(_: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const questions = await questiondb.getMany(200);
+    const questions = await Question.findAll({ limit: 200 });
     res.status(200).json(questions);
   } catch (err) {
     next(err);
@@ -60,7 +62,7 @@ async function getQuestionById(req: Request, res: Response, next: NextFunction):
   const { id } = req.params;
 
   try {
-    const question = await questiondb.getOneById(id);
+    const question = await Question.findByPk(id);
 
     if (question === null) {
       res.status(404).end();
@@ -212,9 +214,16 @@ async function updateQuestion(req: Request, res: Response, next: NextFunction): 
 async function deleteQuestion(req: Request, res: Response, next: NextFunction): Promise<void> {
   const { id } = req.params;
   try {
-    const success = await questiondb.deleteOneById(id);
-    if (!success) {
+    const deleted = await Question.destroy({ where: { id: id }});
+
+    if (deleted === 0) {
       res.status(404).end();
+      return;
+    }
+
+    if (deleted > 1) {
+      res.status(500).end();
+      console.log('Deleted more than one instance when deleting by ID');
       return;
     }
 
