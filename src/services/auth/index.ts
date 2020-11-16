@@ -64,11 +64,13 @@ async function authenticate(req: Request, res: Response): Promise<void> {
   });
 
   if (user === null) {
+    console.log("Didn't find user");
     res.status(401).end();
     return;
   }
   const passwordMatches = await bcrypt.compare(password, user.passwordHash);
   if (!passwordMatches) {
+    console.log("Password didn't match");
     res.status(401).end();
     return;
   }
