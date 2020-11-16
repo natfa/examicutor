@@ -1,4 +1,4 @@
-import { SubjectOld } from './Subject';
+import { SubjectAttributes, SubjectOld } from './Subject';
 
 export interface ThemeOld {
   id?: string;
@@ -28,6 +28,7 @@ export interface ThemeAttributes {
   subjectId?: number;
   name: string;
   questions?: QuestionAttributes[];
+  subject?: SubjectAttributes;
 };
 
 export class Theme extends Model<ThemeAttributes> implements ThemeAttributes {

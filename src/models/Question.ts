@@ -1,6 +1,6 @@
 import { AnswerOld } from './Answer';
 import { SubjectOld } from './Subject';
-import { ThemeOld } from './Theme';
+import { ThemeAttributes, ThemeOld } from './Theme';
 
 export interface QuestionOld {
   id?: string;
@@ -36,6 +36,7 @@ export interface QuestionAttributes {
   text: string;
   points: number;
   answers?: AnswerAttributes[];
+  theme?: ThemeAttributes;
 };
 
 export class Question extends Model<QuestionAttributes> implements QuestionAttributes {
