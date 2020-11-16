@@ -1,10 +1,17 @@
 import { Request, Response, NextFunction } from 'express';
 
-import themedb from '../../db/themes';
+import { Theme } from '../../models/Theme';
 
 async function getThemesBySubjectId(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const themes = await themedb.getManyBySubjectid(req.params.subjectid);
+    const { subjectid } = req.params;
+
+    const themes = await Theme.findAll({
+      where: {
+        subjectId: subjectid,
+      },
+    });
+
     res.status(200).send(themes);
   } catch (err) {
     next(err);
