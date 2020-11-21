@@ -1,4 +1,5 @@
-# API documentation (draft)
+# API documentation
+Please note that this documentation is a work in progress.
 
 The base for all api calls is `/api`. Each heading in this document documents a different
 path of the API. The path is written as part of the heading.
@@ -18,6 +19,8 @@ a capital letter are considered models defined in this document. Lowercase are b
 ### User model
 User model is the basic model for a registered user.
 
+[API documentation](#authentication-/api/auth)
+
 ```
 {
     id:    int;
@@ -26,9 +29,38 @@ User model is the basic model for a registered user.
 }
 ```
 
+### Module model
+A module is basically like a subject. They have a different name due to the teaching structure in the university, but essentially it is the same thing as a subject.
+
+[API documentation](#modules-/api/module)
+
+```
+{
+    id:   int;
+    name: string;
+}
+```
+
+### Theme model
+A theme belongs to a module. It is some part of the teaching material that can have multiple different questions
+that can be added to an [exam](#exam-model)
+
+[API documentation](#themes-/api/theme)
+
+```
+{
+    id:       int;
+    name:     string;
+    moduleId: int;
+}
+```
+
+
 ### Question model
 Question model is a representation of a question that can be answered by a [student](#student-model).
 It contains an array of [answers](#answer-model) and it belongs to a [theme](#theme-model).
+
+[API documentation](#questions-/api/question)
 
 ```
 {
@@ -157,6 +189,48 @@ Response Code | Meaning
 
 #### Notes:
 * NOT JOI validated
+* NOT tested
+
+
+
+## Modules `/api/module`
+Basic CRUD for modules.
+
+1. [Get all modules](#get-/api/module)
+
+
+
+### `GET /api/module`
+Get all modules saved on the database.
+
+#### Responses:
+Response Code | Meaning
+--------------|--------
+200 | Modules sent with response body.
+401 | User not authenticated.
+
+#### Notes:
+* NOT tested
+
+
+
+## Themes `/api/theme`
+Basic CRUD for themes.
+
+1. [Get all module's themes](#get-/api/theme/:moduleId)
+
+
+
+### `GET /api/theme/:moduleId`
+Get all themes saved on the database that are saved under a module.
+
+#### Responses:
+Response Code | Meaning
+--------------|--------
+200 | Themes sent with response body.
+401 | User not authenticated.
+
+#### Notes:
 * NOT tested
 
 
