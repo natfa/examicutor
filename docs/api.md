@@ -26,12 +26,41 @@ User model is the basic model for a registered user.
 }
 ```
 
+### Question model
+Question model is a representation of a question that can be answered by a [student](#student-model).
+It contains an array of [answers](#answer-model) and it belongs to a [theme](#theme-model).
+
+```
+{
+    id:      int;
+    text:    string;
+    points:  number;
+    answers: Answer[];
+    theme:   Theme;
+}
+```
+
+### Answer model
+An answer that belongs to a [question](#question-model). It can either be a correct answer or an incorrect one.
+
+```
+{
+    id:      int;
+    text:    string;
+    correct: boolean;
+}
+```
+
 
 
 ## Authentication `/api/auth`
 Basic authentication utilities. Utilizes a cookie session system. Although the cookie system clashes with the guidelines
 for a RESTful service, was considered to be the better alternative than JWTs.
 
+1. [Get current session info](#get-/api/auth)
+2. [Authenticate](#post-/api/auth)
+3. [Logout](#head-/api/auth/logout)
+4. [Create a new user](#post-/api/auth/create)
 
 
 ### `GET /api/auth`
@@ -44,7 +73,6 @@ Response Code | Meaning
 401 | User not authenticated.
 
 #### Notes:
-* NOT Joi validated
 * NOT tested
 
 
@@ -53,10 +81,10 @@ Response Code | Meaning
 Authenticates a user. Returns the user's information as a response or an error code.
 
 #### Request body:
-Field | Value
-------|------
-email | String. Must be a valid email.
-password | String.
+Field | Type | Value
+------|------|------
+email | `string` | Must be a valid email.
+password | `string` | Your password.
 
 ##### Example:
 ```json
@@ -79,7 +107,9 @@ Response Code | Meaning
 
 
 
-### `HEAD /api/auth/logout` ***NOT IMPLEMENTED***
+### `HEAD /api/auth/logout`
+***NOT IMPLEMENTED***
+
 Log a user out (invalidate the current session).
 
 #### Responses:
@@ -94,16 +124,18 @@ Response Code | Meaning
 
 
 
-### `POST /api/auth/create` ***NOT IMPLEMENTED***
+### `POST /api/auth/create`
+***NOT IMPLEMENTED***
+
 Creates a new user account. This action can only be performed by admins.
 
 #### Request body:
-Field | Value
-------|------
-email | Email string value. Must be a valid email.
-password | String.
-psswordRepeat | String.
-role | String. One of: `admin`, `teacher` or `student`.
+Field | Type | Value
+------|------|------
+email | `string` | Must be a valid email.
+password | `string` | The password of the new user.
+psswordRepeat | `string` | A repeated password.
+role | `string` | One of: `admin`, `teacher` or `student`.
 
 ##### Example:
 ```json
@@ -125,4 +157,155 @@ Response Code | Meaning
 
 #### Notes:
 * NOT JOI validated
+* NOT tested
+
+
+
+## Questions `/api/question`
+Basic CRUD for questions.
+
+1. [Get all questions](#get-/api/question)
+2. [Get question by id](#get-/api/question/:id)
+3. [Create question](#post-/api/question)
+4. [Update a question](#put-/api/question)
+5. [Delete a question by id](#delete-/api/question/:id)
+
+
+
+### `GET /api/question`
+Get all questions saved on the database.
+
+#### Responses:
+Response Code | Meaning
+--------------|--------
+200 | Questions have been sent with response.
+401 | User not authenticated.
+403 | User isn't a teacher.
+
+#### Notes:
+* NOT tested
+
+
+
+### `GET /api/question/:id`
+Get question based on the ID passed in the URL.
+
+**Note**: The `:id` is not a part of a query. This is just another path into the URL.
+For example, the request GET `/api/question/42` will get the question that has an ID of 42.
+
+#### Responses:
+Response Code | Meaning
+--------------|--------
+200 | Question sent with response.
+401 | User not authenticated.
+403 | User isn't a teacher.
+404 | Question with that ID not found.
+
+#### Notes:
+* NOT tested
+
+
+
+### `POST /api/question`
+Create a question.
+
+#### Request body:
+Field | Type | Value
+------|------|------
+text | `string` | The text of the question.
+points | `number` | How many points will the question give when answered correctly.
+answers | `array` | An array of valid [answers](#answer-model).
+subjectName | `string` | A subject name to create the question under.
+themeName | `string` | A theme name to create the question under.
+
+##### Example:
+```json
+{
+    "text": "What is 4+4?",
+    "points": 1,
+    "answers": [
+        { "text": "4+4 is 5!", "correct": false },
+        { "text": "4+4 is 6!", "correct": false },
+        { "text": "4+4 is 7!", "correct": false },
+        { "text": "4+4 is 8!", "correct": true },
+    ],
+    "subjectName": "Math",
+    "themeName": "Algebra"
+}
+```
+
+#### Responses:
+Response Code | Meaning
+--------------|--------
+200 | Question created and returned in response body.
+400 | Question request body is incorrect. Information returned with response body.
+401 | User not authenticated.
+403 | User not a teacher.
+
+#### Notes:
+* NOT JOI validated
+* NOT tested
+
+
+
+### `PUT /api/question`
+Update a question.
+
+#### Request body:
+Field | Type | Value
+------|------|------
+id | `number` | The id of the question to update.
+text | `string` | The text of the question.
+points | `number` | How many points will the question give when answered correctly.
+answers | `array` | An array of valid [answers](#answer-model).
+subjectName | `string` | A subject name to create the question under.
+themeName | `string` | A theme name to create the question under.
+
+##### Example:
+```json
+{
+    "id": 4,
+    "text": "What is 4+4?",
+    "points": 1,
+    "answers": [
+        { "text": "4+4 is 5!", "correct": false },
+        { "text": "4+4 is 6!", "correct": false },
+        { "text": "4+4 is 7!", "correct": false },
+        { "text": "4+4 is 8!", "correct": true },
+    ],
+    "subjectName": "Math",
+    "themeName": "Algebra"
+}
+```
+
+#### Responses:
+Response Code | Meaning
+--------------|--------
+200 | Question created and returned in response body.
+400 | Question request body is incorrect. Information returned with response body.
+401 | User not authenticated.
+403 | User not a teacher.
+404 | Question not found.
+
+#### Notes:
+* NOT JOI validated
+* NOT tested
+
+
+
+### `DELETE /api/question/:id`
+Delete a question by ID.
+
+**Note**: The `:id` is not a part of a query. This is just another path into the URL.
+For example, the request GET `/api/question/42` will delete the question that has an ID of 42.
+
+#### Responses:
+Response Code | Meaning
+--------------|--------
+204 | Question was deleted.
+401 | User not authenticated.
+403 | User not a teacher.
+404 | Question not found.
+
+#### Notes:
 * NOT tested
