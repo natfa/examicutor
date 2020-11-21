@@ -1,7 +1,7 @@
 import express from 'express';
 
 import questionRoute from './question';
-import subjectRoute from './subject';
+import moduleRoute from './module';
 import themeRoute from './theme';
 import authRoute from './auth';
 import mediaRoute from './media';
@@ -13,7 +13,7 @@ import solveRoute from './solve';
 const router = express.Router();
 
 router.use('/question', questionRoute);
-router.use('/subject', subjectRoute);
+router.use('/module', moduleRoute);
 router.use('/theme', themeRoute);
 router.use('/auth', authRoute);
 router.use('/media', mediaRoute);

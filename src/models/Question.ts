@@ -1,5 +1,5 @@
 import { AnswerOld } from './Answer';
-import { SubjectOld } from './Subject';
+import { SubjectOld } from './Module';
 import { ThemeAttributes, ThemeOld } from './Theme';
 
 export interface QuestionOld {

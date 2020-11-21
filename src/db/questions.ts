@@ -5,7 +5,7 @@ import { SubjectsRowDataPacket, buildSubject } from './subjects';
 import { ThemesRowDataPacket, buildTheme } from './themes';
 
 import { QuestionOld } from '../models/Question';
-import { SubjectOld } from '../models/Subject';
+import { SubjectOld } from '../models/Module';
 import { ThemeOld } from '../models/Theme';
 import { AnswerOld } from '../models/Answer';
 

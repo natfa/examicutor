@@ -2,13 +2,13 @@ import { Request, Response, NextFunction } from 'express';
 
 import { Theme } from '../../models/Theme';
 
-async function getThemesBySubjectId(req: Request, res: Response, next: NextFunction): Promise<void> {
+async function getThemesByModuleId(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const { subjectid } = req.params;
+    const { moduleId } = req.params;
 
     const themes = await Theme.findAll({
       where: {
-        subjectId: subjectid,
+        moduleId: moduleId,
       },
     });
 
@@ -19,5 +19,5 @@ async function getThemesBySubjectId(req: Request, res: Response, next: NextFunct
 };
 
 export default {
-  getThemesBySubjectId,
+  getThemesByModuleId,
 }

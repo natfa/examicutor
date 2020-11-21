@@ -2,7 +2,7 @@ import { query } from './index';
 
 import { OkPacket } from './OkPacket';
 
-import { SubjectOld } from '../models/Subject';
+import { SubjectOld } from '../models/Module';
 
 export interface SubjectsRowDataPacket {
   id: number;

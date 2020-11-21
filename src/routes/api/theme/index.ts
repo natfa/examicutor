@@ -7,6 +7,6 @@ const router = express.Router();
 
 router.use(isAuthenticated);
 
-router.get('/:subjectid', themeService.getThemesBySubjectId);
+router.get('/:moduleId', themeService.getThemesByModuleId);
 
 export default router;

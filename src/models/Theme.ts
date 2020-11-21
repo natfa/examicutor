@@ -1,4 +1,5 @@
-import { SubjectAttributes, SubjectOld } from './Subject';
+import { Module, ModuleAttributes, SubjectOld } from './Module';
+import { Question, QuestionAttributes } from './Question';
 
 export interface ThemeOld {
   id?: string;
@@ -20,45 +21,43 @@ import {
   Association,
 } from 'sequelize';
 
-import { Subject } from './Subject';
-import { Question, QuestionAttributes } from './Question';
 
 export interface ThemeAttributes {
   id?: number;
-  subjectId?: number;
+  moduleId?: number;
   name: string;
   questions?: QuestionAttributes[];
-  subject?: SubjectAttributes;
+  module?: ModuleAttributes;
 };
 
 export class Theme extends Model<ThemeAttributes> implements ThemeAttributes {
   public id!: number;
-  public subjectId!: number;
+  public moduleId!: number;
   public name!: string;
 
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
-  public getSubject!: HasOneGetAssociationMixin<Subject>;
-  public setSubject!: HasOneSetAssociationMixin<Subject, number>;
-  public createSubject!: HasOneCreateAssociationMixin<Subject>;
+  public getModule!: HasOneGetAssociationMixin<Module>;
+  public setModule!: HasOneSetAssociationMixin<Module, number>;
+  public createModule!: HasOneCreateAssociationMixin<Module>;
 
   public getQuestions!: HasManyGetAssociationsMixin<Question>;
   public countQuestions!: HasManyCountAssociationsMixin;
   public createQuestion!: HasManyCreateAssociationMixin<Question>;
 
-  public readonly subject?: Subject;
+  public readonly module?: Module;
   public readonly questions?: Question[];
 
   public static associations: {
-    subject: Association<Theme, Subject>;
+    module: Association<Theme, Module>;
     questions: Association<Theme, Question>;
   };
 
   public static associate = () => {
-    Theme.belongsTo(Subject, {
-      foreignKey: 'subjectId',
-      as: 'subject',
+    Theme.belongsTo(Module, {
+      foreignKey: 'moduleId',
+      as: 'module',
     });
 
     Theme.hasMany(Question, {
@@ -76,7 +75,7 @@ export const initTheme = (sequelize: Sequelize) => {
         autoIncrement: true,
         primaryKey: true,
       },
-      subjectId: {
+      moduleId: {
         type: DataTypes.INTEGER.UNSIGNED,
         allowNull: false,
       },

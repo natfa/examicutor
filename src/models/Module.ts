@@ -20,13 +20,13 @@ import {
 
 import { Theme, ThemeAttributes } from './Theme';
 
-export interface SubjectAttributes {
+export interface ModuleAttributes {
   id?: number;
   name: string;
   themes?: ThemeAttributes[];
 };
 
-export class Subject extends Model<SubjectAttributes> implements SubjectAttributes {
+export class Module extends Model<ModuleAttributes> implements ModuleAttributes {
   public id!: number;
   public name!: string;
 
@@ -44,19 +44,19 @@ export class Subject extends Model<SubjectAttributes> implements SubjectAttribut
   public readonly themes?: Theme[];
 
   public static associations: {
-    themes: Association<Subject, Theme>;
+    themes: Association<Module, Theme>;
   };
 
   public static associate = () => {
-    Subject.hasMany(Theme, {
-      foreignKey: 'subjectId',
+    Module.hasMany(Theme, {
+      foreignKey: 'moduleId',
       as: 'themes',
     });
   };
 };
 
-export const initSubject = (sequelize: Sequelize) => {
-  Subject.init(
+export const initModule = (sequelize: Sequelize) => {
+  Module.init(
     {
       id: {
         type: DataTypes.INTEGER.UNSIGNED,
@@ -74,7 +74,7 @@ export const initSubject = (sequelize: Sequelize) => {
     },
     {
       sequelize,
-      tableName: 'subjects',
+      tableName: 'modules',
     }
   )
 };

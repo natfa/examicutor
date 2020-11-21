@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 
-import { Subject } from '../../models/Subject';
+import { Module } from '../../models/Module';
 import { Theme } from '../../models/Theme';
 import { Question } from '../../models/Question';
 
@@ -35,12 +35,12 @@ async function createQuestion(req: Request, res: Response, next: NextFunction): 
     text,
     points,
     answers,
-    subjectName,
+    moduleName,
     themeName,
   } = req.body;
 
-  const [subject] = await Subject.findOrCreate({ where: { name: subjectName }});
-  const [theme] = await Theme.findOrCreate({ where: { name: themeName, subjectId: subject.id }});
+  const [module] = await Module.findOrCreate({ where: { name: moduleName }});
+  const [theme] = await Theme.findOrCreate({ where: { name: themeName, moduleId: module.id }});
 
   const question = await Question.create({
     text: text,
@@ -58,7 +58,7 @@ async function updateQuestion(req: Request, res: Response, next: NextFunction): 
     text,
     points,
     answers,
-    subjectName,
+    moduleName,
     themeName,
   } = req.body;
 
@@ -69,8 +69,8 @@ async function updateQuestion(req: Request, res: Response, next: NextFunction): 
     return;
   }
 
-  const [subject] = await Subject.findOrCreate({ where: { name: subjectName }});
-  const [theme] = await Theme.findOrCreate({ where: { name: themeName, subjectId: subject.id }});
+  const [module] = await Module.findOrCreate({ where: { name: moduleName }});
+  const [theme] = await Theme.findOrCreate({ where: { name: themeName, moduleId: module.id }});
 
   question = await question.update({
     text: text,

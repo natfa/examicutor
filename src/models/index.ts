@@ -1,6 +1,6 @@
 import { Sequelize } from 'sequelize';
 
-import { Subject, initSubject } from './Subject';
+import { Module, initModule } from './Module';
 import { Theme, initTheme } from './Theme';
 import { Question, initQuestion } from './Question';
 import { Answer, initAnswer } from './Answer';
@@ -21,7 +21,7 @@ const { db } = config;
 const sequelize = new Sequelize('sqlite::memory:');
 
 // init models
-initSubject(sequelize);
+initModule(sequelize);
 initTheme(sequelize);
 initQuestion(sequelize);
 initAnswer(sequelize);
@@ -35,7 +35,7 @@ initSolution(sequelize);
 initSolutionAnswer(sequelize);
 
 // create associations
-Subject.associate();
+Module.associate();
 Theme.associate();
 Question.associate();
 Answer.assocate();
@@ -49,7 +49,7 @@ SolutionAnswer.associate();
 
 export {
     sequelize,
-    Subject,
+    Module,
     Theme,
     Question,
     Answer,

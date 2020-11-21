@@ -1,4 +1,4 @@
-import { SubjectOld } from './Subject';
+import { SubjectOld } from './Module';
 import { ThemeFilterOld } from './ThemeFilter';
 
 export interface ExamCreationFilterOld {
