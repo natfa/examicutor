@@ -36,7 +36,9 @@ export interface QuestionAttributes {
   text: string;
   points: number;
   answers?: AnswerAttributes[];
+
   theme?: ThemeAttributes;
+  themeId?: number;
 };
 
 export class Question extends Model<QuestionAttributes> implements QuestionAttributes {
