@@ -1,9 +1,3 @@
-export interface AnswerOld {
-  id?: string;
-  text: string;
-  correct: boolean;
-}
-
 import {
   Sequelize,
   Model,

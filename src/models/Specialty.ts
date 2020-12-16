@@ -1,8 +1,3 @@
-export interface SpecialtyOld {
-  id: string;
-  name: string;
-}
-
 import {
   Sequelize,
   DataTypes,

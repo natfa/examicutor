@@ -1,8 +1,3 @@
-export interface SubjectOld {
-  id?: string;
-  name: string;
-}
-
 import {
   Sequelize,
   Model,

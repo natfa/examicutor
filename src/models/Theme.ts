@@ -1,12 +1,3 @@
-import { Module, ModuleAttributes, SubjectOld } from './Module';
-import { Question, QuestionAttributes } from './Question';
-
-export interface ThemeOld {
-  id?: string;
-  name: string;
-  subject: SubjectOld;
-}
-
 import {
   Sequelize,
   Model,
@@ -21,6 +12,8 @@ import {
   Association,
 } from 'sequelize';
 
+import { Module, ModuleAttributes } from './Module';
+import { Question, QuestionAttributes } from './Question';
 
 export interface ThemeAttributes {
   id?: number;

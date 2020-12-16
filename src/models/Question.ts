@@ -1,16 +1,3 @@
-import { AnswerOld } from './Answer';
-import { SubjectOld } from './Module';
-import { ThemeAttributes, ThemeOld } from './Theme';
-
-export interface QuestionOld {
-  id?: string;
-  text: string;
-  points: number;
-  subject: SubjectOld;
-  theme: ThemeOld;
-  answers: Array<AnswerOld>;
-}
-
 import {
   Sequelize,
   Model,
@@ -28,7 +15,7 @@ import {
 } from 'sequelize';
 
 import { Answer, AnswerAttributes } from './Answer';
-import { Theme } from './Theme';
+import { Theme, ThemeAttributes } from './Theme';
 import { Exam } from './Exam';
 
 export interface QuestionAttributes {
