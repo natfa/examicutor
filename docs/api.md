@@ -55,6 +55,17 @@ that can be added to an [exam](#exam-model)
 }
 ```
 
+### Specialty model
+A specialty is a "class" in a university. That means a group of students that study the same topics within a specific area (specialty).
+
+[API documentation](#specialties-/api/specialty)
+
+```
+{
+    id:   int;
+    name: string;
+}
+```
 
 ### Question model
 Question model is a representation of a question that can be answered by a [student](#student-model).
@@ -207,6 +218,27 @@ Get all modules saved on the database.
 Response Code | Meaning
 --------------|--------
 200 | Modules sent with response body.
+401 | User not authenticated.
+
+#### Notes:
+* NOT tested
+
+
+
+## Specialties `/api/specialty`
+Basic CRUD for specialties.
+
+1. [Get all specialties](#get-/api/specialty)
+
+
+
+### `GET /api/specialty`
+Get all specialties saved on the database.
+
+#### Responses:
+Response Code | Meaning
+--------------|--------
+200 | Specialties sent with response body.
 401 | User not authenticated.
 
 #### Notes:
