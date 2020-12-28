@@ -13,6 +13,9 @@ import {
   Role,
   Module,
   Specialty,
+  Exam,
+  ExamParameter,
+  Theme,
 } from './models';
 
 dayjs.extend(dayjsDuration);
@@ -59,6 +62,33 @@ sequelize.sync({ force: true })
       { name: 'Computer Science' },
       { name: 'Business' },
     ]);
+  })
+  .then(() => {
+    return Theme.findAll({ where: { name: 'Syntax and semantics' }});
+  })
+  .then((themes) => {
+    const theme = themes[0];
+    return Exam.create({
+      name: 'Test exam',
+      startDate: new Date(),
+      timeToSolve: 360000,
+      parameters: [
+        { themeId: theme.id, count: 10 },
+        { themeId: theme.id, count: 20 },
+        { themeId: theme.id, count: 30 },
+      ],
+    }, {
+      include: [
+        { association: Exam.associations.parameters }
+      ]
+    });
+  })
+  .then((exam) => {
+    console.log(exam);
+    return ExamParameter.findAll();
+  })
+  .then((examParams) => {
+    console.log(examParams);
   })
   .then(() => {
     const server = http.createServer(app);

@@ -17,7 +17,6 @@ import {
 
 import { Answer, AnswerAttributes, AnswerSchema } from './Answer';
 import { Theme, ThemeAttributes } from './Theme';
-import { Exam } from './Exam';
 
 export interface QuestionAttributes {
   id?: number;
@@ -86,10 +85,6 @@ export class Question extends Model<QuestionAttributes> implements QuestionAttri
     Question.belongsTo(Theme, {
       foreignKey: 'themeId',
       as: 'theme',
-    });
-
-    Question.belongsToMany(Exam, {
-      through: 'exam_questions',
     });
   }
 };

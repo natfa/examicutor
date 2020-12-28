@@ -1,3 +1,4 @@
+import Joi from 'joi';
 import {
   Sequelize,
   Model,
@@ -6,14 +7,24 @@ import {
   HasOneGetAssociationMixin,
   HasOneSetAssociationMixin,
   HasOneCreateAssociationMixin,
+
   HasManyGetAssociationsMixin,
   HasManyCountAssociationsMixin,
+  HasManyHasAssociationMixin,
+  HasManyHasAssociationsMixin,
+  HasManySetAssociationsMixin,
+  HasManyAddAssociationMixin,
+  HasManyAddAssociationsMixin,
+  HasManyRemoveAssociationMixin,
+  HasManyRemoveAssociationsMixin,
   HasManyCreateAssociationMixin,
+
   Association,
 } from 'sequelize';
 
-import { Module, ModuleAttributes } from './Module';
-import { Question, QuestionAttributes } from './Question';
+import { ExamParameter } from './ExamParameter';
+import { Module, ModuleAttributes, ModuleSchema } from './Module';
+import { Question, QuestionAttributes, QuestionSchema } from './Question';
 
 export interface ThemeAttributes {
   id?: number;
@@ -22,6 +33,24 @@ export interface ThemeAttributes {
   questions?: QuestionAttributes[];
   module?: ModuleAttributes;
 };
+
+export const ThemeSchema = Joi.object({
+  id: Joi
+    .number()
+    .optional(),
+
+  name: Joi
+    .string()
+    .required(),
+
+  //module: ModuleSchema
+    //.required(),
+
+  questions: Joi
+    .array()
+    .items(QuestionSchema)
+    .optional(),
+});
 
 export class Theme extends Model<ThemeAttributes> implements ThemeAttributes {
   public id!: number;
@@ -37,14 +66,34 @@ export class Theme extends Model<ThemeAttributes> implements ThemeAttributes {
 
   public getQuestions!: HasManyGetAssociationsMixin<Question>;
   public countQuestions!: HasManyCountAssociationsMixin;
+  public hasQuestion!: HasManyHasAssociationMixin<Question, number>;
+  public hasQuestions!: HasManyHasAssociationsMixin<Question, number>;
+  public setQuestions!: HasManySetAssociationsMixin<Question, number>;
+  public addQuestion!: HasManyAddAssociationMixin<Question, number>;
+  public addQuestions!: HasManyAddAssociationsMixin<Question, number>;
+  public removeQuestion!: HasManyRemoveAssociationMixin<Question, number>;
+  public removeQuestions!: HasManyRemoveAssociationsMixin<Question, number>;
   public createQuestion!: HasManyCreateAssociationMixin<Question>;
+
+  public getThemes!: HasManyGetAssociationsMixin<Theme>;
+  public countThemes!: HasManyCountAssociationsMixin;
+  public hasTheme!: HasManyHasAssociationMixin<Theme, number>;
+  public hasThemes!: HasManyHasAssociationsMixin<Theme, number>;
+  public setThemes!: HasManySetAssociationsMixin<Theme, number>;
+  public addTheme!: HasManyAddAssociationMixin<Theme, number>;
+  public addThemes!: HasManyAddAssociationsMixin<Theme, number>;
+  public removeTheme!: HasManyRemoveAssociationMixin<Theme, number>;
+  public removeThemes!: HasManyRemoveAssociationsMixin<Theme, number>;
+  public createTheme!: HasManyCreateAssociationMixin<Theme>;
 
   public readonly module?: Module;
   public readonly questions?: Question[];
+  public readonly examParameters?: ExamParameter[];
 
   public static associations: {
     module: Association<Theme, Module>;
     questions: Association<Theme, Question>;
+    examParameters: Association<Theme, ExamParameter>;
   };
 
   public static associate = () => {
@@ -57,6 +106,11 @@ export class Theme extends Model<ThemeAttributes> implements ThemeAttributes {
       foreignKey: 'themeId',
       as: 'questions',
     });
+
+    Theme.hasMany(ExamParameter, {
+      foreignKey: 'themeId',
+      as: 'examParameters',
+    })
   }
 }
 

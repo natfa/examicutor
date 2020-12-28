@@ -5,6 +5,7 @@ import { Theme, initTheme } from './Theme';
 import { Question, initQuestion } from './Question';
 import { Answer, initAnswer } from './Answer';
 import { Exam, initExam } from './Exam';
+import { ExamParameter, initExamParameter } from './ExamParameter';
 import { User, initUser } from './User';
 import { Role, initRole } from './Role';
 import { Specialty, initSpecialty } from './Specialty';
@@ -26,6 +27,7 @@ initTheme(sequelize);
 initQuestion(sequelize);
 initAnswer(sequelize);
 initExam(sequelize);
+initExamParameter(sequelize);
 initUser(sequelize);
 initRole(sequelize);
 initSpecialty(sequelize);
@@ -40,6 +42,7 @@ Theme.associate();
 Question.associate();
 Answer.assocate();
 Exam.associate();
+ExamParameter.associate();
 User.associate();
 Role.associate();
 Student.associate();
@@ -54,6 +57,7 @@ export {
     Question,
     Answer,
     Exam,
+    ExamParameter,
     User,
     Role,
     Specialty,
