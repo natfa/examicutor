@@ -1,3 +1,4 @@
+import Joi from 'joi';
 import {
   Sequelize,
   Model,
@@ -9,12 +10,21 @@ import {
   Association,
 } from 'sequelize';
 
-import { User } from './User';
+import { User, UserSchema } from './User';
 
 export interface TeacherAttributes {
   id?: number;
   userId: number;
 }
+
+export const TeacherSchema = Joi.object({
+  id: Joi
+    .number()
+    .optional(),
+
+  user: UserSchema
+    .required(),
+});
 
 export class Teacher extends Model<TeacherAttributes> implements TeacherAttributes {
   public id!: number;

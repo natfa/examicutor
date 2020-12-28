@@ -1,3 +1,4 @@
+import Joi from 'joi';
 import {
   Sequelize,
   Model,
@@ -14,7 +15,7 @@ import {
   BelongsToCreateAssociationMixin,
 } from 'sequelize';
 
-import { Answer, AnswerAttributes } from './Answer';
+import { Answer, AnswerAttributes, AnswerSchema } from './Answer';
 import { Theme, ThemeAttributes } from './Theme';
 import { Exam } from './Exam';
 
@@ -27,6 +28,28 @@ export interface QuestionAttributes {
   theme?: ThemeAttributes;
   themeId?: number;
 };
+
+/**
+ * The schema that should be accepted from requests
+ */
+export const QuestionSchema = Joi.object({
+  id: Joi
+    .number()
+    .optional(),
+
+  text: Joi
+    .string()
+    .required(),
+
+  points: Joi
+    .number()
+    .required(),
+
+  answers: Joi
+    .array()
+    .items(AnswerSchema)
+    .required(),
+});
 
 export class Question extends Model<QuestionAttributes> implements QuestionAttributes {
   public id!: number;

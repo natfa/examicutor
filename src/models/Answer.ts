@@ -1,3 +1,4 @@
+import Joi from 'joi';
 import {
   Sequelize,
   Model,
@@ -12,6 +13,23 @@ export interface AnswerAttributes {
   text: string;
   correct: boolean;
 }
+
+/**
+ * The schema that should be accepted from requests
+ */
+export const AnswerSchema = Joi.object({
+  id: Joi
+    .number()
+    .optional(),
+
+  text: Joi
+    .string()
+    .required(),
+
+  correct: Joi
+    .boolean()
+    .required(),
+});
 
 export class Answer extends Model<AnswerAttributes> implements AnswerAttributes {
   public id!: number;

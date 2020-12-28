@@ -1,3 +1,4 @@
+import Joi from 'joi';
 import {
   Sequelize,
   DataTypes,
@@ -22,6 +23,16 @@ export interface SpecialtyAttributes {
   id?: number;
   name: string;
 }
+
+export const SpecialtySchema = Joi.object({
+  id: Joi
+    .number()
+    .optional(),
+
+  name: Joi
+    .string()
+    .required(),
+});
 
 export class Specialty extends Model<SpecialtyAttributes> implements SpecialtyAttributes {
   public id!: number;

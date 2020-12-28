@@ -1,3 +1,4 @@
+import Joi from 'joi';
 import {
     Sequelize,
     DataTypes,
@@ -13,6 +14,16 @@ export interface RoleAttributes {
     id?: number;
     name: string;
 };
+
+export const RoleSchema = Joi.object({
+    id: Joi
+        .number()
+        .optional(),
+
+    name: Joi
+        .string()
+        .required(),
+});
 
 export class Role extends Model<RoleAttributes> implements RoleAttributes {
     public id!: number;

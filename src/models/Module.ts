@@ -1,3 +1,4 @@
+import Joi from 'joi';
 import {
   Sequelize,
   Model,
@@ -13,13 +14,28 @@ import {
   Association,
 } from 'sequelize';
 
-import { Theme, ThemeAttributes } from './Theme';
+import { Theme, ThemeAttributes, ThemeSchema } from './Theme';
 
 export interface ModuleAttributes {
   id?: number;
   name: string;
   themes?: ThemeAttributes[];
 };
+
+export const ModuleSchema = Joi.object({
+  id: Joi
+    .number()
+    .optional(),
+
+  name: Joi
+    .string()
+    .required(),
+
+  themes: Joi
+    .array()
+    .items(ThemeSchema)
+    .optional(),
+});
 
 export class Module extends Model<ModuleAttributes> implements ModuleAttributes {
   public id!: number;

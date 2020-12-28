@@ -1,3 +1,4 @@
+import Joi from 'joi';
 import {
     Sequelize,
     DataTypes,
@@ -13,6 +14,27 @@ export interface UserAttributes {
     passwordHash: string;
     roleId: number;
 };
+
+export const UserSchema = Joi.object({
+    id: Joi
+        .number()
+        .optional(),
+
+    email: Joi
+        .string()
+        .required(),
+
+    password: Joi
+        .string(),
+
+    repeatPassword: Joi
+        .string(),
+
+    passwordHash: Joi
+        .string(),
+})
+    .with('password', 'repeatPassword')
+    .xor('password', 'passwordHash');
 
 export class User extends Model<UserAttributes> implements UserAttributes {
     public id!: number;

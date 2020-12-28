@@ -19,15 +19,28 @@ import {
   HasManyCreateAssociationMixin,
 } from 'sequelize';
 
-import { User } from './User';
-import { Specialty } from './Specialty';
+import { User, UserSchema } from './User';
+import { Specialty, SpecialtySchema } from './Specialty';
 import { Solution } from './Solution';
+import Joi from 'joi';
 
 export interface StudentAttributes {
   id?: number;
   userId: number;
   studiesIn: number;
 };
+
+export const StudentSchema = Joi.object({
+  id: Joi
+    .number()
+    .optional(),
+
+  user: UserSchema
+    .required(),
+
+  specialty: SpecialtySchema
+    .required(),
+});
 
 export class Student extends Model<StudentAttributes> implements StudentAttributes {
   public id!: number;
