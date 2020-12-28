@@ -2,17 +2,19 @@
   "name": "natfis",
   "version": "1.0.0",
   "scripts": {
-    "start": "node ./build/index.js",
+    "start": "tsc && node ./build/index.js",
     "watch": "tsc --watch",
     "build": "tsc"
   },
   "author": "Federlizer",
   "license": "ISC",
   "dependencies": {
+    "@types/joi": "^14.3.4",
     "bcryptjs": "^2.4.3",
     "dayjs": "^1.8.25",
     "express": "^4.17.1",
     "express-session": "^1.17.1",
+    "joi": "^17.3.0",
     "multer": "^1.4.2",
     "mysql": "^2.18.1",
     "mysql2": "^2.1.0",
