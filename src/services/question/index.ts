@@ -1,12 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 
-import { Module } from '../../models/Module';
-import { Theme } from '../../models/Theme';
-import { Question } from '../../models/Question';
+import { db } from '../../models';
 
 async function getQuestions(_: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const questions = await Question.findAll();
+    const questions = await db.Question.findAll();
     res.status(200).json(questions);
   } catch (err) {
     next(err);
@@ -18,7 +16,7 @@ async function getQuestionById(req: Request, res: Response, next: NextFunction):
   const { id } = req.params;
 
   try {
-    const question = await Question.findByPk(id);
+    const question = await db.Question.findByPk(id);
 
     if (question === null) {
       res.status(404).end();
@@ -39,10 +37,10 @@ async function createQuestion(req: Request, res: Response, next: NextFunction): 
     themeName,
   } = req.body;
 
-  const [module] = await Module.findOrCreate({ where: { name: moduleName }});
-  const [theme] = await Theme.findOrCreate({ where: { name: themeName, moduleId: module.id }});
+  const [module] = await db.Module.findOrCreate({ where: { name: moduleName }});
+  const [theme] = await db.Theme.findOrCreate({ where: { name: themeName, moduleId: module.id }});
 
-  const question = await Question.create({
+  const question = await db.Question.create({
     text: text,
     points: points,
     answers: answers,
@@ -62,15 +60,15 @@ async function updateQuestion(req: Request, res: Response, next: NextFunction): 
     themeName,
   } = req.body;
 
-  let question = await Question.findByPk(id);
+  let question = await db.Question.findByPk(id);
 
   if (question === null) {
     res.status(404).send('Not found').end();
     return;
   }
 
-  const [module] = await Module.findOrCreate({ where: { name: moduleName }});
-  const [theme] = await Theme.findOrCreate({ where: { name: themeName, moduleId: module.id }});
+  const [module] = await db.Module.findOrCreate({ where: { name: moduleName }});
+  const [theme] = await db.Theme.findOrCreate({ where: { name: themeName, moduleId: module.id }});
 
   question = await question.update({
     text: text,
@@ -85,7 +83,7 @@ async function updateQuestion(req: Request, res: Response, next: NextFunction): 
 async function deleteQuestion(req: Request, res: Response, next: NextFunction): Promise<void> {
   const { id } = req.params;
   try {
-    const deleted = await Question.destroy({ where: { id: id }});
+    const deleted = await db.Question.destroy({ where: { id: id }});
 
     if (deleted === 0) {
       res.status(404).end();

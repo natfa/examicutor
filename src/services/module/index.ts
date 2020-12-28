@@ -1,10 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 
-import { Module } from '../../models/Module';
+import { db } from '../../models';
 
 async function getModules(_: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const subjects = await Module.findAll();
+    const subjects = await db.Module.findAll();
     res.status(200).send(subjects);
   } catch (err) {
     next(err);

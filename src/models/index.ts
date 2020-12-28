@@ -13,56 +13,60 @@ import { Student, initStudent } from './Student';
 import { Teacher, initTeacher } from './Teacher';
 import { Solution, initSolution } from './Solution';
 import { SolutionAnswer, initSolutionAnswer } from './SolutionAnswer';
+import { DBInterface } from '../types/DBInterface';
 
-import config from '../config/default';
+export let db: DBInterface;
 
-const { db } = config;
+export const setupModels = (config: Config) => {
+    const { sequelize: sequelizeConf } = config;
 
-//const sequelize = new Sequelize(`mysql://${db.user}:${db.password}@${db.host}/${db.database}`);
-const sequelize = new Sequelize('sqlite::memory:');
+    //const sequelize = new Sequelize(`mysql://${db.user}:${db.password}@${db.host}/${db.database}`);
+    const sequelize = new Sequelize(sequelizeConf.connectionString);
 
-// init models
-initModule(sequelize);
-initTheme(sequelize);
-initQuestion(sequelize);
-initAnswer(sequelize);
-initExam(sequelize);
-initExamParameter(sequelize);
-initUser(sequelize);
-initRole(sequelize);
-initSpecialty(sequelize);
-initStudent(sequelize);
-initTeacher(sequelize);
-initSolution(sequelize);
-initSolutionAnswer(sequelize);
+    // init models
+    initModule(sequelize);
+    initTheme(sequelize);
+    initQuestion(sequelize);
+    initAnswer(sequelize);
+    initExam(sequelize);
+    initExamParameter(sequelize);
+    initUser(sequelize);
+    initRole(sequelize);
+    initSpecialty(sequelize);
+    initStudent(sequelize);
+    initTeacher(sequelize);
+    initSolution(sequelize);
+    initSolutionAnswer(sequelize);
 
-// create associations
-Module.associate();
-Theme.associate();
-Question.associate();
-Answer.assocate();
-Exam.associate();
-ExamParameter.associate();
-User.associate();
-Role.associate();
-Student.associate();
-Specialty.associate();
-Solution.associate();
-SolutionAnswer.associate();
+    // create associations
+    Module.associate();
+    Theme.associate();
+    Question.associate();
+    Answer.assocate();
+    Exam.associate();
+    ExamParameter.associate();
+    User.associate();
+    Role.associate();
+    Student.associate();
+    Specialty.associate();
+    Solution.associate();
+    SolutionAnswer.associate();
 
-export {
-    sequelize,
-    Module,
-    Theme,
-    Question,
-    Answer,
-    Exam,
-    ExamParameter,
-    User,
-    Role,
-    Specialty,
-    Student,
-    Teacher,
-    Solution,
-    SolutionAnswer,
+    return db = {
+        sequelize,
+
+        Module,
+        Theme,
+        Question,
+        Answer,
+        Exam,
+        ExamParameter,
+        User,
+        Role,
+        Specialty,
+        Student,
+        Teacher,
+        Solution,
+        SolutionAnswer,
+    };
 }

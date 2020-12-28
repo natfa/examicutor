@@ -2,7 +2,6 @@ import express from 'express';
 
 import isAuthenticated from '../../../middleware/isAuthenticated';
 import isTeacher from '../../../middleware/isTeacher';
-import validateExamRequestBody from '../../../validators/exam';
 import examService from '../../../services/exam';
 
 const router = express.Router();
@@ -17,6 +16,6 @@ router.get('/:examId', examService.getExamById);
 router.get('/:examId/results', examService.getExamResults);
 router.get('/:examId/results/:studentId', examService.getStudentExamResults);
 
-router.post('/', isTeacher, validateExamRequestBody, examService.createNewExam);
+router.post('/', isTeacher, examService.createNewExam);
 
 export default router;

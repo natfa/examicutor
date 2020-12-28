@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 
-import { User, Role } from '../../models';
+import { db } from '../../models';
 
 async function getActiveSession(req: Request, res: Response): Promise<void> {
   if (!req.session) throw new Error('req.session is undefined');
@@ -22,13 +22,13 @@ async function createAccount(req: Request, res: Response): Promise<void> {
     return;
   }
 
-  const exists = await User.findOne({ where: { email }});
+  const exists = await db.User.findOne({ where: { email }});
   if (exists) {
     res.status(400).send('Email already in use');
     return;
   }
 
-  const roleObject = await Role.findOne({ where: { name: role }});
+  const roleObject = await db.Role.findOne({ where: { name: role }});
   if (roleObject === null) {
     res.status(400).send('Such a role does\'t exist');
     return;
@@ -36,7 +36,7 @@ async function createAccount(req: Request, res: Response): Promise<void> {
 
   const passwordHash = await bcrypt.hash(password, saltRounds);
 
-  const user = await User.create({
+  const user = await db.User.create({
     email,
     passwordHash,
     roleId: roleObject.id,
@@ -58,9 +58,9 @@ async function authenticate(req: Request, res: Response): Promise<void> {
   }
 
   const { email, password } = req.body;
-  const user = await User.findOne({
+  const user = await db.User.findOne({
     where: { email },
-    include: User.associations.role
+    include: db.User.associations.role
   });
 
   if (user === null) {

@@ -1,25 +1,52 @@
 import dayjs from 'dayjs';
 import dayjsDuration from 'dayjs/plugin/duration';
 import process from 'process';
-import http from 'http';
-import app from './app';
-import bcrypt from 'bcryptjs';
+import http, { Server } from 'http';
 
-import config from './config/default';
-
-import {
-  sequelize,
-  User,
-  Role,
-  Module,
-  Specialty,
-  Exam,
-  ExamParameter,
-  Theme,
-} from './models';
+import { setupConfiguration } from './config';
+import { setupModels } from './models';
+import { setupApp } from './app';
+import { Sequelize } from 'sequelize/types';
 
 dayjs.extend(dayjsDuration);
 
+(async function IIFE() {
+  // runtime setup
+  const config = setupConfiguration();
+  const db = setupModels(config);
+  const app = setupApp(config);
+  const server = http.createServer(app);
+
+  // db setup
+  if (config.environment === 'development') {
+    await db.sequelize.sync({ force: true });
+    // populate DB with test data
+  }
+
+  server.listen(config.express.port, () => console.log(`Server listening on port ${config.express.port}`))
+
+  process.on('SIGINT', () => gracefulShutdown(server, db.sequelize));
+  process.on('SIGTERM', () => gracefulShutdown(server, db.sequelize));
+}());
+
+function gracefulShutdown(server: Server, db: Sequelize) {
+  process.stdout.write('Stopping express server...\n');
+  server.close((err) => {
+    if (err) {
+      throw err;
+    }
+
+    process.stdout.write('Closing DB connection...\n');
+    db.close()
+      .then(() => {
+        process.stdout.write('Done.\n');
+        process.exit(0);
+      });
+  });
+}
+
+
+/*
 sequelize.sync({ force: true })
   .then(() => {
     console.log('Creating roles');
@@ -117,3 +144,4 @@ sequelize.sync({ force: true })
     });
   })
   .catch((err) => console.error(err));
+  */

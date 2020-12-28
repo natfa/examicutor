@@ -1,10 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 
-import { Specialty } from '../../models/Specialty';
+import { db } from '../../models';
 
 async function getAllSpecialties(_: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const specialties = await Specialty.findAll();
+    const specialties = await db.Specialty.findAll();
     res.status(200).json(specialties);
   } catch (err) {
     next(err);

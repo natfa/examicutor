@@ -1,12 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
 import dayjs from 'dayjs';
 
-import { Exam } from '../../models/Exam';
+import { db } from '../../models';
 
 function getExamById(req: Request, res: Response, next: NextFunction): void {
   const { examId } = req.params;
 
-  Exam
+  db.Exam
     .findByPk(examId)
     .then((exam) => {
       if (exam === null) {

@@ -1,12 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
 
-import { Student } from '../../models/Student';
+import { db } from '../../models';
 
 async function getStudent(req: Request, res: Response, next: NextFunction) {
   if (req.session === undefined) throw new Error('req.session is undefined');
 
   try {
-    const student = await Student.findOne({
+    const student = await db.Student.findOne({
       where: {
         userId: req.session.user.id,
       }
