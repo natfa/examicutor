@@ -5,6 +5,7 @@ import {
   DataTypes,
 } from 'sequelize';
 
+import { BaseSchema } from './BaseSchema';
 import { Question } from './Question';
 
 export interface AnswerAttributes {
@@ -17,7 +18,7 @@ export interface AnswerAttributes {
 /**
  * The schema that should be accepted from requests
  */
-export const AnswerSchema = Joi.object({
+export const AnswerSchema = BaseSchema.keys({
   id: Joi
     .number()
     .optional(),

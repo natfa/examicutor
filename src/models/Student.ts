@@ -1,3 +1,4 @@
+import Joi from 'joi';
 import {
   Sequelize,
   Model,
@@ -22,7 +23,7 @@ import {
 import { User, UserSchema } from './User';
 import { Specialty, SpecialtySchema } from './Specialty';
 import { Solution } from './Solution';
-import Joi from 'joi';
+import { BaseSchema } from './BaseSchema';
 
 export interface StudentAttributes {
   id?: number;
@@ -30,7 +31,7 @@ export interface StudentAttributes {
   studiesIn: number;
 };
 
-export const StudentSchema = Joi.object({
+export const StudentSchema = BaseSchema.keys({
   id: Joi
     .number()
     .optional(),

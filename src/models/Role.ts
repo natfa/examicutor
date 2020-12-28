@@ -8,6 +8,7 @@ import {
     HasManyCountAssociationsMixin
 } from 'sequelize';
 
+import { BaseSchema } from './BaseSchema';
 import { User } from './User';
 
 export interface RoleAttributes {
@@ -15,7 +16,7 @@ export interface RoleAttributes {
     name: string;
 };
 
-export const RoleSchema = Joi.object({
+export const RoleSchema = BaseSchema.keys({
     id: Joi
         .number()
         .optional(),

@@ -10,6 +10,7 @@ import {
   Association,
 } from 'sequelize';
 
+import { BaseSchema } from './BaseSchema';
 import { User, UserSchema } from './User';
 
 export interface TeacherAttributes {
@@ -17,7 +18,7 @@ export interface TeacherAttributes {
   userId: number;
 }
 
-export const TeacherSchema = Joi.object({
+export const TeacherSchema = BaseSchema.keys({
   id: Joi
     .number()
     .optional(),

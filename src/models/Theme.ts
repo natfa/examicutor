@@ -22,6 +22,22 @@ import {
   Association,
 } from 'sequelize';
 
+import { BaseSchema } from './BaseSchema';
+
+export const ThemeSchema = BaseSchema.keys({
+  id: Joi
+    .number()
+    .optional(),
+
+  moduleId: Joi
+    .number()
+    .required(),
+
+  name: Joi
+    .string()
+    .required(),
+});
+
 import { ExamParameter } from './ExamParameter';
 import { Module, ModuleAttributes, ModuleSchema } from './Module';
 import { Question, QuestionAttributes, QuestionSchema } from './Question';
@@ -33,24 +49,6 @@ export interface ThemeAttributes {
   questions?: QuestionAttributes[];
   module?: ModuleAttributes;
 };
-
-export const ThemeSchema = Joi.object({
-  id: Joi
-    .number()
-    .optional(),
-
-  name: Joi
-    .string()
-    .required(),
-
-  //module: ModuleSchema
-    //.required(),
-
-  questions: Joi
-    .array()
-    .items(QuestionSchema)
-    .optional(),
-});
 
 export class Theme extends Model<ThemeAttributes> implements ThemeAttributes {
   public id!: number;

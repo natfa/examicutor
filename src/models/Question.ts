@@ -16,6 +16,7 @@ import {
 } from 'sequelize';
 
 import { Answer, AnswerAttributes, AnswerSchema } from './Answer';
+import { BaseSchema } from './BaseSchema';
 import { Theme, ThemeAttributes } from './Theme';
 
 export interface QuestionAttributes {
@@ -31,7 +32,7 @@ export interface QuestionAttributes {
 /**
  * The schema that should be accepted from requests
  */
-export const QuestionSchema = Joi.object({
+export const QuestionSchema = BaseSchema.keys({
   id: Joi
     .number()
     .optional(),

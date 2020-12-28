@@ -1,3 +1,4 @@
+import Joi from 'joi';
 import {
     Sequelize,
     Model,
@@ -8,6 +9,22 @@ import {
     BelongsToSetAssociationMixin,
     BelongsToCreateAssociationMixin,
 } from 'sequelize';
+
+import { BaseSchema } from './BaseSchema';
+import { ThemeSchema } from './Theme';
+
+export const ExamParameterSchema = BaseSchema.keys({
+    id: Joi
+        .number()
+        .optional(),
+
+    theme: ThemeSchema
+        .required(),
+
+    count: Joi
+        .number()
+        .required(),
+});
 
 import { Exam } from './Exam';
 import { Theme } from './Theme';

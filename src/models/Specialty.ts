@@ -17,6 +17,7 @@ import {
   Association,
 } from 'sequelize';
 
+import { BaseSchema } from './BaseSchema';
 import { Student } from './Student';
 
 export interface SpecialtyAttributes {
@@ -24,7 +25,7 @@ export interface SpecialtyAttributes {
   name: string;
 }
 
-export const SpecialtySchema = Joi.object({
+export const SpecialtySchema = BaseSchema.keys({
   id: Joi
     .number()
     .optional(),

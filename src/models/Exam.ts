@@ -1,3 +1,4 @@
+import Joi from 'joi';
 import {
   Sequelize,
   Model,
@@ -16,8 +17,33 @@ import {
   HasManyCreateAssociationMixin,
 } from 'sequelize';
 
-import { ExamParameter, ExamParameterAttributes } from './ExamParameter';
+import { BaseSchema } from './BaseSchema';
+import { ExamParameter, ExamParameterAttributes, ExamParameterSchema } from './ExamParameter';
 import { Solution } from './Solution';
+
+export const ExamSchema = BaseSchema.keys({
+  id: Joi
+    .number()
+    .optional(),
+
+  name: Joi
+    .string()
+    .required(),
+
+  startDate: Joi
+    .date()
+    .greater('now')
+    .required(),
+
+  timeToSolve: Joi
+    .number()
+    .required(),
+
+  parameters: Joi
+    .array()
+    .items(ExamParameterSchema)
+    .required(),
+});
 
 interface ExamAttributes {
   id?: number;
