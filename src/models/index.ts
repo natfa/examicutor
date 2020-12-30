@@ -11,8 +11,8 @@ import { Role, initRole } from './Role';
 import { Specialty, initSpecialty } from './Specialty';
 import { Student, initStudent } from './Student';
 import { Teacher, initTeacher } from './Teacher';
-import { Solution, initSolution } from './Solution';
-import { SolutionAnswer, initSolutionAnswer } from './SolutionAnswer';
+import { StudentExam, initStudentExam } from './StudentExam';
+import { StudentExamQuestion, initStudentExamQuestion } from './StudentExamQuestion';
 import { DBInterface } from '../types/DBInterface';
 
 export let db: DBInterface;
@@ -35,8 +35,8 @@ export const setupModels = (config: Config) => {
     initSpecialty(sequelize);
     initStudent(sequelize);
     initTeacher(sequelize);
-    initSolution(sequelize);
-    initSolutionAnswer(sequelize);
+    initStudentExam(sequelize);
+    initStudentExamQuestion(sequelize);
 
     // create associations
     Module.associate();
@@ -49,8 +49,8 @@ export const setupModels = (config: Config) => {
     Role.associate();
     Student.associate();
     Specialty.associate();
-    Solution.associate();
-    SolutionAnswer.associate();
+    StudentExam.associate();
+    StudentExamQuestion.associate();
 
     return db = {
         sequelize,
@@ -66,7 +66,7 @@ export const setupModels = (config: Config) => {
         Specialty,
         Student,
         Teacher,
-        Solution,
-        SolutionAnswer,
+        StudentExam,
+        StudentExamQuestion,
     };
 }

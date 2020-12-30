@@ -3,11 +3,12 @@ import {
   Sequelize,
   Model,
   DataTypes,
+  Association,
 
   BelongsToGetAssociationMixin,
   BelongsToSetAssociationMixin,
   BelongsToCreateAssociationMixin,
-  Association,
+
   HasManyGetAssociationsMixin,
   HasManyCountAssociationsMixin,
   HasManyHasAssociationMixin,
@@ -22,8 +23,8 @@ import {
 
 import { User, UserSchema } from './User';
 import { Specialty, SpecialtySchema } from './Specialty';
-import { Solution } from './Solution';
 import { BaseSchema } from './BaseSchema';
+import { StudentExam } from './StudentExam';
 
 export interface StudentAttributes {
   id?: number;
@@ -59,25 +60,25 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
   public setSpecialty!: BelongsToSetAssociationMixin<Specialty, number>;
   public createSpecialty!: BelongsToCreateAssociationMixin<Specialty>;
 
-  public getSolutions!: HasManyGetAssociationsMixin<Solution>;
-  public countSolutions!: HasManyCountAssociationsMixin;
-  public hasSolution!: HasManyHasAssociationMixin<Solution, number>;
-  public hasSolutions!: HasManyHasAssociationsMixin<Solution, number>;
-  public setSolutions!: HasManySetAssociationsMixin<Solution, number>;
-  public addSolution!: HasManyAddAssociationMixin<Solution, number>;
-  public addSolutions!: HasManyAddAssociationsMixin<Solution, number>;
-  public removeSolution!: HasManyRemoveAssociationMixin<Solution, number>;
-  public removeSolutions!: HasManyRemoveAssociationsMixin<Solution, number>;
-  public createSolution!: HasManyCreateAssociationMixin<Solution>;
+  public getExams!: HasManyGetAssociationsMixin<StudentExam>;
+  public countExams!: HasManyCountAssociationsMixin;
+  public hasExam!: HasManyHasAssociationMixin<StudentExam, number>;
+  public hasExams!: HasManyHasAssociationsMixin<StudentExam, number>;
+  public setExams!: HasManySetAssociationsMixin<StudentExam, number>;
+  public addExam!: HasManyAddAssociationMixin<StudentExam, number>;
+  public addExams!: HasManyAddAssociationsMixin<StudentExam, number>;
+  public removeExam!: HasManyRemoveAssociationMixin<StudentExam, number>;
+  public removeExams!: HasManyRemoveAssociationsMixin<StudentExam, number>;
+  public createExam!: HasManyCreateAssociationMixin<StudentExam>;
 
   public readonly user?: User;
   public readonly specialty?: Specialty;
-  public readonly solutions?: Solution[];
+  public readonly exams?: StudentExam[];
 
   public static associations: {
     user: Association<Student, User>;
     specialty: Association<Student, Specialty>;
-    solutions: Association<Student, Solution>;
+    exams: Association<Student, StudentExam>;
   }
 
   public static associate = () => {
@@ -91,10 +92,10 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
       as: 'specialty',
     });
 
-    Student.hasMany(Solution, {
+    Student.hasMany(StudentExam, {
       foreignKey: 'studentId',
-      as: 'solutions',
-    })
+      as: 'exams',
+    });
   }
 }
 

@@ -19,7 +19,7 @@ import {
 
 import { BaseSchema } from './BaseSchema';
 import { ExamParameter, ExamParameterAttributes, ExamParameterSchema } from './ExamParameter';
-import { Solution } from './Solution';
+import { StudentExam } from './StudentExam';
 
 export const ExamSchema = BaseSchema.keys({
   id: Joi
@@ -63,40 +63,43 @@ export class Exam extends Model<ExamAttributes> implements ExamAttributes {
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
-  public getSolutions!: HasManyGetAssociationsMixin<Solution>;
-  public countSolutions!: HasManyCountAssociationsMixin;
-  public hasSolution!: HasManyHasAssociationMixin<Solution, number>;
-  public hasSolutions!: HasManyHasAssociationsMixin<Solution, number>;
-  public setSolutions!: HasManySetAssociationsMixin<Solution, number>;
-  public addSolution!: HasManyAddAssociationMixin<Solution, number>;
-  public addSolutions!: HasManyAddAssociationsMixin<Solution, number>;
-  public removeSolution!: HasManyRemoveAssociationMixin<Solution, number>;
-  public removeSolutions!: HasManyRemoveAssociationsMixin<Solution, number>;
-  public createSolution!: HasManyCreateAssociationMixin<Solution>;
+  public getStudentExams!: HasManyGetAssociationsMixin<StudentExam>;
+  public countStudentExams!: HasManyCountAssociationsMixin;
+  public hasStudentExam!: HasManyHasAssociationMixin<StudentExam, number>;
+  public hasStudentExams!: HasManyHasAssociationsMixin<StudentExam, number>;
+  public setStudentExams!: HasManySetAssociationsMixin<StudentExam, number>;
+  public addStudentExam!: HasManyAddAssociationMixin<StudentExam, number>;
+  public addStudentExams!: HasManyAddAssociationsMixin<StudentExam, number>;
+  public removeStudentExam!: HasManyRemoveAssociationMixin<StudentExam, number>;
+  public removeStudentExams!: HasManyRemoveAssociationsMixin<StudentExam, number>;
+  public createStudentExam!: HasManyCreateAssociationMixin<StudentExam>;
 
-  public getExamParameters!: HasManyGetAssociationsMixin<ExamParameter>;
-  public countExamParameters!: HasManyCountAssociationsMixin;
-  public hasExamParameter!: HasManyHasAssociationMixin<ExamParameter, number>;
-  public hasExamParameters!: HasManyHasAssociationsMixin<ExamParameter, number>;
-  public setExamParameters!: HasManySetAssociationsMixin<ExamParameter, number>;
-  public addExamParameter!: HasManyAddAssociationMixin<ExamParameter, number>;
-  public addExamParameters!: HasManyAddAssociationsMixin<ExamParameter, number>;
-  public removeExamParameter!: HasManyRemoveAssociationMixin<ExamParameter, number>;
-  public removeExamParameters!: HasManyRemoveAssociationsMixin<ExamParameter, number>;
-  public createExamParameter!: HasManyCreateAssociationMixin<ExamParameter>;
+  // Remember that an alias of the relation name defines
+  // the names of association mixins.
+  // sequelize.org - If an alias was defined, it will be used instead of the model name to form the method names.
+  public getParameters!: HasManyGetAssociationsMixin<ExamParameter>;
+  public countParameters!: HasManyCountAssociationsMixin;
+  public hasParameter!: HasManyHasAssociationMixin<ExamParameter, number>;
+  public hasParameters!: HasManyHasAssociationsMixin<ExamParameter, number>;
+  public setParameters!: HasManySetAssociationsMixin<ExamParameter, number>;
+  public addParameter!: HasManyAddAssociationMixin<ExamParameter, number>;
+  public addParameters!: HasManyAddAssociationsMixin<ExamParameter, number>;
+  public removeParameter!: HasManyRemoveAssociationMixin<ExamParameter, number>;
+  public removeParameters!: HasManyRemoveAssociationsMixin<ExamParameter, number>;
+  public createParameter!: HasManyCreateAssociationMixin<ExamParameter>;
 
-  public readonly solutions?: Solution[];
+  public readonly studentExams?: StudentExam[];
   public readonly parameters?: ExamParameter[];
 
   public static associations: {
-    solutions: Association<Exam, Solution>;
+    studentExams: Association<Exam, StudentExam>;
     parameters: Association<Exam, ExamParameter>;
   };
 
   public static associate = () => {
-    Exam.hasMany(Solution, {
+    Exam.hasMany(StudentExam, {
       foreignKey: 'examId',
-      as: 'solutions',
+      as: 'studentExams',
     });
 
     Exam.hasMany(ExamParameter, {
