@@ -10,5 +10,6 @@
 **/uploads/
 **/sessions/
 **/.vscode/
+*.code-workspace
 
 *.sh
