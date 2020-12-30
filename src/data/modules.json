@@ -1,0 +1,16 @@
+[
+    {
+        "name": "Math",
+        "themes": [
+            { "name": "Algebra" },
+            { "name": "Geometry" }
+        ]
+    },
+    {
+        "name": "Programming",
+        "themes": [
+            { "name": "Languages" },
+            { "name": "Syntax and semantics" }
+        ]
+    }
+]

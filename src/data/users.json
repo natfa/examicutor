@@ -1,0 +1,17 @@
+[
+    {
+        "email": "federlizer@gmail.com",
+        "password": "123456",
+        "role": "teacher"
+    },
+    {
+        "email": "teacher@mail.com",
+        "password": "123456",
+        "role": "teacher"
+    },
+    {
+        "email": "student@mail.com",
+        "password": "123456",
+        "role": "student"
+    }
+]
