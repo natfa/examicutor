@@ -9,28 +9,45 @@ import questionsData from './questions.json';
 import { DBInterface } from "../types/DBInterface";
 
 export const populateDatabase = async (db: DBInterface) => {
+    // add specialties
     const specialties = await db.Specialty.bulkCreate(specialtiesData);
+
+    // add roles
     const roles = await db.Role.bulkCreate(rolesData);
 
-    const users = await db.User.bulkCreate(usersData.map((ud) => {
+    // add users, students and teachers
+    for (let ud of usersData) {
         const role = roles.find(r => r.name === ud.role);
         if (role === undefined) {
             throw new Error(`Role ${ud.role} doesn't exist, please add it to example data first.`);
         }
 
         const hash = bcrypt.hashSync(ud.password, 10);
-
-        return {
+        const user = await db.User.create({
             email: ud.email,
             passwordHash: hash,
             roleId: role.id,
-        };
-    }));
+        });
 
+        if (ud.role === 'student') {
+            const specialty = specialties.find(s => s.name === ud.specialty);
+            if (specialty === undefined) {
+                throw new Error(`Specialty ${ud.specialty} doesn't exist, please add it to example data first.`);
+            }
+
+            const student = await db.Student.create({
+                userId: user.id,
+                studiesIn: specialty?.id,
+            });
+        }
+    }
+
+    // add modules
     const modules = await db.Module.bulkCreate(modulesData, {
         include: [db.Module.associations.themes],
     });
 
+    // add questions
     const questions = await db.Question.bulkCreate(questionsData.map(qd => {
         const module = modules.find(m => m.name === qd.module);
         if (module === undefined) {
@@ -52,4 +69,6 @@ export const populateDatabase = async (db: DBInterface) => {
             themeId: theme.id,
         }
     }));
+
+    // that's all folks
 }

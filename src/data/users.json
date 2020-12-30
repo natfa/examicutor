@@ -10,8 +10,21 @@
         "role": "teacher"
     },
     {
-        "email": "student@mail.com",
+        "email": "cs1@student.com",
         "password": "123456",
-        "role": "student"
+        "role": "student",
+        "specialty": "Computer Science"
+    },
+    {
+        "email": "cs2@student.com",
+        "password": "123456",
+        "role": "student",
+        "specialty": "Computer Science"
+    },
+    {
+        "email": "cs3@student.com",
+        "password": "123456",
+        "role": "student",
+        "specialty": "Computer Science"
     }
 ]
