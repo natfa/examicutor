@@ -26,8 +26,14 @@ dayjs.extend(dayjsDuration);
 
   server.listen(config.express.port, () => console.log(`Server listening on port ${config.express.port}`))
 
-  process.on('SIGINT', () => gracefulShutdown(server, db.sequelize));
-  process.on('SIGTERM', () => gracefulShutdown(server, db.sequelize));
+  process.on('SIGINT', () => {
+    console.log('SIGINT received...');
+    gracefulShutdown(server, db.sequelize);
+  });
+  process.on('SIGTERM', () => {
+    console.log('SIGTERM received...');
+    gracefulShutdown(server, db.sequelize);
+  });
 }());
 
 function gracefulShutdown(server: Server, db: Sequelize) {
