@@ -3,13 +3,19 @@ import {
   Sequelize,
   Model,
   DataTypes,
+  Association,
 
   HasManyGetAssociationsMixin,
   HasManyCountAssociationsMixin,
+  HasManyHasAssociationMixin,
+  HasManyHasAssociationsMixin,
   HasManySetAssociationsMixin,
   HasManyAddAssociationMixin,
+  HasManyAddAssociationsMixin,
+  HasManyRemoveAssociationMixin,
+  HasManyRemoveAssociationsMixin,
   HasManyCreateAssociationMixin,
-  Association,
+
   BelongsToGetAssociationMixin,
   BelongsToSetAssociationMixin,
   BelongsToCreateAssociationMixin,
@@ -61,8 +67,13 @@ export class Question extends Model<QuestionAttributes> implements QuestionAttri
 
   public getAnswers!: HasManyGetAssociationsMixin<Answer>;
   public countAnswers!: HasManyCountAssociationsMixin;
+  public hasAnswer!: HasManyHasAssociationMixin<Answer, number>;
+  public hasAnswers!: HasManyHasAssociationsMixin<Answer, number>;
   public setAnswers!: HasManySetAssociationsMixin<Answer, number>;
   public addAnswer!: HasManyAddAssociationMixin<Answer, number>;
+  public addAnswers!: HasManyAddAssociationsMixin<Answer, number>;
+  public removeAnswer!: HasManyRemoveAssociationMixin<Answer, number>;
+  public removeAnswers!: HasManyRemoveAssociationsMixin<Answer, number>;
   public createAnswer!: HasManyCreateAssociationMixin<Answer>;
 
   public getTheme!: BelongsToGetAssociationMixin<Theme>;
