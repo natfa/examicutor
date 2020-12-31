@@ -22,13 +22,14 @@ import {
 
 import { Exam } from './Exam';
 import { Student } from './Student';
-import { StudentExamQuestion } from './StudentExamQuestion';
+import { StudentExamQuestion, StudentExamQuestionAttributes } from './StudentExamQuestion';
 
 export interface StudentExamAttributes {
   id?: number;
   examId: number;
   studentId: number;
   grade?: number;
+  questions?: StudentExamQuestionAttributes[];
 }
 
 export class StudentExam extends Model<StudentExamAttributes> implements StudentExamAttributes {

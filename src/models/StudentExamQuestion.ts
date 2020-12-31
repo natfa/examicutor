@@ -18,9 +18,9 @@ import { Answer } from './Answer';
 
 export interface StudentExamQuestionAttributes {
   id?: number;
-  studentExamId: number;
+  studentExamId?: number;
   questionId: number;
-  givenAnswerId: number;
+  givenAnswerId?: number;
 }
 
 export class StudentExamQuestion extends Model<StudentExamQuestionAttributes> implements StudentExamQuestionAttributes {
@@ -90,7 +90,7 @@ export const initStudentExamQuestion = (sequelize: Sequelize) => {
       },
       givenAnswerId: {
         type: DataTypes.INTEGER.UNSIGNED,
-        allowNull: false,
+        allowNull: true,
       },
     },
     {

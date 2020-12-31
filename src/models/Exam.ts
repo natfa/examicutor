@@ -119,7 +119,7 @@ export const initExam = (sequelize: Sequelize) => {
       },
       name: {
         type: DataTypes.STRING(128),
-        unique: true,
+        //unique: true,
         allowNull: false,
       },
       startDate: {
