@@ -49,7 +49,7 @@ interface ExamAttributes {
   id?: number;
   name: string;
   startDate: Date;
-  timeToSolve: number;
+  timeToSolve: number; // in seconds
   parameters?: ExamParameterAttributes[];
   // creator: string;
 }
@@ -58,7 +58,7 @@ export class Exam extends Model<ExamAttributes> implements ExamAttributes {
   public id!: number;
   public name!: string;
   public startDate!: Date;
-  public timeToSolve!: number;
+  public timeToSolve!: number; // in seconds
 
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;

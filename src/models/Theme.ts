@@ -126,7 +126,7 @@ export const initTheme = (sequelize: Sequelize) => {
       },
       name: {
         type: DataTypes.STRING(128),
-        unique: true,
+        unique: false,
         allowNull: false,
         validate: {
           notEmpty: true,

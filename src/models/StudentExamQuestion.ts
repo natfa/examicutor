@@ -36,9 +36,9 @@ export class StudentExamQuestion extends Model<StudentExamQuestionAttributes> im
   public setExam!: BelongsToSetAssociationMixin<StudentExam, number>;
   public createExam!: BelongsToCreateAssociationMixin<StudentExam>;
 
-  public getQuestion!: HasOneGetAssociationMixin<Question>;
-  public setQuestion!: HasOneSetAssociationMixin<Question, number>;
-  public createQuestion!: HasOneCreateAssociationMixin<Question>;
+  public getQuestion!: BelongsToGetAssociationMixin<Question>;
+  public setQuestion!: BelongsToSetAssociationMixin<Question, number>;
+  public createQuestion!: BelongsToCreateAssociationMixin<Question>;
 
   public getGivenAnswer!: HasOneGetAssociationMixin<Answer>;
   public setGivenAnswer!: HasOneSetAssociationMixin<Answer, number>;
@@ -60,12 +60,12 @@ export class StudentExamQuestion extends Model<StudentExamQuestionAttributes> im
       as: 'exam',
     });
 
-    StudentExamQuestion.hasOne(Question, {
+    StudentExamQuestion.belongsTo(Question, {
       foreignKey: 'questionId',
       as: 'question',
     });
 
-    StudentExamQuestion.hasOne(Answer, {
+    StudentExamQuestion.belongsTo(Answer, {
       foreignKey: 'givenAnswerId',
       as: 'givenAnswer',
     })

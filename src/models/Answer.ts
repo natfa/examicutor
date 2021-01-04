@@ -7,6 +7,7 @@ import {
 
 import { BaseSchema } from './BaseSchema';
 import { Question } from './Question';
+import { StudentExamQuestion } from './StudentExamQuestion';
 
 export interface AnswerAttributes {
   id?: number;
@@ -45,6 +46,11 @@ export class Answer extends Model<AnswerAttributes> implements AnswerAttributes 
     Answer.belongsTo(Question, {
       foreignKey: 'questionId',
     });
+
+    Answer.hasMany(StudentExamQuestion, {
+      foreignKey: 'givenAnswerId',
+      as: 'studentExamQuestions',
+    })
   }
 }
 

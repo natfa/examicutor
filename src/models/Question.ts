@@ -22,6 +22,7 @@ import {
 } from 'sequelize';
 
 import { Answer, AnswerAttributes, AnswerSchema } from './Answer';
+import { StudentExamQuestion } from './StudentExamQuestion';
 import { BaseSchema } from './BaseSchema';
 import { Theme, ThemeAttributes } from './Theme';
 
@@ -98,6 +99,11 @@ export class Question extends Model<QuestionAttributes> implements QuestionAttri
       foreignKey: 'themeId',
       as: 'theme',
     });
+
+    Question.hasMany(StudentExamQuestion, {
+      foreignKey: 'questionId',
+      as: 'studentExamQuestions',
+    })
   }
 };
 
