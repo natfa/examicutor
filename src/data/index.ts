@@ -68,7 +68,9 @@ export const populateDatabase = async (db: DBInterface) => {
             answers: qd.answers,
             themeId: theme.id,
         }
-    }));
+    }), {
+        include: [db.Question.associations.answers],
+    });
 
     // that's all folks
 }
