@@ -5,7 +5,7 @@
         "role": "teacher"
     },
     {
-        "email": "teacher@mail.com",
+        "email": "teacher@teacher.com",
         "password": "123456",
         "role": "teacher"
     },
@@ -26,5 +26,17 @@
         "password": "123456",
         "role": "student",
         "specialty": "Computer Science"
+    },
+    {
+        "email": "business@student.com",
+        "password": "123456",
+        "role": "student",
+        "specialty": "Business"
+    },
+    {
+        "email": "math@student.com",
+        "password": "123456",
+        "role": "student",
+        "specialty": "Mathematics"
     }
 ]
