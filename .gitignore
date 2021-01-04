@@ -7,7 +7,6 @@ node_modules
 **/build/
 
 # configs and environment specific
-**/config/
 **/uploads/
 **/sessions/
 **/.vscode/
