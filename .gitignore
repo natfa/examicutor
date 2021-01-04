@@ -1,5 +1,6 @@
 # dependencies
 **/node_modules/
+node_modules
 
 # build
 **/bin/
@@ -13,3 +14,6 @@
 *.code-workspace
 
 *.sh
+.ftpquota
+.htaccess
+passengar.log
