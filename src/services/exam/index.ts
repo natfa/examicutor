@@ -104,20 +104,37 @@ async function createNewExam(req: Request, res: Response, next: NextFunction): P
 };
 
 async function getExamById(req: Request, res: Response, next: NextFunction): Promise<void> {
+  if (req.session === undefined) throw new Error('req.session is undefined');
+
   const { examId } = req.params;
 
-  try {
-    const exam = await db.Exam.findByPk(examId);
+  let options: object = {};
 
-    if (!exam) {
-      res.status(404).end();
-      return;
+  if (req.session.user.role === 'student') {
+    const student = await db.Student.findOne({ where: { userId: req.session.user.id }});
+
+    if (!student) throw new Error(`User with role ${req.session.user.role} doesn't have a student entry`);
+
+    options = {
+      include: [
+        {
+          association: db.Exam.associations.studentExams,
+          where: {
+            studentId: student.id
+          }
+        }
+      ]
     }
-
-    res.status(200).json(exam.toJSON());
-  } catch (err) {
-    next(err);
   }
+
+  const exam = await db.Exam.findByPk(examId, options);
+
+  if (!exam) {
+    res.status(404).end();
+    return;
+  }
+
+  res.status(200).json(exam.toJSON());
 }
 
 async function getAllExams(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -131,7 +148,41 @@ async function getAllExams(req: Request, res: Response, next: NextFunction): Pro
 }
 
 async function getUpcomingExams(req: Request, res: Response, next: NextFunction): Promise<void> {
-  res.status(500).send('Not implemented');
+  if (req.session === undefined) {
+    throw new Error('req.session is undefined');
+  }
+
+  const today = new Date().setHours(0, 0, 0, 0);
+  let query: object = {
+    where: {
+      startDate: {
+        [Op.gte]: today,
+      },
+    }
+  }
+
+  if (req.session.user.role === 'student') {
+    const student = await db.Student.findOne({ where: { userId: req.session.user.id }});
+    if (student === null) {
+      throw new Error(`Student not found for userId ${req.session.user.id} but session says that role is ${req.session.user.role}.`);
+    }
+
+    query = {
+      ...query,
+      include: [
+        {
+          association: db.Exam.associations.studentExams,
+          where: {
+            studentId: student.id,
+          },
+        },
+      ],
+    }
+  }
+
+  const upcomingExams = await db.Exam.findAll(query);
+
+  res.status(200).json(upcomingExams.map(e => e.toJSON()));
 }
 
 async function getPastExams(req: Request, res: Response, next: NextFunction): Promise<void> {
