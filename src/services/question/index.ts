@@ -4,7 +4,9 @@ import { db } from '../../models';
 
 async function getQuestions(_: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const questions = await db.Question.findAll();
+    const questions = await db.Question.findAll({
+      include: [db.Question.associations.answers],
+    });
     res.status(200).json(questions);
   } catch (err) {
     next(err);
