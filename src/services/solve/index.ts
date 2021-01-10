@@ -18,6 +18,7 @@ async function getExamById(req: Request, res: Response, next: NextFunction): Pro
   }
 
   const exam = await db.Exam.findByPk(examId, {
+    order: db.sequelize.random(),
     include: [
       {
         association: db.Exam.associations.studentExams,
@@ -26,11 +27,14 @@ async function getExamById(req: Request, res: Response, next: NextFunction): Pro
         },
         include: [
           {
-            association: db.StudentExam.associations.questions,
+			association: db.StudentExam.associations.questions,
             include: [
               {
                 association: db.StudentExamQuestion.associations.question,
-                include: [ db.Question.associations.answers ],
+ 			    include: [ 
+				  {
+				    association: db.Question.associations.answers,
+				  } ],
               }
             ],
           },
@@ -52,7 +56,7 @@ async function getExamById(req: Request, res: Response, next: NextFunction): Pro
     res.status(400).end();
     return;
   }
-
+  
   res.status(200).json(exam.toJSON());
 }
 
