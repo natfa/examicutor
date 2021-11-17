@@ -68,5 +68,6 @@
     "./scripts/**",
     "./node_modules",
     "./build",
+    "./app.js"
   ]
 }
